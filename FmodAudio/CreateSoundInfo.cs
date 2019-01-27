@@ -8,7 +8,7 @@ namespace FmodAudio
     {
         static readonly int StructSize = Marshal.SizeOf<_interopStruct>();
 
-        internal _interopStruct Struct = new _interopStruct();
+        internal _interopStruct Struct = default;
 
         private FmodMemory.SaferPointer InclusionListMemory = null;
 

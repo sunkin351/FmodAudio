@@ -61,8 +61,7 @@ namespace FmodAudio
             {
                 return AllocationSize / sizeof(T);
             }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            
             public unsafe Span<T> AsSpan<T>() where T: unmanaged
             {
                 return new Span<T>(this.ToPointer(), AllocationSize / sizeof(T));

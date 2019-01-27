@@ -151,12 +151,8 @@ namespace FmodAudio
 
         internal void ReleaseDSP(IntPtr handle)
         {
-            if (!DSPLookup.TryRemove(handle, out _))
-            {
-                throw new InvalidOperationException();
-            }
-
             library.DSP_Release(handle).CheckResult();
+            DSPLookup.TryRemove(handle, out _);
         }
 
         internal Geometry GetGeometry(IntPtr handle)
@@ -187,12 +183,8 @@ namespace FmodAudio
 
         internal void ReleaseGeometry(IntPtr handle)
         {
-            if (!GeometryLookup.TryRemove(handle, out _))
-            {
-                throw new InvalidOperationException();
-            }
-
             library.Geometry_Release(handle).CheckResult();
+            GeometryLookup.TryRemove(handle, out _);
         }
 
         /// <summary>
