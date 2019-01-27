@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 namespace FmodAudio.Interop
 {
     using Dsp;
-    using Dsp.Interop;
 
     public delegate Result ChannelCallbackInternal(IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2);
 

@@ -2,7 +2,7 @@
 
 namespace FmodAudio
 {
-#pragma warning disable 414
+//#pragma warning disable 414
     [StructLayout(LayoutKind.Sequential)]
     public struct ReverbProperties
     {                            /*        MIN     MAX    DEFAULT   DESCRIPTION */
@@ -39,5 +39,5 @@ namespace FmodAudio
         }
         #endregion
     }
-#pragma warning restore 414
+//#pragma warning restore 414
 }

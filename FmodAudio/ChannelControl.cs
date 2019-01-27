@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FmodAudio
 {
-    using Interop;
     using Dsp;
+    using Interop;
 
     public abstract class ChannelControl : HandleBase
     {

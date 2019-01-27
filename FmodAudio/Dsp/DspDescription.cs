@@ -5,8 +5,6 @@ using System.Text;
 
 namespace FmodAudio.Dsp
 {
-    
-
     [StructLayout(LayoutKind.Sequential)]
     public unsafe class DspDescription
     {

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Runtime;
 using System.Collections.Concurrent;
-using System.Threading;
 
 namespace FmodAudio
 {

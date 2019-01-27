@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FmodAudio.Dsp
+﻿namespace FmodAudio.Dsp
 {
     /// <summary>
     /// These definitions can be used for creating FMOD defined special effects or DSP units.

@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace FmodAudio.Dsp
 {
     using global::FmodAudio.Interop;
-    using Interop;
     public sealed class DSP : HandleBase
     {
         static IFmodLibrary library { get => NativeLibrary.Library; }

@@ -1,10 +1,4 @@
-﻿using FmodAudio;
-using System;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System;
 
 namespace Examples
 {
@@ -19,33 +13,33 @@ namespace Examples
                 return;
             }
 
-            IExample test = null;
+            IExample example = null;
 
             switch (value)
             {
                 case 1:
-                    test = new _3DExample();
+                    example = new _3DExample();
                     break;
                 case 2:
-                    test = new AsyncIOExample();
+                    example = new AsyncIOExample();
                     break;
                 case 3:
-                    test = new ChannelGroupsExample();
+                    example = new ChannelGroupsExample();
                     break;
                 case 4:
-                    test = new ConvolutionReverbExample();
+                    example = new ConvolutionReverbExample();
                     break;
                 case 5:
-                    test = new CustomDSPExample();
+                    example = new CustomDSPExample();
                     break;
                 case 18:
-                    test = new RecordExample();
+                    example = new RecordExample();
                     break;
             }
 
-            using (test)
+            using (example)
             {
-                test.Run();
+                example.Run();
             }
 
             Console.ReadKey();
