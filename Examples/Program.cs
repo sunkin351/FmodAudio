@@ -37,9 +37,17 @@ namespace Examples
                     break;
             }
 
-            using (example)
+            try
             {
                 example.Run();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                example.Dispose();
             }
 
             Console.ReadKey();

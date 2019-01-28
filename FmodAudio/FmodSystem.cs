@@ -585,21 +585,35 @@ namespace FmodAudio
             return CreateSound(Filename, mode, DefaultInfo);
         }
 
-        public Sound CreateSound(string Filename, Mode mode, CreateSoundInfo info)
+        public unsafe Sound CreateSound(string Filename, Mode mode, CreateSoundInfo info)
         {
             byte[] data = Helpers.ToUTF8NullTerminated(Filename);
-            
-            library.System_CreateSound(Handle, data, MemoryBits(mode, true), ref (info ?? DefaultInfo).Struct, out IntPtr handle).CheckResult();
+            IntPtr handle;
 
+            fixed(byte* dataPtr = data)
+            {
+                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), ref (info ?? DefaultInfo).Struct, out handle).CheckResult();
+            }
+            
             return GetSound(handle);
         }
 
-        public Sound CreateSound(byte[] data, Mode mode, CreateSoundInfo info)
+        public unsafe Sound CreateSound(Span<byte> data, Mode mode, CreateSoundInfo info)
         {
             if (info == null)
                 throw new ArgumentNullException(nameof(info));
 
-            library.System_CreateSound(Handle, data, MemoryBits(mode, false), ref info.Struct, out IntPtr handle).CheckResult();
+            if (data.Length < info.Length)
+            {
+                throw new ArgumentException("data length less than length specified in CreateSoundInfo structure.");
+            }
+
+            IntPtr handle;
+
+            fixed(byte* dataPtr = data)
+            {
+                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), ref info.Struct, out handle).CheckResult();
+            }
 
             return GetSound(handle);
         }
@@ -610,7 +624,7 @@ namespace FmodAudio
         /// <param name="mode"></param>
         /// <param name="info"></param>
         /// <returns></returns>
-        public Sound CreateSoundOpenUser(Mode mode, CreateSoundInfo info)
+        public unsafe Sound CreateSoundOpenUser(Mode mode, CreateSoundInfo info)
         {
             mode = (mode & ~(Mode.OpenMemory_Point | Mode.OpenMemory)) | Mode.OpenUser;
 

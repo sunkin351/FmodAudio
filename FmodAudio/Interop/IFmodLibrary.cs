@@ -190,7 +190,7 @@ namespace FmodAudio.Interop
         Result System_GetSoundRAM(IntPtr system, out int currentalloced, out int maxalloced, out int total);
 
         [NativeSymbol("FMOD_System_CreateSound")]
-        Result System_CreateSound(IntPtr system, [In, Out] byte[] name_or_data, Mode mode, ref CreateSoundInfo._interopStruct exinfo, out IntPtr sound);
+        Result System_CreateSound(IntPtr system, byte* name_or_data, Mode mode, ref CreateSoundInfo._interopStruct exinfo, out IntPtr sound);
 
         [NativeSymbol("FMOD_System_CreateStream")]
         Result System_CreateStream(IntPtr system, [In, Out] byte[] name_or_data, Mode mode, ref CreateSoundInfo._interopStruct exinfo, out IntPtr sound);
@@ -893,10 +893,10 @@ namespace FmodAudio.Interop
         Result DSPConnection_GetMix(IntPtr dspconnection, out float volume);
 
         [NativeSymbol("FMOD_DSPConnection_SetMixMatrix")]
-        Result DSPConnection_SetMixMatrix(IntPtr dspconnection, float[] matrix, int outchannels, int inchannels, int inchannel_hop);
+        Result DSPConnection_SetMixMatrix(IntPtr dspconnection, float* matrix, int outchannels, int inchannels, int inchannel_hop);
 
         [NativeSymbol("FMOD_DSPConnection_GetMixMatrix")]
-        Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float[] matrix, out int outchannels, out int inchannels, int inchannel_hop);
+        Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, out int outchannels, out int inchannels, int inchannel_hop);
 
         [NativeSymbol("FMOD_DSPConnection_GetType")]
         Result DSPConnection_GetType(IntPtr dspconnection, out DSPConnectionType type);

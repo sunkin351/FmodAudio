@@ -115,16 +115,16 @@ namespace FmodAudio.Dsp
         }
 
 
-        public DSPConnection AddInput(DSP target, DSPConnectionType type)
+        public DSPConnection AddInput(DSP target, DSPConnectionType type = DSPConnectionType.Standard)
         {
             library.DSP_AddInput(Handle, target.Handle, out IntPtr connection, type).CheckResult();
 
             return new DSPConnection(SystemObject, connection);
         }
 
-        public void DisconnectFrom(DSP dsp, DSPConnection connection)
+        public void DisconnectFrom(DSP dsp, DSPConnection connection = null)
         {
-            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection.Handle).CheckResult();
+            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection?.Handle ?? default).CheckResult();
         }
 
         public void DisconnectAll(bool inputs, bool outputs)

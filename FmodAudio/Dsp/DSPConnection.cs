@@ -70,5 +70,26 @@ namespace FmodAudio.Dsp
                 library.DSPConnection_SetUserData(Handle, value).CheckResult();
             }
         }
+        
+        public unsafe void SetMixMatrix(Span<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
+        {
+            if (matrix.Length < outChannels * inChannels)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            fixed (float* mptr = matrix)
+            {
+                library.DSPConnection_SetMixMatrix(Handle, mptr, outChannels, inChannels, inChannelHop).CheckResult();
+            }
+        }
+
+        public unsafe void GetMixMatrix(Span<float> matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
+        {
+            fixed(float* mptr = matrix)
+            {
+                library.DSPConnection_GetMixMatrix(Handle, mptr, out outChannels, out inChannels, inChannelHop).CheckResult();
+            }
+        }
     }
 }
