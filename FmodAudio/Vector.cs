@@ -8,6 +8,9 @@ namespace FmodAudio
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector
     {
+        public static readonly Vector Zero = default;
+        public static ref readonly Vector Origin => ref Zero;
+
         public float X;
         public float Y;
         public float Z;

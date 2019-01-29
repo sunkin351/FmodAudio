@@ -162,13 +162,8 @@ namespace FmodAudio
             {
                 return;
             }
-            
-            library.ChannelGroup_SetCallback(Handle, internalCallback).CheckResult();
 
-            InternalCallback = internalCallback;
-            Callback = callback;
-
-            Result internalCallback(IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2)
+            ChannelCallbackInternal cb = delegate (IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2)
             {
                 if (rawchannel != Handle)
                 {
@@ -191,15 +186,27 @@ namespace FmodAudio
                 }
 
                 return result;
-            }
+            };
+            
+            library.ChannelGroup_SetCallback(Handle, cb).CheckResult();
 
+            InternalCallback = cb;
+            Callback = callback;
         }
 
         public bool IsPlaying
         {
             get
             {
-                library.ChannelGroup_IsPlaying(Handle, out bool value).CheckResult();
+                var res = library.ChannelGroup_IsPlaying(Handle, out bool value);
+
+                if (res != Result.Ok)
+                {
+                    if (res == Result.Err_Invalid_Handle)
+                        return false;
+
+                    res.CheckResult();
+                }
 
                 return value;
             }
