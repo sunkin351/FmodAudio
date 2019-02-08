@@ -28,7 +28,7 @@ namespace FmodAudio
             library.ChannelGroup_Stop(Handle).CheckResult();
         }
 
-        public bool IsPaused
+        public bool Paused
         {
             get
             {
