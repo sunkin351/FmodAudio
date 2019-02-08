@@ -3,8 +3,9 @@ using System;
 
 namespace Examples.Base
 {
-    public interface IExample : IDisposable
+    public interface IExample
     {
+        string Title { get; }
         void Run();
     }
 }

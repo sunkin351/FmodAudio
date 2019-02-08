@@ -1,5 +1,6 @@
 ﻿using FmodAudio;
 using FmodAudio.Dsp;
+using System;
 
 namespace Examples
 {
@@ -7,17 +8,12 @@ namespace Examples
 
     public class ConvolutionReverbExample : Example
     {
-        readonly FmodSystem system;
-
-        public ConvolutionReverbExample()
-        {
-            system = new FmodSystem();
-
-            TestVersion(system);
-        }
-
         public override void Run()
         {
+            FmodSystem system = new FmodSystem();
+
+            TestVersion(system);
+
             system.Init(32);
 
             ChannelGroup reverbGroup, mainGroup;
@@ -35,25 +31,25 @@ namespace Examples
 
             if (sFormat != SoundFormat.PCM16)
             {
-                //Fatal Error
+                Console.WriteLine("Sound file's format is not PCM16.");
+                Environment.Exit(-1);
             }
 
-            int irSoundLength = (int)sound.GetLength(TimeUnit.PCM);
+            {
+                int irSoundLength = (int)sound.GetLength(TimeUnit.PCM);
 
-            int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
-            
-            var irData = FmodMemory.Allocate(irDataLength);
+                int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
 
-            uint irDataRead = sound.ReadData(irData, irDataLength);
+                var irData = FmodMemory.Allocate(irDataLength);
 
-            const int ReverbParamIR = 0;
-            const int ReverbParamDry = 2;
+                sound.ReadData(irData, irDataLength);
 
-            reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+                const int ReverbParamIR = 0;
+                const int ReverbParamDry = 2;
 
-            reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
-
-            irData = null; //GC will take care of this.
+                reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+                reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
+            }
 
             sound.Release();
 
@@ -65,7 +61,7 @@ namespace Examples
 
             DSPConnection reverbConnection = reverbUnit.AddInput(channelHead, DSPConnectionType.Send);
 
-            channel.IsPaused = false;
+            channel.Paused = false;
 
             float wetVolume = 1f, dryVolume = 1f;
 
@@ -123,12 +119,6 @@ namespace Examples
             reverbUnit.DisconnectAll(true, true);
             reverbUnit.Release();
             reverbGroup.Release();
-        }
-
-        public override void Dispose()
-        {
-            system.Release();
-            base.Dispose();
         }
     }
 }

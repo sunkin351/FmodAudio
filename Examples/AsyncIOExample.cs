@@ -18,20 +18,16 @@ namespace Examples
         static long FileHandleInc = 1;
         static bool ThreadContinue = true;
         static readonly Thread AsyncThread = new Thread(ProcessThread);
-        readonly FmodSystem system;
-
-        public AsyncIOExample()
-        {
-            system = new FmodSystem();
-
-            TestVersion(system);
-        }
         
         public override void Run()
         {
+            FmodSystem system = new FmodSystem();
+
+            TestVersion(system);
+
             AsyncThread.Start();
 
-            system.Init(1, InitFlags.Normal);
+            system.Init(32, InitFlags.Normal);
 
             system.SetStreamBufferSize(32768, TimeUnit.RAWBytes);
 
@@ -95,12 +91,8 @@ namespace Examples
             ThreadContinue = false;
 
             AsyncThread.Join();
-        }
 
-        public override void Dispose()
-        {
             system.Release();
-            base.Dispose();
         }
 
         const int BufferLength = 5;

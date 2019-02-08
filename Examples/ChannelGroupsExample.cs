@@ -7,31 +7,16 @@ namespace Examples
 
     public class ChannelGroupsExample : Example
     {
-        readonly FmodSystem system;
-
-        public ChannelGroupsExample()
-        {
-            system = new FmodSystem();
-
-            TestVersion(system);
-        }
-
         public override void Run()
         {
+            FmodSystem system = new FmodSystem();
+
+            TestVersion(system);
+
             Sound[] sounds = new Sound[6];
             Channel[] channels = new Channel[6];
 
             ChannelGroup A, B, Master;
-
-            {
-                var version = system.Version;
-
-                if (version < FmodSystem.BindingVersion)
-                {
-                    Console.WriteLine($"FMOD lib version {version} doesn't match binding version {FmodSystem.BindingVersion}");
-                    return;
-                }
-            }
             
             system.Init(32);
 
@@ -107,12 +92,8 @@ namespace Examples
 
             A.Release();
             B.Release();
-        }
 
-        public override void Dispose()
-        {
             system.Release();
-            base.Dispose();
         }
     }
 }

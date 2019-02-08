@@ -9,24 +9,19 @@ namespace Examples
     {
         const int InterfaceUpdateTime = 50;
         const float DistanceFactor = 1.0f;
-
-        readonly FmodSystem system;
-
+        
         private readonly char[] ss = "|.............<1>......................<2>.......|".ToCharArray();
 
         float T = 0.0f;
         Vector LastPos = default;
-
-        public _3DExample()
-        {
-            //Create a System Object
-            system = new FmodSystem();
-
-            TestVersion(system);
-        }
-
+        
         public override void Run()
         {
+            //Create a System Object
+            FmodSystem system = new FmodSystem();
+
+            TestVersion(system);
+
             Sound s1, s2, s3;
             Channel c1 = null, c2 = null, c3 = null;
             bool listenerFlag = true;
@@ -57,13 +52,13 @@ namespace Examples
 
                 c1 = system.PlaySound(s1, null, true);
                 c1.Set3DAttributes(ref pos, ref vel);
-                c1.IsPaused = false;
+                c1.Paused = false;
 
                 pos.X = 15.0f * DistanceFactor;
 
                 c2 = system.PlaySound(s2, null, true);
                 c2.Set3DAttributes(ref pos, ref vel);
-                c2.IsPaused = false;
+                c2.Paused = false;
             }
 
             char[] s = new char[ss.Length];
@@ -80,10 +75,10 @@ namespace Examples
                         switch (button)
                         {
                             case Button.Action1:
-                                c1.IsPaused = !c1.IsPaused;
+                                c1.Paused = !c1.Paused;
                                 break;
                             case Button.Action2:
-                                c2.IsPaused = !c2.IsPaused;
+                                c2.Paused = !c2.Paused;
                                 break;
                             case Button.Action3:
                                 if (c3 == null || !c3.IsPlaying)
@@ -144,15 +139,9 @@ namespace Examples
             s2.Release();
             s3.Release();
 
-            system.Close();
-        }
-
-        public override void Dispose()
-        {
             system.Release();
-            base.Dispose();
         }
 
-        protected override string ExampleTitle => "Fmod 3D Example";
+        public override string Title => "Fmod 3D Example";
     }
 }

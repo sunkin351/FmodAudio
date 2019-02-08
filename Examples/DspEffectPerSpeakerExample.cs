@@ -7,7 +7,9 @@ using FmodAudio.Dsp;
 
 namespace Examples
 {
-    public class DspEffectPerSpeakerExample : Base.Example
+    using Base;
+
+    public class DspEffectPerSpeakerExample : Example
     {
         private FmodSystem System;
 
@@ -118,6 +120,8 @@ namespace Examples
             {
                 OnUpdate();
 
+                system.Update();
+
                 bool lowpassBypass = lowPass.Bypass, highpassBypass = highPass.Bypass;
 
                 if (!Commands.IsEmpty)
@@ -153,8 +157,6 @@ namespace Examples
                     }
                 }
 
-                system.Update();
-
                 DrawText("==================================================");
                 DrawText("DSP Effect Per Speaker Example.");
                 DrawText("Copyright (c) Firelight Technologies 2004-2018.");
@@ -179,13 +181,7 @@ namespace Examples
             lowPass.Release();
             highPass.Release();
 
-            system.Close();
-        }
-
-        public override void Dispose()
-        {
-            System.Release();
-            base.Dispose();
+            system.Release();
         }
     }
 }

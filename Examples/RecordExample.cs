@@ -14,18 +14,12 @@ namespace Examples
         uint LastRecordPos = 0;
         uint MinRecordDelta = uint.MaxValue;
         uint LastPlayPos = 0;
-
-        readonly FmodSystem system;
-
-        public RecordExample() : base()
-        {
-            system = new FmodSystem();
-
-            TestVersion(system);
-        }
-
+        
         public override void Run()
         {
+            FmodSystem system = new FmodSystem();
+
+            TestVersion(system);
             Channel channel = null;
             Sound sound;
             uint SamplesRecorded = 0;
@@ -136,7 +130,7 @@ namespace Examples
 
                     if (!isRecording)
                     {
-                        channel.IsPaused = true;
+                        channel.Paused = true;
                     }
 
                     uint playPos = channel.GetPosition(TimeUnit.PCM);
@@ -196,13 +190,8 @@ namespace Examples
             finally
             {
                 sound.Release();
+                system.Release();
             }
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            system.Release();
         }
     }
 }

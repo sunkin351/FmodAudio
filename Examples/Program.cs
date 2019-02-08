@@ -35,22 +35,31 @@ namespace Examples
                 case 18:
                     example = new RecordExample();
                     break;
+                case 30:
+                    example = new TestExample();
+                    break;
             }
 
-            try
+            if (example != null)
             {
-                example.Run();
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            finally
-            {
-                example.Dispose();
-            }
+                ConsoleHelpers.Initialize(example.Title);
 
-            Console.ReadKey();
+                try
+                {
+                    example.Run();
+                }
+                catch (Exception e)
+                {
+                    ConsoleHelpers.OnError();
+                    Console.WriteLine(e);
+                }
+                finally
+                {
+                    ConsoleHelpers.OnExit();
+                }
+
+                Console.ReadKey();
+            }
         }
 
         public static void PrintUsage()

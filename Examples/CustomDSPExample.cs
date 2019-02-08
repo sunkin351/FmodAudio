@@ -224,7 +224,7 @@ namespace Examples
 
             var ParamIndex = dsp.GetDataParameterIndex(ParameterDataType.User);
 
-            channel.IsPaused = false;
+            channel.Paused = false;
 
             do
             {
@@ -250,7 +250,7 @@ namespace Examples
                                 AdjustVolume(dsp, 0.1f);
                                 break;
                             case Button.More:
-                                channel.IsPaused = !channel.IsPaused;
+                                channel.Paused = !channel.Paused;
                                 break;
                             case Button.Quit:
                                 goto Exit;
@@ -316,7 +316,7 @@ namespace Examples
             sound.Release();
             masterGroup.RemoveDSP(dsp);
             dsp.Release();
-            masterGroup = null;
+            system.Release();
         }
 
         static void AdjustVolume(DSP dsp, float adjustment)
@@ -329,12 +329,6 @@ namespace Examples
             {
                 dsp.SetParameterFloat(1, vol);
             }
-        }
-
-        public override void Dispose()
-        {
-            system.Release();
-            base.Dispose();
         }
     }
 }
