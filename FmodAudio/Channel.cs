@@ -6,6 +6,7 @@ namespace FmodAudio
     {
         internal Channel(FmodSystem system, IntPtr handle) : base(system, handle)
         {
+            GC.SuppressFinalize(this); //Channels do not need to be released, and thus don't need finalizer.
         }
 
         #region Channel-Specific Control Functionality
