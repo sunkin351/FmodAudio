@@ -17,7 +17,10 @@ namespace FmodAudio
 
         ~HandleBase()
         {
-            Release();
+            if (!IsValid)
+                return;
+
+            ReleaseImpl();
         }
 
         internal bool IsValid
@@ -33,6 +36,8 @@ namespace FmodAudio
             ReleaseImpl();
 
             Handle = IntPtr.Zero;
+
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void ReleaseImpl()
