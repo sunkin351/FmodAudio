@@ -15,10 +15,9 @@ namespace FmodAudio
             const ImplementationOptions options = 
                 ImplementationOptions.EnableOptimizations | 
                 ImplementationOptions.EnableDllMapSupport | 
-                ImplementationOptions.UseIndirectCalls | 
-                ImplementationOptions.UseLazyBinding;
+                ImplementationOptions.UseIndirectCalls;
 
-            string libExt = string.Empty;
+            string libExt;
 
             //This section of code could probably use some improvement
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
