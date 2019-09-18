@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {   
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public delegate Result DebugCallback(DebugFlags flags, string file, int line, string func, string message);
 
     public delegate Result SystemCallback(FmodSystem system, SystemCallbackType type, IntPtr commanddata1, IntPtr commanddata2, IntPtr userdata);

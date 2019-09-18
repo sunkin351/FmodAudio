@@ -1,6 +1,7 @@
 ﻿using AdvancedDLSupport;
 using System;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace FmodAudio.Interop
 {
@@ -67,7 +68,7 @@ namespace FmodAudio.Interop
         Result System_SetFileSystem(IntPtr system, FileOpenCallbackImpl useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek, FileAsyncReadCallback userasyncread, FileAsyncCancelCallback userasynccancel, int blockalign);
 
         [NativeSymbol("FMOD_System_AttachFileSystem")]
-        Result System_AttachFileSystem(IntPtr system, FileOpenCallback useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek);
+        Result System_AttachFileSystem(IntPtr system, FileOpenCallbackImpl useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek);
 
         [NativeSymbol("FMOD_System_SetPluginPath")]
         Result System_SetPluginPath(IntPtr system, [In, Out] byte[] path);
@@ -160,10 +161,10 @@ namespace FmodAudio.Interop
         Result System_Get3DNumListeners(IntPtr system, out int numlisteners);
 
         [NativeSymbol("FMOD_System_Set3DListenerAttributes")]
-        Result System_Set3DListenerAttributes(IntPtr system, int listener, ref Vector pos, ref Vector vel, ref Vector forward, ref Vector up);
+        Result System_Set3DListenerAttributes(IntPtr system, int listener, ref Vector3 pos, ref Vector3 vel, ref Vector3 forward, ref Vector3 up);
 
         [NativeSymbol("FMOD_System_Get3DListenerAttributes")]
-        Result System_Get3DListenerAttributes(IntPtr system, int listener, out Vector pos, out Vector vel, out Vector forward, out Vector up);
+        Result System_Get3DListenerAttributes(IntPtr system, int listener, out Vector3 pos, out Vector3 vel, out Vector3 forward, out Vector3 up);
 
         [NativeSymbol("FMOD_System_SetStreamBufferSize")]
         Result System_SetStreamBufferSize(IntPtr system, uint filebuffersize, TimeUnit filebuffersizetype);

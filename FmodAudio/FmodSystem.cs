@@ -1,7 +1,11 @@
+#pragma warning disable IDE0052
+#pragma warning disable IDE1006
+
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace FmodAudio
 {
@@ -9,8 +13,8 @@ namespace FmodAudio
 
     public sealed partial class FmodSystem : HandleBase
     {
-        static Interop.IFmodLibrary library { get => NativeLibrary.Library; }
-        static object SyncObject = new object();
+        private static Interop.IFmodLibrary library { get => NativeLibrary.Library; }
+        private static readonly object SyncObject = new object();
 
         internal const int MaxInteropNameStringLength = 200;
 
@@ -346,13 +350,7 @@ namespace FmodAudio
             library.System_GetSoftwareFormat(Handle, out SampleRate, out speakerMode, out RawSpeakerCount).CheckResult();
         }
 
-        private static FileOpenCallbackImpl WrapFileOpen(FileOpenCallback callback)
-        {
-            return delegate (IntPtr Filename, ref uint filesize, ref IntPtr handle, IntPtr userdata)
-            {
-                return callback(Helpers.PtrToStringUnknownSize(Filename), out filesize, out handle, userdata);
-            };
-        }
+
 
         //Keep References to all delegates passed as filesystem functions
         private FileOpenCallbackImpl UserOpen;
@@ -371,10 +369,8 @@ namespace FmodAudio
             FileAsyncCancelCallback userAsyncCancel,
             int blockAlignment = -1)
         {
-            var fileOpen = WrapFileOpen(userOpen);
-            library.System_SetFileSystem(Handle, fileOpen, userClose, userRead, userSeek, userAsyncRead, userAsyncCancel, blockAlignment).CheckResult();
+            library.System_SetFileSystem(Handle, UserOpen = userOpen.Wrap(), userClose, userRead, userSeek, userAsyncRead, userAsyncCancel, blockAlignment).CheckResult();
 
-            UserOpen = fileOpen;
             UserClose = userClose;
             UserRead = userRead;
             UserSeek = userSeek;
@@ -388,7 +384,11 @@ namespace FmodAudio
             FileReadCallback userRead,
             FileSeekCallback userSeek)
         {
-            library.System_AttachFileSystem(Handle, userOpen, userClose, userRead, userSeek).CheckResult();
+            library.System_AttachFileSystem(Handle, UserOpen = userOpen.Wrap(), userClose, userRead, userSeek).CheckResult();
+
+            UserClose = userClose;
+            UserRead = userRead;
+            UserSeek = userSeek;
         }
 
         public void GetAdvancedSettings(AdvancedSettings settings)
@@ -467,12 +467,12 @@ namespace FmodAudio
             }
         }
 
-        public void Set3DListenerAttributes(int listener, ref Vector pos, ref Vector vel, ref Vector forward, ref Vector up)
+        public void Set3DListenerAttributes(int listener, ref Vector3 pos, ref Vector3 vel, ref Vector3 forward, ref Vector3 up)
         {
             library.System_Set3DListenerAttributes(Handle, listener, ref pos, ref vel, ref forward, ref up).CheckResult();
         }
 
-        public void Get3DListenerAttributes(int listener, out Vector pos, out Vector vel, out Vector forward, out Vector up)
+        public void Get3DListenerAttributes(int listener, out Vector3 pos, out Vector3 vel, out Vector3 forward, out Vector3 up)
         {
             library.System_Get3DListenerAttributes(Handle, listener, out pos, out vel, out forward, out up).CheckResult();
         }

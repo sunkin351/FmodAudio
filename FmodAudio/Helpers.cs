@@ -163,7 +163,7 @@ namespace FmodAudio
             if (size == 0)
                 return string.Empty;
             
-            if (size > 0)
+            if (size < buffer.Length)
             {
                 buffer = buffer.Slice(0, size);
             }
@@ -171,14 +171,14 @@ namespace FmodAudio
             return encoding.GetString(buffer);
         }
 
-        public static byte[] ToUTF8NullTerminated(string str)
+        public static byte[] ToUTF8NullTerminated(ReadOnlySpan<char> str)
         {
             Encoding enc = Encoding.UTF8;
 
             int count = enc.GetByteCount(str);
             byte[] data = new byte[count + 1]; //Extra charactor acts as the null terminator
 
-            enc.GetBytes(str, 0, str.Length, data, 0);
+            enc.GetBytes(str, data.AsSpan(0, count));
 
             Debug.Assert(data[count] == byte.MinValue);
 
@@ -269,6 +269,14 @@ namespace FmodAudio
             int tmp2 = Marshal.SizeOf<T>();
 
             Debug.Assert(tmp == tmp2, $"Sizeof Mismatch: sizeof() operator returns {tmp} while Marshal.Sizeof() returns {tmp2} for type {typeof(T).FullName}");
+        }
+
+        public static FileOpenCallbackImpl Wrap(this FileOpenCallback callback)
+        {
+            return delegate (IntPtr Filename, ref uint filesize, ref IntPtr handle, IntPtr userdata)
+            {
+                return callback(PtrToStringUnknownSize(Filename), out filesize, out handle, userdata);
+            };
         }
     }
 }
