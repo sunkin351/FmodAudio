@@ -117,12 +117,12 @@ namespace FmodAudio.Dsp
         {
             get
             {
-                return Helpers.MemoryToString(new Span<byte>(Unsafe.AsPointer(ref NameBuffer[0]), 15));
+                return Helpers.MemoryToString(MemoryMarshal.CreateReadOnlySpan(ref NameBuffer[0], 15));
             }
 
             set
             {
-                var buf = new Span<byte>(Unsafe.AsPointer(ref NameBuffer[0]), 15);
+                var buf = MemoryMarshal.CreateSpan(ref NameBuffer[0], 15);
 
                 if (buf[0] != 0)
                     buf.Clear();
@@ -138,12 +138,12 @@ namespace FmodAudio.Dsp
         {
             get
             {
-                return Helpers.MemoryToString(new Span<byte>(Unsafe.AsPointer(ref LabelBuffer[0]), 15));
+                return Helpers.MemoryToString(MemoryMarshal.CreateReadOnlySpan(ref LabelBuffer[0], 15));
             }
 
             set
             {
-                var buf = new Span<byte>(Unsafe.AsPointer(ref LabelBuffer[0]), 15);
+                var buf = MemoryMarshal.CreateSpan(ref LabelBuffer[0], 15);
 
                 if (buf[0] != 0)
                     buf.Clear();
@@ -170,24 +170,48 @@ namespace FmodAudio.Dsp
             [FieldOffset(0)]
             public ParameterDescData DataDescription;
 
-            public static implicit operator DescriptionUnion(ParameterDescData desc)
+            private DescriptionUnion(ParameterDescFloat desc)
             {
-                return new DescriptionUnion() { DataDescription = desc };
+                this = default;
+                FloatDescription = desc;
+            }
+
+            private DescriptionUnion(ParameterDescInt desc)
+            {
+                this = default;
+                IntDescription = desc;
+            }
+
+            private DescriptionUnion(ParameterDescBool desc)
+            {
+                this = default;
+                BoolDescription = desc;
+            }
+
+            private DescriptionUnion(ParameterDescData desc)
+            {
+                this = default;
+                DataDescription = desc;
             }
 
             public static implicit operator DescriptionUnion(ParameterDescFloat desc)
             {
-                return new DescriptionUnion() { FloatDescription = desc };
+                return new DescriptionUnion(desc);
             }
 
             public static implicit operator DescriptionUnion(ParameterDescInt desc)
             {
-                return new DescriptionUnion() { IntDescription = desc };
+                return new DescriptionUnion(desc);
             }
 
             public static implicit operator DescriptionUnion(ParameterDescBool desc)
             {
-                return new DescriptionUnion() { BoolDescription = desc };
+                return new DescriptionUnion(desc);
+            }
+
+            public static implicit operator DescriptionUnion(ParameterDescData desc)
+            {
+                return new DescriptionUnion(desc);
             }
         }
     }

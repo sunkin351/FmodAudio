@@ -29,7 +29,7 @@ namespace FmodAudio.Dsp
         public readonly struct DspAllocCallback
         {
             private delegate IntPtr Delegate(IntPtr funcPtr, uint size, MemoryType type, IntPtr sourceString);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -45,7 +45,7 @@ namespace FmodAudio.Dsp
         public readonly struct DspReallocCallback
         {
             private delegate IntPtr Delegate(IntPtr funcPtr, IntPtr ptr, uint size, MemoryType type, IntPtr sourceString);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -61,7 +61,7 @@ namespace FmodAudio.Dsp
         public readonly struct DspFreeCallback
         {
             private delegate void Delegate(IntPtr funcPtr, IntPtr ptr, MemoryType type, IntPtr sourceString);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -77,7 +77,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspGetSampleRateCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out int rate);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -93,7 +93,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspGetBlockSizeCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out uint blockSize);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -109,7 +109,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspGetSpeakerModeCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out SpeakerMode mixer, out SpeakerMode output);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -125,7 +125,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspGetClockCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out ulong clock, out uint offset, out uint length);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -141,7 +141,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspListenerAttributesCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out int listenerCount, out Attributes3D attributes);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -157,7 +157,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspGetUserDataCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, out IntPtr userData);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -180,7 +180,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspDFTFFTRealCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, float* signal, ref Complex dft, float* window, int signalHop);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -196,7 +196,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspDFTIFFTRealCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, ref Complex dft, float* signal, float* window, int signalHop);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -223,7 +223,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanSumMonoMatrixCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, SpeakerMode mode, float lowFrequencyGain, float overallGain, float* matrix);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -239,7 +239,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanSumSterioMatrixCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, SpeakerMode mode, float pan, float lowFrequencyGain, float OverallGain, int matrixHop, float* matrix);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -255,7 +255,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanSumSurroundMatrixCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, SpeakerMode sourceMode, SpeakerMode targetMode, float direction, float extent, float rotation, float lowFrequencyGain, float overallGain, int matrixHop, float* matrix, PanSurroundFlags flags);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -271,7 +271,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanSumMonoToSurroundMatrixCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, SpeakerMode targetMode, float direction, float extent, float lowFrequencyGain, float overallGain, int matrixHop, float* matrix);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -287,7 +287,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanSumSterioToSurroundMatrixCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, SpeakerMode targetMode, float direction, float extent, float rotation, float lowFrequencyGain, float overallGain, int matrixHop, float* matrix);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
@@ -303,7 +303,7 @@ namespace FmodAudio.Dsp
         public unsafe readonly struct DspPanGetRolloffGainCallback
         {
             private delegate Result Delegate(IntPtr funcPtr, DspState* state, Effects.Pan3DRolloffType rolloff, float distance, float minDistance, float MaxDistance, float* gain);
-            private static Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
+            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
