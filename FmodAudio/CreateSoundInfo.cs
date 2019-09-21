@@ -1,4 +1,7 @@
-﻿using System;
+﻿#pragma warning disable IDE1006
+
+using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -6,7 +9,7 @@ namespace FmodAudio
 {
     public class CreateSoundInfo
     {
-        static readonly int StructSize = Marshal.SizeOf<_interopStruct>();
+        static readonly int StructSize = Unsafe.SizeOf<_interopStruct>();
 
         internal _interopStruct Struct = default;
 
@@ -117,25 +120,55 @@ namespace FmodAudio
                 int count = value.Length;
                 InclusionListManaged = value;
                 InclusionListMemory = FmodMemory.Allocate(count * sizeof(int));
-                InclusionListManaged.CopyTo(InclusionListMemory.AsSpan<int>());
+                value.CopyTo(InclusionListMemory.AsSpan<int>());
                 Struct.InclusionList = InclusionListMemory;
                 Struct.InclusionListCount = count;
             }
         }
+
+        private SoundPCMReadCallback pcmReadCallback;
+
         /// <summary>
         /// [w] Optional.
         /// Callback to 'piggyback' on FMOD's read functions and accept or even write PCM data while FMOD is opening the sound.
         /// Used for user sounds created with OPENUSER or for capturing decoded data as FMOD reads it.
         /// </summary>
-        public SoundPCMReadCallback PCMReadCallback { get => Struct.PCMReadCallback; set => Struct.PCMReadCallback = value; }
+        public SoundPCMReadCallback PCMReadCallback
+        {
+            get => pcmReadCallback;
+            set
+            {
+                UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
+            }
+        }
+
+        private SoundPCMSetPosCallback pcmSetPosCallback;
+
         /// <summary>
         /// [w] Optional. Callback for when the user calls a seeking function such as Channel::setPosition within a multi-sample sound, and for when it is opened.
         /// </summary>
-        public SoundPCMSetPosCallback PCMSetPosCallback { get => Struct.PCMSetPosCallback; set => Struct.PCMSetPosCallback = value; }
+        public SoundPCMSetPosCallback PCMSetPosCallback
+        {
+            get => pcmSetPosCallback;
+            set
+            {
+                UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
+            }
+        }
+
+        private SoundNonBlockCallback nonBlockCallback;
+
         /// <summary>
         /// [w] Optional. Callback for successful completion, or error while loading a sound that used the FMOD_NONBLOCKING flag.
         /// </summary>
-        public SoundNonBlockCallback NonBlockCallback { get => Struct.NonBlockCallback; set => Struct.NonBlockCallback = value; }
+        public SoundNonBlockCallback NonBlockCallback
+        {
+            get => nonBlockCallback;
+            set
+            {
+                UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
+            }
+        }
         /// <summary>
         /// [w] Optional.
         /// Filename for a DLS or SF2 sample set when loading a MIDI file.
@@ -202,30 +235,94 @@ namespace FmodAudio
         /// [w] Optional. Instead of scanning all codec types, use this to speed up loading by making it jump straight to this codec.
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
+
+#pragma warning disable IDE0052 // Remove unread private members
+        private FileOpenCallbackImpl fileOpenImpl;
+#pragma warning restore IDE0052 // Remove unread private members
+        private FileOpenCallback fileOpen;
+
         /// <summary>
         /// [w] Optional. Callback for opening this file.
         /// </summary>
-        public FileOpenCallback FileUserOpen { get => Struct.FileUserOpen; set => Struct.FileUserOpen = value; }
+        public FileOpenCallback FileUserOpen
+        {
+            get => fileOpen;
+            set
+            {
+                UpdateCallback(value?.Wrap(), out fileOpenImpl, out Struct.FileUserOpen);
+                fileOpen = value;
+            }
+        }
+
+        private FileCloseCallback fileUserClose;
+
         /// <summary>
         /// [w] Optional. Callback for closing this file.
         /// </summary>
-        public FileCloseCallback FileUserClose { get => Struct.FileUserClose; set => Struct.FileUserClose = value; }
+        public FileCloseCallback FileUserClose
+        {
+            get => fileUserClose;
+            set
+            {
+                UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
+            }
+        }
+
+        private FileReadCallback fileUserRead;
+
         /// <summary>
         /// [w] Optional. Callback for reading from this file.
         /// </summary>
-        public FileReadCallback FileUserRead { get => Struct.FileUserRead; set => Struct.FileUserRead = value; }
+        public FileReadCallback FileUserRead
+        {
+            get => fileUserRead;
+            set
+            {
+                UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
+            }
+        }
+
+        private FileSeekCallback fileUserSeek;
+
         /// <summary>
         /// [w] Optional. Callback for seeking within this file.
         /// </summary>
-        public FileSeekCallback FileUserSeek { get => Struct.FileUserSeek; set => Struct.FileUserSeek = value; }
+        public FileSeekCallback FileUserSeek
+        {
+            get => fileUserSeek;
+            set
+            {
+                UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
+            }
+        }
+
+        private FileAsyncReadCallback fileUserAsyncRead;
+
         /// <summary>
         /// [w] Optional. Callback for asyncronously reading from this file.
         /// </summary>
-        public FileAsyncReadCallback FileUserAsyncRead { get => Struct.FileUserAsyncRead; set => Struct.FileUserAsyncRead = value; }
+        public FileAsyncReadCallback FileUserAsyncRead
+        {
+            get => fileUserAsyncRead;
+            set
+            {
+                UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
+            }
+        }
+
+        private FileAsyncCancelCallback fileUserAsyncCancel;
+
         /// <summary>
         /// [w] Optional. Callback for cancelling an asyncronous read.
         /// </summary>
-        public FileAsyncCancelCallback FileUserAsyncCancel { get => Struct.FileUserAsyncCancel; set => Struct.FileUserAsyncCancel = value; }
+        public FileAsyncCancelCallback FileUserAsyncCancel
+        {
+            get => fileUserAsyncCancel;
+            set
+            {
+                UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
+            }
+        }
         /// <summary>
         /// [w] Optional. User data to be passed into the file callbacks.
         /// </summary>
@@ -296,7 +393,10 @@ namespace FmodAudio
             set
             {
                 if ((uint)value >= 5)
-                    throw new ArgumentOutOfRangeException(nameof(value));
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "NonBlocking Thread ID cannot be >= 5");
+                }
+
                 Struct.Nonblockthreadid = value;
             }
         }
@@ -329,7 +429,7 @@ namespace FmodAudio
             if (encryptionKey is null)
             {
                 encryptionKeyMemory = null;
-                Struct.EncryptionKey = IntPtr.Zero;
+                Struct.EncryptionKey = default;
                 return;
             }
 
@@ -339,6 +439,14 @@ namespace FmodAudio
             {
                 Struct.EncryptionKey = encryptionKeyMemory;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateCallback<TDel>(TDel del, out TDel managedSite, out IntPtr unmanagedSite)
+            where TDel: Delegate
+        {
+            unmanagedSite = (del != null) ? Marshal.GetFunctionPointerForDelegate(del) : (default);
+            managedSite = del;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -369,11 +477,11 @@ namespace FmodAudio
 
             public int InclusionListCount;
             
-            public SoundPCMReadCallback PCMReadCallback;
+            public IntPtr PCMReadCallback;
 
-            public SoundPCMSetPosCallback PCMSetPosCallback;
+            public IntPtr PCMSetPosCallback;
 
-            public SoundNonBlockCallback NonBlockCallback;
+            public IntPtr NonBlockCallback;
 
             public IntPtr DLSName;
 
@@ -385,17 +493,17 @@ namespace FmodAudio
 
             public SoundType SuggestedSoundType;
             
-            public FileOpenCallback FileUserOpen;
+            public IntPtr FileUserOpen;
             
-            public FileCloseCallback FileUserClose;
+            public IntPtr FileUserClose;
             
-            public FileReadCallback FileUserRead;
+            public IntPtr FileUserRead;
             
-            public FileSeekCallback FileUserSeek;
+            public IntPtr FileUserSeek;
             
-            public FileAsyncReadCallback FileUserAsyncRead;
+            public IntPtr FileUserAsyncRead;
 
-            public FileAsyncCancelCallback FileUserAsyncCancel;
+            public IntPtr FileUserAsyncCancel;
 
             public IntPtr FileUserData;
 
