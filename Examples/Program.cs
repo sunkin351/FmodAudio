@@ -60,11 +60,15 @@ namespace Examples
 
                 Console.ReadKey();
             }
+            else
+            {
+                Console.WriteLine("Invalid Example Number");
+            }
         }
 
         public static void PrintUsage()
         {
-
+            Console.WriteLine("Usage: Examples {Example Number}");
         }
     }
 }

@@ -11,12 +11,9 @@ namespace Examples
 
     public class DspEffectPerSpeakerExample : Example
     {
-        private FmodSystem System;
-
         public override void Run()
         {
             FmodSystem system = new FmodSystem();
-            System = system;
 
             TestVersion(system);
 
@@ -98,8 +95,8 @@ namespace Examples
                       [DSPHIGHPASS]
             */
 
-            Span<float> lowPassMatrix = stackalloc float[2 * 2] { 1, 0, 0, 0 };
-            Span<float> highPassMatrix = stackalloc float[2 * 2] { 0, 0, 0, 1 };
+            Span<float> lowPassMatrix = new float[2 * 2] { 1, 0, 0, 0 };
+            Span<float> highPassMatrix = new float[2 * 2] { 0, 0, 0, 1 };
 
             //Upgrade the signal coming from the channel mixer from Mono to Stereo. Otherwise the lowpass and highpass will get mono signals.
             channelMixer.SetChannelFormat(default, 0, SpeakerMode.Stereo);

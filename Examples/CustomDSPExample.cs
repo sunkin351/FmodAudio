@@ -47,6 +47,7 @@ namespace Examples
 
             int LengthInFloats = (int)length / sizeof(float);
 
+            //Span comes with bounding checks for bug detection. For greater speed, use pure pointers instead.
             var BufferData = new Span<float>((void*)data.Buffer, LengthInFloats);
             var InData = new Span<float>((void*)inBuffer, LengthInFloats);
             var OutData = new Span<float>((void*)outBuffer, LengthInFloats);
@@ -143,10 +144,11 @@ namespace Examples
 
         static unsafe Result MyDSPGetParameterFloat(DspState* state, int index, out float value, IntPtr _)
         {
-            value = default;
-
             if (index != 1)
+            {
+                value = default;
                 return Result.Err_Invalid_Param;
+            }
 
             value = ((MyDSPData*)state->plugindata)->VolumeLinear;
             return Result.Ok;
@@ -210,7 +212,7 @@ namespace Examples
 
             sound = system.CreateSound(MediaPath("stereo.ogg"), Mode.Loop_Normal);
 
-            channel = system.PlaySound(sound, null, true);
+            channel = system.PlaySound(sound, paused: true);
 
             var plugin = CreateDSPPlugin(system);
 
@@ -323,9 +325,9 @@ namespace Examples
         {
             var vol = dsp.GetParameterFloat(1);
 
-            var vol2 = Clamp(0, 1, vol + adjustment);
+            var vol2 = Math.Clamp(0, 1, vol + adjustment);
 
-            if (vol.CompareTo(vol2) != 0) //Optimization
+            if (vol != vol2) //Optimization
             {
                 dsp.SetParameterFloat(1, vol);
             }
