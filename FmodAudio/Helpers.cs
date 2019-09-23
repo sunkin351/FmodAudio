@@ -260,11 +260,7 @@ namespace FmodAudio
         [Conditional("DEBUG")]
         public static void VerifySizeof<T>() where T: unmanaged
         {
-            int tmp;
-            unsafe
-            {
-                tmp = sizeof(T);
-            }
+            int tmp = Unsafe.SizeOf<T>();
 
             int tmp2 = Marshal.SizeOf<T>();
 

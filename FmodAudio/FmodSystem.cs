@@ -38,9 +38,9 @@ namespace FmodAudio
             DebugCallbackReference = callback;
         }
 
-        int? driverCount;
+        private int? driverCount;
 
-        bool SystemOpen = false;
+        private bool SystemOpen = false;
         
         public ChannelGroup MasterChannelGroup { get; private set; }
         public SoundGroup MasterSoundGroup { get; private set; }
@@ -384,13 +384,18 @@ namespace FmodAudio
 
         public void GetAdvancedSettings(AdvancedSettings settings)
         {
+            if (settings is null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             library.System_GetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
         }
 
         public AdvancedSettings GetAdvancedSettings()
         {
             var settings = new AdvancedSettings();
-            GetAdvancedSettings(settings);
+            library.System_GetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
             return settings;
         }
 

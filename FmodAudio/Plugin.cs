@@ -27,7 +27,7 @@ namespace FmodAudio
 
         public override int GetHashCode()
         {
-            return Handle.GetHashCode();
+            return HashCode.Combine(Handle);
         }
 
         public static bool operator==(Plugin l, Plugin r)
