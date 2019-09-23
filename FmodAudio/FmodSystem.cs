@@ -2,10 +2,12 @@
 #pragma warning disable IDE1006
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Numerics;
+using System.Text;
 
 namespace FmodAudio
 {
@@ -13,6 +15,11 @@ namespace FmodAudio
 
     public sealed partial class FmodSystem : HandleBase
     {
+        /// <summary>
+        /// Subscribe to this to log when fatal errors occur. String passed is the error message.
+        /// </summary>
+        public static event Action<string> FatalError;
+
         private static Interop.IFmodLibrary library { get => NativeLibrary.Library; }
         private static readonly object SyncObject = new object();
 
@@ -408,9 +415,74 @@ namespace FmodAudio
             library.System_SetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
         }
 
-        public void SetCallback(SystemCallback callback, SystemCallbackType type)
+        public event Action DeviceListChanged;
+
+        public event Action DeviceLost;
+
+        public event Action<string> MemoryAllocationFailed;
+
+        public event Action<DSP, DSP> BadDSPConnection;
+
+        public event Action<ErrorCallbackInfo> Error;
+
+        private SystemCallback syscallback;
+
+        private unsafe Result SystemCallbackRoutine(IntPtr sysPtr, SystemCallbackType type, IntPtr ptr1, IntPtr ptr2, IntPtr userdata)
         {
-            library.System_SetCallback(Handle, callback, type).CheckResult();
+            if (sysPtr != this.Handle)
+            {
+                return Result.Err_Invalid_Param;
+            }
+
+            try
+            {
+                switch (type)
+                {
+                    case SystemCallbackType.DeviceListChanged:
+                        DeviceListChanged();
+                        break;
+                    case SystemCallbackType.DeviceLost:
+                        DeviceLost();
+                        break;
+                    case SystemCallbackType.MemoryAllocationFailed:
+                        string debugStr = Encoding.ASCII.GetString(new Span<byte>(ptr1.ToPointer(), ptr2.ToInt32()));
+                        MemoryAllocationFailed(debugStr);
+                        break;
+                    case SystemCallbackType.BadDSPConnection:
+                        var target = new DSP(this, ptr1, false);
+                        var source = new DSP(this, ptr2, false);
+                        BadDSPConnection(target, source);
+                        break;
+                    case SystemCallbackType.Error:
+                        Error(new ErrorCallbackInfo(ref *(ErrorCallbackInfoNative*)ptr1));
+                        break;
+
+                }
+            }
+            catch (FmodException e)
+            {
+                return e.Result ?? Result.Err_Internal;
+            }
+            catch
+            {
+                return Result.Err_Internal;
+            }
+
+            return Result.Ok;
+        }
+
+        private unsafe void SetupEventCallbacks()
+        {
+            const SystemCallbackType mask =
+                SystemCallbackType.DeviceListChanged |
+                SystemCallbackType.DeviceLost |
+                SystemCallbackType.BadDSPConnection |
+                SystemCallbackType.MemoryAllocationFailed |
+                SystemCallbackType.Error;
+
+            syscallback = this.SystemCallbackRoutine;
+
+            library.System_SetCallback(Handle, syscallback, mask);
         }
 
         #endregion

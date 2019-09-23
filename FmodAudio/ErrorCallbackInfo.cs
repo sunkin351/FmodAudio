@@ -3,29 +3,41 @@ using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ErrorCallbackInfo
+    public struct ErrorCallbackInfoNative
     {
         public Result Result;                     /* Error code result */
         public ErrorCallbackInstanceType InstanceType;               /* Type of instance the error occurred on */
         public IntPtr Instance;                   /* Instance pointer */
-        private IntPtr FunctionName_Internal;      /* Function that the error occurred on */
-        private IntPtr FunctionParams_Internal;    /* Function parameters that the error ocurred on */
+        public IntPtr FunctionName;      /* Function that the error occurred on */
+        public IntPtr FunctionParams;    /* Function parameters that the error ocurred on */
+    }
 
-        public string FunctionName
-        {
-            get
-            {
-                return Helpers.PtrToStringUnknownSize(FunctionName_Internal);
-            }
-        }
+    public class ErrorCallbackInfo
+    {
+        public Result Result;                     /* Error code result */
+        public ErrorCallbackInstanceType InstanceType;               /* Type of instance the error occurred on */
+        public object Instance;                   /* Instance object */
+        public string FunctionName;      /* Function that the error occurred on */
+        public string FunctionParams;    /* Function parameters that the error ocurred on */
 
-        public string FunctionParams
+        public ErrorCallbackInfo(ref ErrorCallbackInfoNative native)
         {
-            get
+            Result = native.Result;
+            InstanceType = native.InstanceType;
+
+            switch(native.InstanceType)
             {
-                return Helpers.PtrToStringUnknownSize(FunctionParams_Internal);
+                case ErrorCallbackInstanceType.System:
+                    Instance = FmodSystem.GetSystem(native.Instance);
+                    break;
+
+                default:
+                    Instance = null;
+                    break;
             }
+
+            FunctionName = Helpers.PtrToStringUnknownSize(native.FunctionName);
+            FunctionParams = Helpers.PtrToStringUnknownSize(native.FunctionParams);
         }
     }
 }

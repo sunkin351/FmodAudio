@@ -6,7 +6,8 @@ namespace FmodAudio
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public delegate Result DebugCallback(DebugFlags flags, string file, int line, string func, string message);
 
-    public delegate Result SystemCallback(FmodSystem system, SystemCallbackType type, IntPtr commanddata1, IntPtr commanddata2, IntPtr userdata);
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    public delegate Result SystemCallback(IntPtr system, SystemCallbackType type, IntPtr commanddata1, IntPtr commanddata2, IntPtr userdata);
 
     public delegate void ChannelCallback(ChannelControl channel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2);
 

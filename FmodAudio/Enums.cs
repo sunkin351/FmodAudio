@@ -1342,12 +1342,12 @@ namespace FmodAudio
     public enum SystemCallbackType : uint
     {
         /// <summary>
-        /// Called from System.Update() when the enumerated list of devices has changed.
+        /// Called from <see cref="FmodSystem.Update"/> when the enumerated list of devices has changed.
         /// </summary>
         DeviceListChanged = 0x00000001,
 
         /// <summary>
-        /// Called from System::update when an output device has been lost due to control panel parameter changes and FMOD cannot automatically recover.
+        /// Called from <see cref="FmodSystem.Update"/> when an output device has been lost due to control panel parameter changes and FMOD cannot automatically recover.
         /// </summary>
         DeviceLost = 0x00000002,
 
