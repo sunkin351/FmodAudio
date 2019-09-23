@@ -7,6 +7,38 @@ namespace FmodAudio
 
     public partial class FmodSystem
     {
+        private static readonly ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>> SystemLookup = new ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>>();
+
+        internal static bool TryGetSystem(IntPtr handle, out FmodSystem system)
+        {
+            if (SystemLookup.TryGetValue(handle, out var wref))
+            {
+                if (wref.TryGetTarget(out system))
+                {
+                    return true;
+                }
+
+                goto InvalidState;
+            }
+
+            system = null;
+            return false;
+
+
+            InvalidState:
+            throw new InvalidOperationException();
+        }
+
+        internal static FmodSystem GetSystem(IntPtr handle)
+        {
+            if (!TryGetSystem(handle, out var system))
+            {
+                throw new ArgumentException("Invalid system handle");
+            }
+
+            return system;
+        }
+
         private readonly ConcurrentDictionary<IntPtr, WeakReference<Sound>> SoundLookup = new ConcurrentDictionary<IntPtr, WeakReference<Sound>>();
         private readonly ConcurrentDictionary<IntPtr, WeakReference<SoundGroup>> SoundGroupLookup = new ConcurrentDictionary<IntPtr, WeakReference<SoundGroup>>();
         private readonly ConcurrentDictionary<IntPtr, WeakReference<ChannelGroup>> ChannelGroupLookup = new ConcurrentDictionary<IntPtr, WeakReference<ChannelGroup>>();
@@ -138,6 +170,7 @@ namespace FmodAudio
             }
 
             dsp = new DSP(this, handle);
+
             if (DSPLookup.TryAdd(handle, new WeakReference<DSP>(dsp)))
             {
                 return dsp;

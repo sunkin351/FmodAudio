@@ -52,7 +52,15 @@ namespace FmodAudio
             lock (SyncObject)
             {
                 library.System_Create(out Handle).CheckResult();
+
+                if (!SystemLookup.TryAdd(Handle, new WeakReference<FmodSystem>(this)))
+                {
+                    FatalError("Identical System handle returned from FMOD_System_Create()");
+                    Environment.Exit(-1);
+                }
             }
+
+            SetupEventCallbacks();
         }
 
         protected override void ReleaseImpl()
@@ -62,6 +70,8 @@ namespace FmodAudio
             lock (SyncObject)
             {
                 library.System_Release(Handle).CheckResult();
+
+                SystemLookup.TryRemove(Handle, out _);
             }
         }
 
