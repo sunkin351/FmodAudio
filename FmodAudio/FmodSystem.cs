@@ -115,32 +115,6 @@ namespace FmodAudio
 
         #region UtilityFunctions
         
-        internal static void CheckResult(Result result)
-        {
-            if (result == Result.Ok || result == Result.Err_DSP_DontProcess)
-                return;
-
-            if (result == Result.Err_Truncated && AllowStringTruncation)
-            {
-                return;
-            }
-
-            string message = Helpers.GetErrorMessage(result);
-            switch (result)
-            {
-                case Result.Err_Invalid_Handle:
-                    throw new ObjectDisposedException(message, new FmodException(result));
-                case Result.Err_File_NotFound:
-                    throw new FileNotFoundException(message);
-                case Result.Err_File_Bad:
-                    throw new FileLoadException(message, new FmodException(result));
-                case Result.Err_Unsupported:
-                    throw new InvalidOperationException(message);
-                default:
-                    throw new FmodException(result, message);
-            }
-        }
-
         internal static void ReportErrorAndCrash(Result res)
         {
             if (res == Result.Ok)

@@ -12,16 +12,26 @@ namespace FmodAudio.Dsp
         public FmodSystem SystemObject { get; }
         internal DspDescription Description;
         int? ParamCount;
+        readonly bool OwnsHandle;
 
-        internal DSP(FmodSystem sys, IntPtr handle) : base(handle)
+        internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle = true) : base(handle)
         {
             SystemObject = sys;
+            OwnsHandle = ownsHandle;
+
+            if (!ownsHandle)
+            {
+                GC.SuppressFinalize(this);
+            }
         }
 
         protected override void ReleaseImpl()
         {
-            this.DisconnectAll(true, true);
-            SystemObject.ReleaseDSP(Handle);
+            if (OwnsHandle)
+            {
+                this.DisconnectAll(true, true);
+                SystemObject.ReleaseDSP(Handle);
+            }
         }
 
         public int InputCount
