@@ -428,22 +428,28 @@ namespace FmodAudio
                 switch (type)
                 {
                     case SystemCallbackType.DeviceListChanged:
-                        DeviceListChanged();
+                        DeviceListChanged?.Invoke();
                         break;
                     case SystemCallbackType.DeviceLost:
-                        DeviceLost();
+                        DeviceLost?.Invoke();
                         break;
                     case SystemCallbackType.MemoryAllocationFailed:
-                        string debugStr = Encoding.ASCII.GetString(new Span<byte>(ptr1.ToPointer(), ptr2.ToInt32()));
-                        MemoryAllocationFailed(debugStr);
+                        if (MemoryAllocationFailed != null)
+                        {
+                            string debugStr = Encoding.ASCII.GetString(new Span<byte>(ptr1.ToPointer(), ptr2.ToInt32()));
+                            MemoryAllocationFailed(debugStr);
+                        }
                         break;
                     case SystemCallbackType.BadDSPConnection:
-                        var target = new DSP(this, ptr1, false);
-                        var source = new DSP(this, ptr2, false);
-                        BadDSPConnection(target, source);
+                        if (BadDSPConnection != null)
+                        {
+                            var target = new DSP(this, ptr1, false);
+                            var source = new DSP(this, ptr2, false);
+                            BadDSPConnection(target, source);
+                        }
                         break;
                     case SystemCallbackType.Error:
-                        Error(new ErrorCallbackInfo(ref *(ErrorCallbackInfoNative*)ptr1));
+                        Error?.Invoke(new ErrorCallbackInfo(ref *(ErrorCallbackInfoNative*)ptr1));
                         break;
 
                 }
