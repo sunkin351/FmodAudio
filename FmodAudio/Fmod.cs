@@ -1,4 +1,4 @@
-#pragma warning disable IDE0052
+﻿#pragma warning disable IDE0052
 using System;
 using System.Collections.Concurrent;
 using System.Text;
@@ -157,6 +157,31 @@ namespace FmodAudio
             Debug.Assert(tmp);
 
             return sys;
+        }
+
+        public static class Memory
+        {
+            private static MemoryAllocCallback userAlloc;
+            private static MemoryReallocCallback userRealloc;
+            private static MemoryFreeCallback userFree;
+
+            public static void Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags)
+            {
+                EnsureInitialized();
+
+                nativeLibrary.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
+
+                userAlloc = useralloc;
+                userRealloc = userrealloc;
+                userFree = userfree;
+            }
+
+            public static void GetStats(out int currentlyAllocated, out int maxAllocated, bool blocking)
+            {
+                EnsureInitialized();
+
+                nativeLibrary.Memory_GetStats(out currentlyAllocated, out maxAllocated, blocking).CheckResult();
+            }
         }
 
         #endregion

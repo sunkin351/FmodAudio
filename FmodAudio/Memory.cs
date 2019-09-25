@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
-    public static class FmodMemory
+    internal static class Memory
     {
         public static SaferPointer Allocate(int bytes)
         {

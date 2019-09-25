@@ -120,12 +120,12 @@ namespace FmodAudio
             }
         }
         
-        public static FmodMemory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
+        public static Memory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
         {
             if (rolloff.IsEmpty)
                 return null;
 
-            var ptr = FmodMemory.Allocate(rolloff.Length * Unsafe.SizeOf<Vector3>());
+            var ptr = Memory.Allocate(rolloff.Length * Unsafe.SizeOf<Vector3>());
             
             rolloff.CopyTo(ptr.AsSpan<Vector3>());
 
@@ -216,7 +216,7 @@ namespace FmodAudio
         /// <param name="encoding">The encoding to use for conversion</param>
         /// <param name="pointer">Unmanaged Memory Block</param>
         /// <returns>if 'pointer' was reallocated</returns>
-        public static unsafe bool StringToPointer(string value, Encoding encoding, ref FmodMemory.SaferPointer pointer)
+        public static unsafe bool StringToPointer(string value, Encoding encoding, ref Memory.SaferPointer pointer)
         {
             bool Reallocated = false;
 
@@ -229,7 +229,7 @@ namespace FmodAudio
 
             if (allocSize < tmp)
             {
-                pointer = localptr = FmodMemory.Allocate(tmp);
+                pointer = localptr = Memory.Allocate(tmp);
                 Reallocated = true;
             }
             

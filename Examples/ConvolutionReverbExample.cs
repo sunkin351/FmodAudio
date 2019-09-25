@@ -1,6 +1,7 @@
 ﻿using FmodAudio;
 using FmodAudio.Dsp;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Examples
 {
@@ -40,15 +41,22 @@ namespace Examples
 
                 int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
 
-                var irData = FmodMemory.Allocate(irDataLength);
+                var irData = Marshal.AllocHGlobal(irDataLength);
 
-                sound.ReadData(irData, irDataLength);
+                try
+                {
+                    sound.ReadData(irData, irDataLength);
 
-                const int ReverbParamIR = 0;
-                const int ReverbParamDry = 2;
+                    const int ReverbParamIR = 0;
+                    const int ReverbParamDry = 2;
 
-                reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
-                reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
+                    reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+                    reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(irData);
+                }
             }
 
             sound.Release();

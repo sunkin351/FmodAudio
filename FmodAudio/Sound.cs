@@ -15,7 +15,7 @@ namespace FmodAudio
 
         private string name;
         private int? SubsoundCount;
-        private FmodMemory.SaferPointer CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
+        private Memory.SaferPointer CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
         private readonly List<Sound> Subsounds = new List<Sound>();
         public SoundGroup soundGroup = null;
 
@@ -99,7 +99,7 @@ namespace FmodAudio
         public void SetCustomRolloff3D(ReadOnlySpan<Vector3> points)
         {
             int num = 0;
-            FmodMemory.SaferPointer arrptr = Helpers.AllocateCustomRolloff(points);
+            Memory.SaferPointer arrptr = Helpers.AllocateCustomRolloff(points);
 
             if (arrptr != null)
             {
@@ -165,7 +165,7 @@ namespace FmodAudio
                 {
                     const int buflen = FmodSystem.MaxInteropNameStringLength;
 
-                    var buf = FmodMemory.Allocate(buflen);
+                    var buf = Memory.Allocate(buflen);
 
                     library.Sound_GetName(Handle, buf, buflen).CheckResult();
 
@@ -300,7 +300,7 @@ namespace FmodAudio
                 throw new ArgumentException("SyncPoint is not of this Sound object.");
             }
 
-            var buffer = FmodMemory.Allocate(buflen);
+            var buffer = Memory.Allocate(buflen);
 
             library.Sound_GetSyncPointInfo(Handle, point.Handle, buffer, buflen, out offset, unit).CheckResult();
 

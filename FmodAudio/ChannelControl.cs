@@ -17,7 +17,7 @@ namespace FmodAudio
             library = sys.library;
         }
 
-        internal ChannelControl(FmodSystem sys, IntPtr handle, FmodMemory.SaferPointer customRolloff) : this(sys, handle)
+        internal ChannelControl(FmodSystem sys, IntPtr handle, Memory.SaferPointer customRolloff) : this(sys, handle)
         {
             CustomRolloff = customRolloff;
         }
@@ -439,7 +439,7 @@ namespace FmodAudio
             library.ChannelGroup_Get3DConeOrientation(Handle, out orientation).CheckResult();
         }
 
-        private FmodMemory.SaferPointer CustomRolloff = null;
+        private Memory.SaferPointer CustomRolloff = null;
 
         public void Set3DCustomRolloff(ReadOnlySpan<Vector3> rolloff)
         {

@@ -13,7 +13,7 @@ namespace FmodAudio
 
         internal _interopStruct Struct = default;
 
-        private FmodMemory.SaferPointer InclusionListMemory = null;
+        private Memory.SaferPointer InclusionListMemory = null;
 
         private int[] InclusionListManaged = null;
         
@@ -21,11 +21,11 @@ namespace FmodAudio
 
         private string DLSNameManaged = null;
 
-        private FmodMemory.SaferPointer DLSNameMemory = null;
+        private Memory.SaferPointer DLSNameMemory = null;
         
         private string encryptionKey = null;
 
-        private FmodMemory.SaferPointer encryptionKeyMemory = null;
+        private Memory.SaferPointer encryptionKeyMemory = null;
 
         private SoundGroup initSoundGroup;
 
@@ -119,7 +119,7 @@ namespace FmodAudio
 
                 int count = value.Length;
                 InclusionListManaged = value;
-                InclusionListMemory = FmodMemory.Allocate(count * sizeof(int));
+                InclusionListMemory = Memory.Allocate(count * sizeof(int));
                 value.CopyTo(InclusionListMemory.AsSpan<int>());
                 Struct.InclusionList = InclusionListMemory;
                 Struct.InclusionListCount = count;
