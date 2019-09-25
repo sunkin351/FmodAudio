@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace FmodAudio
 {
@@ -8,9 +9,9 @@ namespace FmodAudio
     [StructLayout(LayoutKind.Sequential)]
     public struct Attributes3D
     {
-        public Vector Position;
-        public Vector Velocity;
-        public Vector Forward;
-        public Vector Up;
+        public Vector3 Position;
+        public Vector3 Velocity;
+        public Vector3 Forward;
+        public Vector3 Up;
     }
 }

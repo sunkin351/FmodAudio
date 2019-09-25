@@ -882,7 +882,7 @@ namespace FmodAudio
             return GetGeometry(handle);
         }
 
-        public void GetGeometryOcclusion(ref Vector listener, ref Vector source, out float direct, out float reverb)
+        public void GetGeometryOcclusion(ref Vector3 listener, ref Vector3 source, out float direct, out float reverb)
         {
             library.System_GetGeometryOcclusion(Handle, ref listener, ref source, out direct, out reverb).CheckResult();
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace FmodAudio
 {
@@ -25,17 +25,13 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetMaxAudible(Handle, out int value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetMaxAudible(Handle, out int value).CheckResult();
 
                 return value;
             }
             set
             {
-                var res = library.SoundGroup_SetMaxAudible(Handle, value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_SetMaxAudible(Handle, value).CheckResult();
             }
         }
 
@@ -43,17 +39,13 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetMaxAudibleBehavior(Handle, out SoundGroupBehavior value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetMaxAudibleBehavior(Handle, out SoundGroupBehavior value).CheckResult();
 
                 return value;
             }
             set
             {
-                var res = library.SoundGroup_SetMaxAudibleBehavior(Handle, value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_SetMaxAudibleBehavior(Handle, value).CheckResult();
             }
         }
 
@@ -61,17 +53,13 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetMuteFadeSpeed(Handle, out float value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetMuteFadeSpeed(Handle, out float value).CheckResult();
 
                 return value;
             }
             set
             {
-                var res = library.SoundGroup_SetMuteFadeSpeed(Handle, value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_SetMuteFadeSpeed(Handle, value).CheckResult();
             }
         }
 
@@ -79,17 +67,13 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetVolume(Handle, out float value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetVolume(Handle, out float value).CheckResult();
 
                 return value;
             }
             set
             {
-                var res = library.SoundGroup_SetVolume(Handle, value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_SetVolume(Handle, value).CheckResult();
             }
         }
 
@@ -100,9 +84,7 @@ namespace FmodAudio
                 const int len = FmodSystem.MaxInteropNameStringLength;
                 var ptr = stackalloc byte[len];
 
-                var res = library.SoundGroup_GetName(Handle, ptr, len);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
 
                 return Helpers.PtrToString(ptr, len);
             }
@@ -112,9 +94,7 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetNumSounds(Handle, out int value);
-
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetNumSounds(Handle, out int value).CheckResult();
 
                 return value;
             }
@@ -124,8 +104,7 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetNumPlaying(Handle, out int value);
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetNumPlaying(Handle, out int value).CheckResult();
 
                 return value;
             }
@@ -135,23 +114,19 @@ namespace FmodAudio
         {
             get
             {
-                var res = library.SoundGroup_GetUserData(Handle, out IntPtr value);
-                FmodSystem.CheckResult(res);
+                library.SoundGroup_GetUserData(Handle, out IntPtr value).CheckResult();
 
                 return value;
             }
             set
             {
-                var res = library.Sound_SetUserData(Handle, value);
-                FmodSystem.CheckResult(res);
+                library.Sound_SetUserData(Handle, value).CheckResult();
             }
         }
 
         public void Stop()
         {
-            var res = library.SoundGroup_Stop(Handle);
-
-            FmodSystem.CheckResult(res);
+            library.SoundGroup_Stop(Handle).CheckResult();
         }
     }
 }

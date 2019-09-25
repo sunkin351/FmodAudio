@@ -429,19 +429,19 @@ namespace FmodAudio
             library.ChannelGroup_Get3DConeSettings(Handle, out insideConeAngle, out outsideConeAngle, out outsideVolume).CheckResult();
         }
 
-        public void Set3DConeOrientation(ref Vector orientation)
+        public void Set3DConeOrientation(ref Vector3 orientation)
         {
             library.ChannelGroup_Set3DConeOrientation(Handle, ref orientation).CheckResult();
         }
 
-        public void Get3DConeOrientation(out Vector orientation)
+        public void Get3DConeOrientation(out Vector3 orientation)
         {
             library.ChannelGroup_Get3DConeOrientation(Handle, out orientation).CheckResult();
         }
 
         private FmodMemory.SaferPointer CustomRolloff = null;
 
-        public void Set3DCustomRolloff(ReadOnlySpan<Vector> rolloff)
+        public void Set3DCustomRolloff(ReadOnlySpan<Vector3> rolloff)
         {
             if (this is Channel)
                 throw new NotSupportedException();
@@ -463,14 +463,14 @@ namespace FmodAudio
             CustomRolloff = ptr;
         }
 
-        public unsafe Span<Vector> Get3DCustomRolloff()
+        public unsafe Span<Vector3> Get3DCustomRolloff()
         {
             library.ChannelGroup_Get3DCustomRolloff(Handle, out IntPtr points, out int pointCount).CheckResult();
 
             if (points == IntPtr.Zero)
                 return default;
 
-            return new Span<Vector>((void*)points, pointCount);
+            return new Span<Vector3>((void*)points, pointCount);
         }
 
         public void Set3DOcclusion(float directOcclusion, float reverbOcclusion)

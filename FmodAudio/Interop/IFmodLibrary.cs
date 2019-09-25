@@ -275,7 +275,7 @@ namespace FmodAudio.Interop
         Result System_LoadGeometry(IntPtr system, byte* data, int datasize, out IntPtr geometry);
 
         [NativeSymbol("FMOD_System_GetGeometryOcclusion")]
-        Result System_GetGeometryOcclusion(IntPtr system, ref Vector listener, ref Vector source, out float direct, out float reverb);
+        Result System_GetGeometryOcclusion(IntPtr system, ref Vector3 listener, ref Vector3 source, out float direct, out float reverb);
 
         [NativeSymbol("FMOD_System_SetNetworkProxy")]
         Result System_SetNetworkProxy(IntPtr system, byte[] proxy);
@@ -657,10 +657,10 @@ namespace FmodAudio.Interop
         Result ChannelGroup_Get3DConeSettings(IntPtr channelgroup, out float insideconeangle, out float outsideconeangle, out float outsidevolume);
 
         [NativeSymbol("FMOD_ChannelGroup_Set3DConeOrientation")]
-        Result ChannelGroup_Set3DConeOrientation(IntPtr channelgroup, ref Vector orientation);
+        Result ChannelGroup_Set3DConeOrientation(IntPtr channelgroup, ref Vector3 orientation);
 
         [NativeSymbol("FMOD_ChannelGroup_Get3DConeOrientation")]
-        Result ChannelGroup_Get3DConeOrientation(IntPtr channelgroup, out Vector orientation);
+        Result ChannelGroup_Get3DConeOrientation(IntPtr channelgroup, out Vector3 orientation);
 
         [NativeSymbol("FMOD_ChannelGroup_Set3DCustomRolloff")]
         Result ChannelGroup_Set3DCustomRolloff(IntPtr channelgroup, IntPtr points, int numpoints);
@@ -916,7 +916,7 @@ namespace FmodAudio.Interop
         Result Geometry_Release(IntPtr geometry);
 
         [NativeSymbol("FMOD_Geometry_AddPolygon")]
-        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector* vertices, out int polygonindex);
+        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, out int polygonindex);
 
         [NativeSymbol("FMOD_Geometry_GetNumPolygons")]
         Result Geometry_GetNumPolygons(IntPtr geometry, out int numpolygons);
@@ -928,10 +928,10 @@ namespace FmodAudio.Interop
         Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, out int numvertices);
 
         [NativeSymbol("FMOD_Geometry_SetPolygonVertex")]
-        Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, ref Vector vertex);
+        Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, ref Vector3 vertex);
 
         [NativeSymbol("FMOD_Geometry_GetPolygonVertex")]
-        Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, out Vector vertex);
+        Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, out Vector3 vertex);
 
         [NativeSymbol("FMOD_Geometry_SetPolygonAttributes")]
         Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
@@ -946,22 +946,22 @@ namespace FmodAudio.Interop
         Result Geometry_GetActive(IntPtr geometry, out bool active);
 
         [NativeSymbol("FMOD_Geometry_SetRotation")]
-        Result Geometry_SetRotation(IntPtr geometry, ref Vector forward, ref Vector up);
+        Result Geometry_SetRotation(IntPtr geometry, ref Vector3 forward, ref Vector3 up);
 
         [NativeSymbol("FMOD_Geometry_GetRotation")]
-        Result Geometry_GetRotation(IntPtr geometry, out Vector forward, out Vector up);
+        Result Geometry_GetRotation(IntPtr geometry, out Vector3 forward, out Vector3 up);
 
         [NativeSymbol("FMOD_Geometry_SetPosition")]
-        Result Geometry_SetPosition(IntPtr geometry, ref Vector position);
+        Result Geometry_SetPosition(IntPtr geometry, ref Vector3 position);
 
         [NativeSymbol("FMOD_Geometry_GetPosition")]
-        Result Geometry_GetPosition(IntPtr geometry, out Vector position);
+        Result Geometry_GetPosition(IntPtr geometry, out Vector3 position);
 
         [NativeSymbol("FMOD_Geometry_SetScale")]
-        Result Geometry_SetScale(IntPtr geometry, ref Vector scale);
+        Result Geometry_SetScale(IntPtr geometry, ref Vector3 scale);
 
         [NativeSymbol("FMOD_Geometry_GetScale")]
-        Result Geometry_GetScale(IntPtr geometry, out Vector scale);
+        Result Geometry_GetScale(IntPtr geometry, out Vector3 scale);
 
         [NativeSymbol("FMOD_Geometry_Save")]
         Result Geometry_Save(IntPtr geometry, void* data, out int datasize);
