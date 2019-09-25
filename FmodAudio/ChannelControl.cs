@@ -8,7 +8,7 @@ namespace FmodAudio
 
     public abstract class ChannelControl : HandleBase
     {
-        protected readonly IFmodLibrary library;
+        protected readonly INativeLibrary library;
         public FmodSystem SystemObject { get; }
 
         protected ChannelControl(FmodSystem sys, IntPtr handle) : base(handle)

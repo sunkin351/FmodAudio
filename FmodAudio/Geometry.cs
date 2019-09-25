@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable IDE0059
+
+using System;
 using System.Numerics;
 
 namespace FmodAudio
@@ -6,9 +8,9 @@ namespace FmodAudio
     using Interop;
     public class Geometry : HandleBase
     {
-        private readonly IFmodLibrary library;
+        private readonly INativeLibrary library;
 
-        internal Geometry(IntPtr handle, IFmodLibrary lib) : base(handle)
+        internal Geometry(IntPtr handle, INativeLibrary lib) : base(handle)
         {
             library = lib;
         }

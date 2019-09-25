@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0052
+#pragma warning disable IDE0052
 using System;
 using System.Collections.Concurrent;
 using System.Text;
@@ -19,7 +19,7 @@ namespace FmodAudio
         private static string defaultLibName;
         private static string location;
 
-        private static IFmodLibrary nativeLibrary;
+        private static INativeLibrary nativeLibrary;
 
         /// <summary>
         /// Subscribe to this to log when fatal errors occur. String passed is the error message.
@@ -90,7 +90,7 @@ namespace FmodAudio
 
                 NativeLibraryBuilder builder = new NativeLibraryBuilder(options);
 
-                nativeLibrary = builder.ActivateInterface<IFmodLibrary>(location ?? DefaultLibraryName);
+                nativeLibrary = builder.ActivateInterface<INativeLibrary>(location ?? DefaultLibraryName);
             }
         }
 

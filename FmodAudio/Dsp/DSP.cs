@@ -7,7 +7,7 @@ namespace FmodAudio.Dsp
     using global::FmodAudio.Interop;
     public sealed class DSP : HandleBase
     {
-        private readonly IFmodLibrary library;
+        private readonly INativeLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal DspDescription Description;

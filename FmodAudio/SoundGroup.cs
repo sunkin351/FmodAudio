@@ -5,7 +5,7 @@ namespace FmodAudio
     using Interop;
     public class SoundGroup : HandleBase
     {
-        private readonly IFmodLibrary library;
+        private readonly INativeLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal bool IsMaster = false;

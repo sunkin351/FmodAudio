@@ -9,7 +9,7 @@ namespace FmodAudio.Interop
 
     public delegate Result ChannelCallbackInternal(IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2);
 
-    public unsafe interface IFmodLibrary
+    public unsafe interface INativeLibrary
     {
         [NativeSymbol("FMOD_Memory_Initialize")]
         Result Memory_Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags);

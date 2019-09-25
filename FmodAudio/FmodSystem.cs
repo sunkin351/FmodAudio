@@ -28,7 +28,7 @@ namespace FmodAudio
 
 
 
-        internal IFmodLibrary library;
+        internal INativeLibrary library;
 
         private int? driverCount;
 
@@ -39,7 +39,7 @@ namespace FmodAudio
 
         #region System Creation / Destruction
 
-        internal FmodSystem(IFmodLibrary lib, IntPtr handle) : base(handle)
+        internal FmodSystem(INativeLibrary lib, IntPtr handle) : base(handle)
         {
             library = lib;
             SetupEventCallbacks();
