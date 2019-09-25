@@ -28,7 +28,7 @@ namespace FmodAudio
             switch(native.InstanceType)
             {
                 case ErrorCallbackInstanceType.System:
-                    Instance = FmodSystem.GetSystem(native.Instance);
+                    Instance = Fmod.GetSystem(native.Instance);
                     break;
 
                 default:
