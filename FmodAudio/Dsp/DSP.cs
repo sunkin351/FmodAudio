@@ -7,7 +7,7 @@ namespace FmodAudio.Dsp
     using global::FmodAudio.Interop;
     public sealed class DSP : HandleBase
     {
-        static IFmodLibrary library { get => NativeLibrary.Library; }
+        private readonly IFmodLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal DspDescription Description;
@@ -17,6 +17,7 @@ namespace FmodAudio.Dsp
         internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle = true) : base(handle)
         {
             SystemObject = sys;
+            library = sys.library;
             OwnsHandle = ownsHandle;
 
             if (!ownsHandle)

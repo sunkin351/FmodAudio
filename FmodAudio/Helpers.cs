@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Numerics;
 
 namespace FmodAudio
 {
@@ -119,14 +120,14 @@ namespace FmodAudio
             }
         }
         
-        public static unsafe FmodMemory.SaferPointer AllocateCustomRolloff(in ReadOnlySpan<Vector> rolloff)
+        public static FmodMemory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
         {
             if (rolloff.IsEmpty)
                 return null;
 
-            var ptr = FmodMemory.Allocate(rolloff.Length * sizeof(Vector)); //unsafe modifier is required for sizeof(Vector)
+            var ptr = FmodMemory.Allocate(rolloff.Length * Unsafe.SizeOf<Vector3>());
             
-            rolloff.CopyTo(ptr.AsSpan<Vector>());
+            rolloff.CopyTo(ptr.AsSpan<Vector3>());
 
             return ptr;
         }

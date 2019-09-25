@@ -5,13 +5,14 @@ namespace FmodAudio.Dsp
     using global::FmodAudio.Interop;
     public sealed class DSPConnection : HandleBase
     {
-        static IFmodLibrary library { get => NativeLibrary.Library; }
+        private readonly IFmodLibrary library;
 
         private readonly FmodSystem system;
 
         internal DSPConnection(FmodSystem sys, IntPtr handle) : base(handle)
         {
             system = sys;
+            library = sys.library;
         }
         
         public DSP Input

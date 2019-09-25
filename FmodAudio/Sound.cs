@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace FmodAudio
 {
     public sealed class Sound : HandleBase
     {
-        static Interop.IFmodLibrary library { get => NativeLibrary.Library; }
+        private readonly Interop.IFmodLibrary library;
 
         public FmodSystem SystemObject { get; }
 
@@ -21,6 +22,7 @@ namespace FmodAudio
         internal Sound(FmodSystem sys, IntPtr inst) : base(inst)
         {
             SystemObject = sys;
+            library = sys.library;
         }
 
         protected override void ReleaseImpl()
@@ -80,7 +82,7 @@ namespace FmodAudio
             library.Sound_Get3DConeSettings(Handle, out insideconeangle, out outsideconeangle, out outsidevolume).CheckResult();
         }
         
-        public unsafe Span<Vector> GetCustomRolloff3D()
+        public unsafe Span<Vector3> GetCustomRolloff3D()
         {
             library.Sound_Get3DCustomRolloff(Handle, out IntPtr points, out int Number).CheckResult();
 
@@ -90,11 +92,11 @@ namespace FmodAudio
             }
             else
             {
-                return new Span<Vector>((void*)points, Number);
+                return new Span<Vector3>((void*)points, Number);
             }
         }
 
-        public void SetCustomRolloff3D(ReadOnlySpan<Vector> points)
+        public void SetCustomRolloff3D(ReadOnlySpan<Vector3> points)
         {
             int num = 0;
             FmodMemory.SaferPointer arrptr = Helpers.AllocateCustomRolloff(points);

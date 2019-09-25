@@ -196,7 +196,7 @@ namespace Examples
 
         public CustomDSPExample()
         {
-            system = new FmodSystem();
+            system = Fmod.CreateSystem();
 
             TestVersion(system);
         }
@@ -315,10 +315,10 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Release();
+            sound.Dispose();
             masterGroup.RemoveDSP(dsp);
-            dsp.Release();
-            system.Release();
+            dsp.Dispose();
+            system.Dispose();
         }
 
         static void AdjustVolume(DSP dsp, float adjustment)

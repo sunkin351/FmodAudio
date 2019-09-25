@@ -1,5 +1,6 @@
 ﻿using FmodAudio;
 using System;
+using System.IO;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -40,7 +41,7 @@ namespace Examples.Base
 
         protected static string MediaPath(string file)
         {
-            return "../../../media/" + file;
+            return Path.Combine("../../../media/", file);
         }
 
         protected static void TestVersion(FmodSystem system)
@@ -51,16 +52,6 @@ namespace Examples.Base
             {
                 throw new NotSupportedException($"FMOD Library version {version} doesn't match Binding version {FmodSystem.BindingVersion}");
             }
-        }
-
-        protected static float Clamp(float min, float max, float value)
-        {
-            if (value < min)
-                value = min;
-            else if (value > max)
-                value = max;
-
-            return value;
         }
     }
 }

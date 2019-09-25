@@ -639,10 +639,10 @@ namespace FmodAudio.Interop
         Result ChannelGroup_GetFadePoints(IntPtr channelgroup, ref uint numpoints, ulong* point_dspclock, float* point_volume);
 
         [NativeSymbol("FMOD_ChannelGroup_Set3DAttributes")]
-        Result ChannelGroup_Set3DAttributes(IntPtr channelgroup, ref Vector pos, ref Vector vel, ref Vector alt_pan_pos);
+        Result ChannelGroup_Set3DAttributes(IntPtr channelgroup, ref Vector3 pos, ref Vector3 vel, ref Vector3 alt_pan_pos);
 
         [NativeSymbol("FMOD_ChannelGroup_Get3DAttributes")]
-        Result ChannelGroup_Get3DAttributes(IntPtr channelgroup, out Vector pos, out Vector vel, out Vector alt_pan_pos);
+        Result ChannelGroup_Get3DAttributes(IntPtr channelgroup, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos);
 
         [NativeSymbol("FMOD_ChannelGroup_Set3DMinMaxDistance")]
         Result ChannelGroup_Set3DMinMaxDistance(IntPtr channelgroup, float mindistance, float maxdistance);

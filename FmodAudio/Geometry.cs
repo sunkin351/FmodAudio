@@ -5,10 +5,11 @@ namespace FmodAudio
     using Interop;
     public class Geometry : HandleBase
     {
-        static IFmodLibrary library => NativeLibrary.Library;
+        private readonly IFmodLibrary library;
 
-        internal Geometry(IntPtr handle) : base(handle)
+        internal Geometry(IntPtr handle, IFmodLibrary lib) : base(handle)
         {
+            library = lib;
         }
 
         protected override void ReleaseImpl()

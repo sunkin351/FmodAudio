@@ -1,5 +1,6 @@
 ﻿using FmodAudio;
 using System;
+using System.Numerics;
 
 namespace Examples
 {
@@ -13,19 +14,19 @@ namespace Examples
         private readonly char[] ss = "|.............<1>......................<2>.......|".ToCharArray();
 
         float T = 0.0f;
-        Vector LastPos = default;
+        Vector3 LastPos = default;
         
         public override void Run()
         {
             //Create a System Object
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
 
             Sound s1, s2, s3;
-            Channel c1 = null, c2 = null, c3 = null;
-            bool listenerFlag = true;
-            Vector listenerPos = new Vector() { Z = -1.0f * DistanceFactor };
+            Channel c1, c2, c3 = null;
+            bool autoMove = true;
+            Vector3 listenerPos = new Vector3() { Z = -1.0f * DistanceFactor };
 
             //System object Initialization
             system.Init(32);
@@ -48,9 +49,11 @@ namespace Examples
 
             {
                 //Play sounds at certain positions
-                Vector pos = new Vector() { X = -10.0f * DistanceFactor }, vel = default;
+                Vector3 pos = default, vel = default;
 
-                c1 = system.PlaySound(s1, null, true);
+                pos.X = -10.0f * DistanceFactor;
+
+                c1 = system.PlaySound(s1, paused: true);
                 c1.Set3DAttributes(ref pos, ref vel);
                 c1.Paused = false;
 
@@ -85,7 +88,7 @@ namespace Examples
                                     c3 = system.PlaySound(s3);
                                 break;
                             case Button.More:
-                                listenerFlag = !listenerFlag;
+                                autoMove = !autoMove;
                                 break;
                             case Button.Quit:
                                 goto BreakLoop;
@@ -97,11 +100,11 @@ namespace Examples
                 // UPDATE THE LISTENER
                 // ==========================================================================================
 
-                Vector forward = new Vector() { Z = 1 }, up = new Vector() { Y = 1.0f }, vel = default;
+                Vector3 forward = new Vector3() { Z = 1f }, up = new Vector3() { Y = 1f }, vel = default;
 
-                if (listenerFlag)
+                if (autoMove)
                 {
-                    listenerPos.X = (float)Math.Sin(this.T * 0.05f) * 24 * DistanceFactor;
+                    listenerPos.X = MathF.Sin(this.T * 0.05f) * 24 * DistanceFactor;
                 }
 
                 vel.X = (listenerPos.X - this.LastPos.X) * (1000 / InterfaceUpdateTime);
@@ -116,7 +119,7 @@ namespace Examples
 
                 system.Update();
 
-                ss.CopyTo(s, 0);
+                ss.AsSpan().CopyTo(s);
                 s[(int)(listenerPos.X / DistanceFactor) + 25] = 'L';
 
                 DrawText("==================================================");
@@ -135,11 +138,11 @@ namespace Examples
             } while (true);
 
             BreakLoop:
-            s1.Release();
-            s2.Release();
-            s3.Release();
+            s1.Dispose();
+            s2.Dispose();
+            s3.Dispose();
 
-            system.Release();
+            system.Dispose();
         }
 
         public override string Title => "Fmod 3D Example";

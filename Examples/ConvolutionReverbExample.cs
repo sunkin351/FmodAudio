@@ -10,7 +10,7 @@ namespace Examples
     {
         public override void Run()
         {
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
 
@@ -76,16 +76,16 @@ namespace Examples
                         switch (btn)
                         {
                             case Button.Left:
-                                wetVolume = Clamp(0, 1, wetVolume - 0.05f);
+                                wetVolume = Math.Clamp(0, 1, wetVolume - 0.05f);
                                 break;
                             case Button.Right:
-                                wetVolume = Clamp(0, 1, wetVolume + 0.05f);
+                                wetVolume = Math.Clamp(0, 1, wetVolume + 0.05f);
                                 break;
                             case Button.Up:
-                                dryVolume = Clamp(0, 1, dryVolume + 0.05f);
+                                dryVolume = Math.Clamp(0, 1, dryVolume + 0.05f);
                                 break;
                             case Button.Down:
-                                dryVolume = Clamp(0, 1, dryVolume - 0.05f);
+                                dryVolume = Math.Clamp(0, 1, dryVolume - 0.05f);
                                 break;
                             case Button.Quit:
                                 goto Exit;
@@ -113,12 +113,12 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Release();
-            mainGroup.Release();
+            sound.Dispose();
+            mainGroup.Dispose();
             reverbGroup.RemoveDSP(reverbUnit);
-            reverbUnit.DisconnectAll(true, true);
-            reverbUnit.Release();
-            reverbGroup.Release();
+            //reverbUnit.DisconnectAll(true, true); Disposing does this already
+            reverbUnit.Dispose();
+            reverbGroup.Dispose();
         }
     }
 }

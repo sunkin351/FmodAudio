@@ -11,17 +11,12 @@ using System.Text;
 
 namespace FmodAudio
 {
+    using Interop;
     using Dsp;
 
     public sealed partial class FmodSystem : HandleBase
     {
-        /// <summary>
-        /// Subscribe to this to log when fatal errors occur. String passed is the error message.
-        /// </summary>
-        public static event Action<string> FatalError;
-
-        private static Interop.IFmodLibrary library { get => NativeLibrary.Library; }
-        private static readonly object SyncObject = new object();
+        
 
         internal const int MaxInteropNameStringLength = 200;
 
@@ -30,13 +25,10 @@ namespace FmodAudio
         /// </summary>
         public static bool AllowStringTruncation { get; set; }
         public static FmodVersion BindingVersion => new FmodVersion(0x00011008);
-        private static DebugCallback DebugCallbackReference;
 
-        public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
-        {
-            library.Debug_Initialize(flags, mode, callback, filename).CheckResult();
-            DebugCallbackReference = callback;
-        }
+
+
+        internal IFmodLibrary library;
 
         private int? driverCount;
 
@@ -47,19 +39,9 @@ namespace FmodAudio
 
         #region System Creation / Destruction
 
-        public FmodSystem()
+        internal FmodSystem(IFmodLibrary lib, IntPtr handle) : base(handle)
         {
-            lock (SyncObject)
-            {
-                library.System_Create(out Handle).CheckResult();
-
-                if (!SystemLookup.TryAdd(Handle, new WeakReference<FmodSystem>(this)))
-                {
-                    FatalError("Identical System handle returned from FMOD_System_Create()");
-                    Environment.Exit(-1);
-                }
-            }
-
+            library = lib;
             SetupEventCallbacks();
         }
 
@@ -67,11 +49,11 @@ namespace FmodAudio
         {
             Close();
             
-            lock (SyncObject)
+            lock (Fmod.CreationSyncObject)
             {
                 library.System_Release(Handle).CheckResult();
 
-                SystemLookup.TryRemove(Handle, out _);
+                Fmod.SystemLookup.TryRemove(Handle, out _);
             }
         }
 
@@ -79,7 +61,7 @@ namespace FmodAudio
         {
             if (SystemOpen)
             {
-                throw new InvalidOperationException("FmodSystem object already initialized");
+                throw new InvalidOperationException("FmodSystem object already initialized"); //Semantic similarity with the native call
             }
 
             library.System_Init(Handle, MaxChannels, flags, ExtraDriverData).CheckResult();

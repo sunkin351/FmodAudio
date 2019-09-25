@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace FmodAudio
 {
@@ -7,13 +8,13 @@ namespace FmodAudio
 
     public abstract class ChannelControl : HandleBase
     {
-        internal static IFmodLibrary library { get => NativeLibrary.Library; }
-
+        protected readonly IFmodLibrary library;
         public FmodSystem SystemObject { get; }
 
-        internal ChannelControl(FmodSystem sys, IntPtr handle) : base(handle)
+        protected ChannelControl(FmodSystem sys, IntPtr handle) : base(handle)
         {
             SystemObject = sys;
+            library = sys.library;
         }
 
         internal ChannelControl(FmodSystem sys, IntPtr handle, FmodMemory.SaferPointer customRolloff) : this(sys, handle)
@@ -233,10 +234,10 @@ namespace FmodAudio
             fixed(float* levels = mixLevels)
                 res = library.ChannelGroup_SetMixLevelsInput(Handle, levels, mixLevels.Length);
 
-            FmodSystem.CheckResult(res);
+            res.CheckResult();
         }
 
-        public unsafe void SetMixMatrix(float[] matrix, int outChannels, int inChannels, int inChannelHop = 0)
+        public unsafe void SetMixMatrix(ReadOnlySpan<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
         {
             Result res;
 
@@ -250,7 +251,7 @@ namespace FmodAudio
                 res = library.ChannelGroup_SetMixMatrix(Handle, mx, outChannels, inChannels, inChannelHop);
             }
 
-            FmodSystem.CheckResult(res);
+            res.CheckResult();
         }
 
         public unsafe void GetMixMatrix(out float[] matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
@@ -392,18 +393,18 @@ namespace FmodAudio
 
         #region 3D Effects
 
-        public void Set3DAttributes(ref Vector pos, ref Vector vel, ref Vector altPanPos)
+        public void Set3DAttributes(ref Vector3 pos, ref Vector3 vel, ref Vector3 altPanPos)
         {
             library.ChannelGroup_Set3DAttributes(Handle, ref pos, ref vel, ref altPanPos).CheckResult();
         }
 
-        public void Set3DAttributes(ref Vector pos, ref Vector vel)
+        public void Set3DAttributes(ref Vector3 pos, ref Vector3 vel)
         {
-            Vector altPanPos = default;
+            Vector3 altPanPos = default;
             Set3DAttributes(ref pos, ref vel, ref altPanPos);
         }
 
-        public void Get3DAttributes(out Vector pos, out Vector vel, out Vector altPanPos)
+        public void Get3DAttributes(out Vector3 pos, out Vector3 vel, out Vector3 altPanPos)
         {
             library.ChannelGroup_Get3DAttributes(Handle, out pos, out vel, out altPanPos).CheckResult();
         }
@@ -440,12 +441,12 @@ namespace FmodAudio
 
         private FmodMemory.SaferPointer CustomRolloff = null;
 
-        public void Set3DCustomRolloff(in ReadOnlySpan<Vector> rolloff)
+        public void Set3DCustomRolloff(ReadOnlySpan<Vector> rolloff)
         {
             if (this is Channel)
                 throw new NotSupportedException();
 
-            var ptr = Helpers.AllocateCustomRolloff(in rolloff);
+            var ptr = Helpers.AllocateCustomRolloff(rolloff);
             int count = 0;
 
             if (ptr != null)

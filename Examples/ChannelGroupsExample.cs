@@ -9,7 +9,7 @@ namespace Examples
     {
         public override void Run()
         {
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
 
@@ -87,13 +87,13 @@ namespace Examples
             //Shutdown
             foreach (var sound in sounds)
             {
-                sound.Release();
+                sound.Dispose();
             }
 
-            A.Release();
-            B.Release();
+            A.Dispose();
+            B.Dispose();
 
-            system.Release();
+            system.Dispose();
         }
     }
 }

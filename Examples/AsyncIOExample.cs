@@ -21,7 +21,7 @@ namespace Examples
         
         public override void Run()
         {
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
 
@@ -85,14 +85,13 @@ namespace Examples
             while (true);
 
             Exit:
-            if (sound != null)
-                sound.Release();
+            sound?.Dispose(); //Dispose if not null
 
             ThreadContinue = false;
 
             AsyncThread.Join();
 
-            system.Release();
+            system.Dispose();
         }
 
         const int BufferLength = 5;

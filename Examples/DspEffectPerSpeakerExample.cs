@@ -13,7 +13,7 @@ namespace Examples
     {
         public override void Run()
         {
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
 
@@ -138,12 +138,12 @@ namespace Examples
                                 break;
 
                             case Button.Left:
-                                pan = Clamp(-1, 1, pan - 0.1f);
+                                pan = Math.Clamp(-1, 1, pan - 0.1f);
                                 channel.SetPan(pan);
                                 break;
 
                             case Button.Right:
-                                pan = Clamp(-1, 1, pan + 0.1f);
+                                pan = Math.Clamp(-1, 1, pan + 0.1f);
                                 channel.SetPan(pan);
                                 break;
 
@@ -173,12 +173,12 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Release();
+            sound.Dispose();
 
-            lowPass.Release();
-            highPass.Release();
+            lowPass.Dispose();
+            highPass.Dispose();
 
-            system.Release();
+            system.Dispose();
         }
     }
 }

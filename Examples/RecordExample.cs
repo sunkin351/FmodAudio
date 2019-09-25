@@ -17,7 +17,7 @@ namespace Examples
         
         public override void Run()
         {
-            FmodSystem system = new FmodSystem();
+            FmodSystem system = Fmod.CreateSystem();
 
             TestVersion(system);
             Channel channel = null;
@@ -189,8 +189,8 @@ namespace Examples
             }
             finally
             {
-                sound.Release();
-                system.Release();
+                sound.Dispose();
+                system.Dispose();
             }
         }
     }

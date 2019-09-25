@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 
 namespace FmodAudio
 {
     using Interop;
     public class SoundGroup : HandleBase
     {
-        static IFmodLibrary library { get => NativeLibrary.Library; }
+        private readonly IFmodLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal bool IsMaster = false;
@@ -13,6 +13,7 @@ namespace FmodAudio
         internal SoundGroup(FmodSystem sys, IntPtr inst) : base(inst)
         {
             SystemObject = sys;
+            library = sys.library;
         }
 
         protected override void ReleaseImpl()
