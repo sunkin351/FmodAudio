@@ -463,14 +463,14 @@ namespace FmodAudio
             CustomRolloff = ptr;
         }
 
-        public unsafe Span<Vector3> Get3DCustomRolloff()
+        public unsafe ReadOnlySpan<Vector3> Get3DCustomRolloff()
         {
             library.ChannelGroup_Get3DCustomRolloff(Handle, out IntPtr points, out int pointCount).CheckResult();
 
             if (points == IntPtr.Zero)
                 return default;
 
-            return new Span<Vector3>((void*)points, pointCount);
+            return new ReadOnlySpan<Vector3>((void*)points, pointCount);
         }
 
         public void Set3DOcclusion(float directOcclusion, float reverbOcclusion)

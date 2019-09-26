@@ -6,53 +6,56 @@ using System.Text;
 namespace FmodAudio.Dsp
 {
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe class DspDescription
+    public unsafe sealed class DspDescription
     {
-        private Structure iStruct = default;
+        internal Structure Struct = default;
 
-        public ref Structure Struct => ref iStruct;
+        //private DspStateCallback create;
+        //private DspStateCallback release;
+        //private DspStateCallback reset;
 
-        public FmodVersion PluginSDKVersion { get => iStruct.PluginSDKVersion; set => iStruct.PluginSDKVersion = value; }
 
-        public string Name { get => iStruct.Name; set => iStruct.Name = value; }
+        public FmodVersion PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
 
-        public FmodVersion Version { get => iStruct.Version; set => iStruct.Version = value; }
+        public string Name { get => Struct.Name; set => Struct.Name = value; }
 
-        public int InputBufferCount { get => iStruct.InputBufferCount; set => iStruct.InputBufferCount = value; }
+        public FmodVersion Version { get => Struct.Version; set => Struct.Version = value; }
 
-        public int OutputBufferCount { get => iStruct.OutputBufferCount; set => iStruct.OutputBufferCount = value; }
+        public int InputBufferCount { get => Struct.InputBufferCount; set => Struct.InputBufferCount = value; }
 
-        public DspStateCallback Create { get => iStruct.Create; set => iStruct.Create = value; }
+        public int OutputBufferCount { get => Struct.OutputBufferCount; set => Struct.OutputBufferCount = value; }
 
-        public DspStateCallback Release { get => iStruct.Release; set => iStruct.Release = value; }
+        public DspStateCallback Create { get => Struct.Create; set => Struct.Create = value; }
 
-        public DspStateCallback Reset { get => iStruct.Reset; set => iStruct.Reset = value; }
+        public DspStateCallback Release { get => Struct.Release; set => Struct.Release = value; }
 
-        public DspReadCallback Read { get => iStruct.Read; set => iStruct.Read = value; }
+        public DspStateCallback Reset { get => Struct.Reset; set => Struct.Reset = value; }
 
-        public DspProcessCallback Process { get => iStruct.Process; set => iStruct.Process = value; }
+        public DspReadCallback Read { get => Struct.Read; set => Struct.Read = value; }
 
-        public DspSetPositionCallback SetPosition { get => iStruct.SetPosition; set => iStruct.SetPosition = value; }
+        public DspProcessCallback Process { get => Struct.Process; set => Struct.Process = value; }
 
-        public int ParameterCount { get => iStruct.ParameterCount; set => iStruct.ParameterCount = value; }
+        public DspSetPositionCallback SetPosition { get => Struct.SetPosition; set => Struct.SetPosition = value; }
 
-        public ParameterDescription** ParameterDescriptions { get => iStruct.ParameterDescriptions; set => iStruct.ParameterDescriptions = value; }
+        public int ParameterCount { get => Struct.ParameterCount; set => Struct.ParameterCount = value; }
 
-        public DspSetParamFloatCallback SetParamFloat { get => iStruct.SetParamFloat; set => iStruct.SetParamFloat = value; }
+        public ParameterDescription** ParameterDescriptions { get => Struct.ParameterDescriptions; set => Struct.ParameterDescriptions = value; }
 
-        public DspSetParamIntCallback SetParamInt { get => iStruct.SetParamInt; set => iStruct.SetParamInt = value; }
+        public DspSetParamFloatCallback SetParamFloat { get => Struct.SetParamFloat; set => Struct.SetParamFloat = value; }
 
-        public DspSetParamBoolCallback SetParamBool { get => iStruct.SetParamBool; set => iStruct.SetParamBool = value; }
+        public DspSetParamIntCallback SetParamInt { get => Struct.SetParamInt; set => Struct.SetParamInt = value; }
 
-        public DspSetParamDataCallback SetParamData { get => iStruct.SetParamData; set => iStruct.SetParamData = value; }
+        public DspSetParamBoolCallback SetParamBool { get => Struct.SetParamBool; set => Struct.SetParamBool = value; }
 
-        public DspGetParamFloatCallback GetParamFloat { get => iStruct.GetParamFloat; set => iStruct.GetParamFloat = value; }
+        public DspSetParamDataCallback SetParamData { get => Struct.SetParamData; set => Struct.SetParamData = value; }
 
-        public DspGetParamIntCallback GetParamInt { get => iStruct.GetParamInt; set => iStruct.GetParamInt = value; }
+        public DspGetParamFloatCallback GetParamFloat { get => Struct.GetParamFloat; set => Struct.GetParamFloat = value; }
 
-        public DspGetParamBoolCallback GetParamBool { get => iStruct.GetParamBool; set => iStruct.GetParamBool = value; }
+        public DspGetParamIntCallback GetParamInt { get => Struct.GetParamInt; set => Struct.GetParamInt = value; }
 
-        public DspGetParamDataCallback GetParamData { get => iStruct.GetParamData; set => iStruct.GetParamData = value; }
+        public DspGetParamBoolCallback GetParamBool { get => Struct.GetParamBool; set => Struct.GetParamBool = value; }
+
+        public DspGetParamDataCallback GetParamData { get => Struct.GetParamData; set => Struct.GetParamData = value; }
 
         
         [StructLayout(LayoutKind.Sequential)]
@@ -138,6 +141,11 @@ namespace FmodAudio.Dsp
                     }
                 }
             }
+        }
+
+        internal DspDescription Clone()
+        {
+            return (DspDescription)this.MemberwiseClone();
         }
 
         public delegate Result DspStateCallback(DspState* state);

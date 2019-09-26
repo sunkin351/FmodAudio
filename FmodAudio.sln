@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2048
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FmodAudio", "FmodAudio\FmodAudio.csproj", "{69AE6852-20E1-4C8A-AD65-FFADB8643F6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FmodAudio", "FmodAudio\FmodAudio.csproj", "{69AE6852-20E1-4C8A-AD65-FFADB8643F6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{4DD9C721-61ED-41CA-93A8-3C78D1E090B3}"
 EndProject

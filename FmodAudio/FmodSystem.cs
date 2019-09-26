@@ -526,9 +526,12 @@ namespace FmodAudio
             library.System_Get3DListenerAttributes(Handle, listener, out pos, out vel, out forward, out up).CheckResult();
         }
 
+        private CB_3D_RolloffCallback rolloffCallback;
+
         public void Set3DRolloffCallback(CB_3D_RolloffCallback callback)
         {
             library.System_Set3DRolloffCallback(Handle, callback).CheckResult();
+            rolloffCallback = callback;
         }
 
         public void MixerSuspend()
@@ -627,30 +630,49 @@ namespace FmodAudio
             return (Mode)m;
         }
 
-        private static readonly CreateSoundInfo DefaultInfo = new CreateSoundInfo();
-
-        public Sound CreateSound(string Filename, Mode mode = Mode.Default)
+        public unsafe Sound CreateSound(string Filename, Mode mode = Mode.Default, CreateSoundInfo info = null)
         {
-            return CreateSound(Filename, mode, DefaultInfo);
-        }
+            if (Filename is null)
+            {
+                throw new ArgumentNullException(nameof(Filename));
+            }
 
-        public unsafe Sound CreateSound(string Filename, Mode mode, CreateSoundInfo info)
-        {
             byte[] data = Helpers.ToUTF8NullTerminated(Filename);
             IntPtr handle;
 
             fixed(byte* dataPtr = data)
             {
-                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), ref (info ?? DefaultInfo).Struct, out handle).CheckResult();
+                if (info is null)
+                {
+                    library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), null, out handle).CheckResult();
+                }
+                else
+                {
+                    fixed (CreateSoundInfo._interopStruct* @struct = &info.Struct)
+                    {
+                        library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), @struct, out handle).CheckResult();
+                    }
+                }
             }
-            
-            return GetSound(handle);
+
+            var sound = GetSound(handle);
+
+            sound.soundGroup = info.InitialSoundGroup;
+
+            return sound;
         }
 
         public unsafe Sound CreateSound(Span<byte> data, Mode mode, CreateSoundInfo info)
         {
             if (info == null)
+            {
                 throw new ArgumentNullException(nameof(info));
+            }
+
+            if (info.Length == 0)
+            {
+                throw new ArgumentException("Data length not specified in CreateSoundInfo.Length");
+            }
 
             if (data.Length < info.Length)
             {
@@ -660,11 +682,16 @@ namespace FmodAudio
             IntPtr handle;
 
             fixed(byte* dataPtr = data)
+            fixed(CreateSoundInfo._interopStruct* @struct = &info.Struct)
             {
-                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), ref info.Struct, out handle).CheckResult();
+                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), @struct, out handle).CheckResult();
             }
 
-            return GetSound(handle);
+            var sound = GetSound(handle);
+
+            sound.soundGroup = info.InitialSoundGroup;
+
+            return sound;
         }
 
         /// <summary>
@@ -677,37 +704,39 @@ namespace FmodAudio
         {
             mode = (mode & ~(Mode.OpenMemory_Point | Mode.OpenMemory)) | Mode.OpenUser;
 
-            library.System_CreateSound(Handle, null, mode, ref info.Struct, out IntPtr handle).CheckResult();
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
 
-            return GetSound(handle);
+            IntPtr handle;
+
+            fixed (CreateSoundInfo._interopStruct* @struct = &info.Struct)
+            {
+                library.System_CreateSound(Handle, null, mode, @struct, out handle).CheckResult();
+            }
+
+            var sound = GetSound(handle);
+
+            sound.soundGroup = info.InitialSoundGroup;
+
+            return sound;
         }
 
-        public Sound CreateStream(string Filename, Mode mode = Mode.Default)
+        public Sound CreateStream(string Filename, Mode mode = Mode.Default, CreateSoundInfo info = null)
         {
-            return CreateStream(Filename, mode, DefaultInfo);
-        }
-
-        public Sound CreateStream(string Filename, Mode mode, CreateSoundInfo info)
-        {
-            byte[] data = Helpers.ToUTF8NullTerminated(Filename);
-
-            library.System_CreateStream(Handle, data, MemoryBits(mode, true), ref info.Struct, out IntPtr handle).CheckResult();
-
-            return GetSound(handle);
+            return CreateSound(Filename, mode | Mode.CreateStream, info);
         }
 
         public DSP CreateDSP(DspDescription description)
         {
-            return CreateDSP(ref description.Struct);
-        }
+            var clone = description.Clone();
 
-        public DSP CreateDSP(ref DspDescription.Structure description)
-        {
-            library.System_CreateDSP(Handle, ref description, out IntPtr handle).CheckResult();
+            library.System_CreateDSP(Handle, ref clone.Struct, out IntPtr handle).CheckResult();
 
             var dsp = GetDSP(handle);
 
-            dsp.Description = new DspDescription() { Struct = description };
+            dsp.Description = clone;
 
             return dsp;
         }
@@ -739,7 +768,7 @@ namespace FmodAudio
             return new Channel(this, handle);
         }
 
-        public Channel PlayDsp(Dsp.DSP dsp, ChannelGroup group = null, bool paused = false)
+        public Channel PlayDsp(DSP dsp, ChannelGroup group = null, bool paused = false)
         {
             library.System_PlayDSP(Handle, dsp.Handle, group?.Handle ?? IntPtr.Zero, paused, out IntPtr handle).CheckResult();
 
@@ -902,15 +931,18 @@ namespace FmodAudio
                 {
                     res = library.System_GetNetworkProxy(Handle, ptr, size);
                 }
-                
-                if (res == Result.Err_Truncated && RetryCount > 0)
-                {
-                    size += 100;
-                    RetryCount -= 1;
-                    goto Retry;
-                }
 
-                res.CheckResult();
+                if (res != Result.Ok)
+                {
+                    if (res == Result.Err_Truncated && RetryCount > 0)
+                    {
+                        size += 100;
+                        RetryCount -= 1;
+                        goto Retry;
+                    }
+
+                    res.CheckResult();
+                }
 
                 return Helpers.MemoryToString(buffer);
             }

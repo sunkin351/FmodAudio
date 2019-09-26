@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace FmodAudio
 {
@@ -10,9 +11,9 @@ namespace FmodAudio
     {
         internal _interopStruct Struct;
 
-        public unsafe AdvancedSettings()
+        public AdvancedSettings()
         {
-            Struct.cbSize = sizeof(_interopStruct);
+            Struct.cbSize = Unsafe.SizeOf<_interopStruct>();
             Struct.HRTFMaxAngle = 360.0f;
             Struct.HRTFMinAngle = 180.0f;
         }

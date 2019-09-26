@@ -21,10 +21,10 @@ namespace FmodAudio
 
         private static INativeLibrary nativeLibrary;
 
-        /// <summary>
-        /// Subscribe to this to log when fatal errors occur. String passed is the error message.
-        /// </summary>
-        public static event Action<string, string> FatalError;
+        // <summary>
+        // Subscribe to this to log when fatal errors occur.String passed is the error message.
+        // </summary>
+        //public static event Action<string, string> FatalError;
 
         public static string DefaultLibraryName
         {
@@ -74,13 +74,11 @@ namespace FmodAudio
 
         private static void EnsureInitialized()
         {
-            if (nativeLibrary != null)
-                return;
+            if (nativeLibrary != null) return;
 
             lock (InitSyncObject)
             {
-                if (nativeLibrary != null)
-                    return;
+                if (nativeLibrary != null) return;
 
                 const ImplementationOptions options =
                     ImplementationOptions.EnableOptimizations |
@@ -89,7 +87,7 @@ namespace FmodAudio
                     ImplementationOptions.UseLazyBinding;
 
                 NativeLibraryBuilder builder = new NativeLibraryBuilder(options);
-
+                
                 nativeLibrary = builder.ActivateInterface<INativeLibrary>(location ?? DefaultLibraryName);
             }
         }

@@ -191,7 +191,7 @@ namespace FmodAudio.Interop
         Result System_GetSoundRAM(IntPtr system, out int currentalloced, out int maxalloced, out int total);
 
         [NativeSymbol("FMOD_System_CreateSound")]
-        Result System_CreateSound(IntPtr system, byte* name_or_data, Mode mode, ref CreateSoundInfo._interopStruct exinfo, out IntPtr sound);
+        Result System_CreateSound(IntPtr system, byte* name_or_data, Mode mode, CreateSoundInfo._interopStruct* exinfo, out IntPtr sound);
 
         [NativeSymbol("FMOD_System_CreateStream")]
         Result System_CreateStream(IntPtr system, [In, Out] byte[] name_or_data, Mode mode, ref CreateSoundInfo._interopStruct exinfo, out IntPtr sound);
