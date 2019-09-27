@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.8.0</Version>
+    <Version>0.8.0.0</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -12,6 +12,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Description>Wrapper Library for the Fmod low level API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
+    <PackageReleaseNotes>The DSP namespace is incomplete. Will be completed in a future release.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
