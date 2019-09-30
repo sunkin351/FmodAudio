@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -35,10 +34,12 @@ namespace FmodAudio.Dsp
     {
         public int Min, Max, DefaultValue;
 
+        private int _infinity;
+
         /// <summary>
         /// Whether the last value represents infinity
         /// </summary>
-        public bool GoesToInf;
+        public bool GoesToInfinity { get => _infinity != 0; set => _infinity = value ? 1 : 0; }
 
         /// <summary>
         /// [Optional] Names for each value. There should be as many strings as there are possible values (max - min + 1).
@@ -49,7 +50,9 @@ namespace FmodAudio.Dsp
     [StructLayout(LayoutKind.Sequential)]
     public struct ParameterDescBool
     {
-        public bool DefaultValue;
+        private int _default;
+
+        public bool DefaultValue { get => _default != 0; set => _default = value ? 1 : 0; }
 
         /// <summary>
         /// [Optional] Names for true and false respectively. There should be 2 strings.
@@ -71,7 +74,7 @@ namespace FmodAudio.Dsp
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct ParameterDescription
     {
-        public static ParameterDescription CreateDataDescription(string name, string label, ParameterDataType dataType)
+        public static ParameterDescription CreateDataDescription(string name, string label, DSPParameterType dataType)
         {
             return CreateDataDescription(name, label, (int)dataType);
         }
