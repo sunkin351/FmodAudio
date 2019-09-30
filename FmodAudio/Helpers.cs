@@ -275,5 +275,13 @@ namespace FmodAudio
                 return callback(PtrToStringUnknownSize(Filename), out filesize, out handle, userdata);
             };
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void UpdateCallback<TDel>(TDel del, out TDel managedSite, out IntPtr unmanagedSite)
+            where TDel : Delegate
+        {
+            unmanagedSite = (del != null) ? Marshal.GetFunctionPointerForDelegate(del) : (default);
+            managedSite = del;
+        }
     }
 }
