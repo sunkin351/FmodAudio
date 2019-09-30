@@ -79,24 +79,24 @@ namespace FmodAudio.Dsp
         public static ParameterDescription CreateDataDescription(string name, string label, int dataType)
         {
             ParameterDescription desc = default;
-            desc.Type = ParameterType.Data;
+            desc.Type = DSPParameterType.Data;
             desc.Name = name;
             desc.Label = label;
-            desc.DescData = new ParameterDescData(dataType);
+            desc.DescUnion = new ParameterDescData(dataType);
             return desc;
         }
 
         public static ParameterDescription CreateFloatDescription(string name, string label, float min, float max, float defaultValue)
         {
             ParameterDescription desc = default;
-            desc.Type = ParameterType.Float;
+            desc.Type = DSPParameterType.Float;
             desc.Name = name;
             desc.Label = label;
-            desc.DescData = new ParameterDescFloat(min, max, defaultValue);
+            desc.DescUnion = new ParameterDescFloat(min, max, defaultValue);
             return desc;
         }
 
-        public ParameterType Type;
+        public DSPParameterType Type;
         
         private fixed byte NameBuffer[16];
         
@@ -107,8 +107,7 @@ namespace FmodAudio.Dsp
         /// </summary>
         public IntPtr Description;
 
-        public DescriptionUnion DescData;
-        
+        public DescriptionUnion DescUnion;
 
         /// <summary>
         /// Max string length is 16 UTF8 bytes

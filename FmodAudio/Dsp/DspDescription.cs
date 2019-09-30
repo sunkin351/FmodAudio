@@ -10,10 +10,14 @@ namespace FmodAudio.Dsp
     {
         internal Structure Struct = default;
 
-        //private DspStateCallback create;
-        //private DspStateCallback release;
-        //private DspStateCallback reset;
+        private DspStateCallback Create;
+        private DspStateCallback Release;
+        private DspStateCallback Reset;
+        private DspReadCallback Read;
+        private DspProcessCallback Process;
+        private DspSetPositionCallback SetPosition;
 
+        private ParameterDescriptionManager descManager;
 
         public FmodVersion PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
 
@@ -25,21 +29,67 @@ namespace FmodAudio.Dsp
 
         public int OutputBufferCount { get => Struct.OutputBufferCount; set => Struct.OutputBufferCount = value; }
 
-        public DspStateCallback Create { get => Struct.Create; set => Struct.Create = value; }
+        public DspStateCallback CreateCallback
+        {
+            get => Create;
+            set => Helpers.UpdateCallback(value, out Create, out Struct.Create);
+        }
 
-        public DspStateCallback Release { get => Struct.Release; set => Struct.Release = value; }
+        public DspStateCallback ReleaseCallback
+        {
+            get => Release;
+            set => Helpers.UpdateCallback(value, out Release, out Struct.Create);
+        }
 
-        public DspStateCallback Reset { get => Struct.Reset; set => Struct.Reset = value; }
+        public DspStateCallback ResetCallback
+        {
+            get => Reset;
+            set => Helpers.UpdateCallback(value, out Reset, out Struct.Reset);
+        }
 
-        public DspReadCallback Read { get => Struct.Read; set => Struct.Read = value; }
+        public DspReadCallback ReadCallback
+        {
+            get => Read;
+            set => Helpers.UpdateCallback(value, out Read, out Struct.Read);
+        }
 
-        public DspProcessCallback Process { get => Struct.Process; set => Struct.Process = value; }
+        public DspProcessCallback ProcessCallback
+        {
+            get => Process;
+            set => Helpers.UpdateCallback(value, out Process, out Struct.Process);
+        }
 
-        public DspSetPositionCallback SetPosition { get => Struct.SetPosition; set => Struct.SetPosition = value; }
+        public DspSetPositionCallback SetPositionCallback
+        {
+            get => SetPosition;
+            set => Helpers.UpdateCallback(value, out SetPosition, out Struct.SetPosition);
+        }
 
-        public int ParameterCount { get => Struct.ParameterCount; set => Struct.ParameterCount = value; }
+        public ReadOnlySpan<ParameterDescription> ParameterDescriptions
+        {
+            get
+            {
+                return descManager is null ? default : descManager.Array;
+            }
+        }
 
-        public ParameterDescription** ParameterDescriptions { get => Struct.ParameterDescriptions; set => Struct.ParameterDescriptions = value; }
+        public int ParameterCount => Struct.ParameterCount;
+
+        public void SetParameterDescriptions(ReadOnlySpan<ParameterDescription> paramDescriptions)
+        {
+            if (paramDescriptions.IsEmpty)
+            {
+                descManager = null;
+                Struct.ParameterCount = 0;
+                Struct.ParameterDescriptions = null;
+            }
+            else
+            {
+                descManager = new ParameterDescriptionManager(paramDescriptions);
+                Struct.ParameterCount = paramDescriptions.Length;
+                Struct.ParameterDescriptions = (ParameterDescription**)descManager.PointerArray;
+            }
+        }
 
         public DspSetParamFloatCallback SetParamFloat { get => Struct.SetParamFloat; set => Struct.SetParamFloat = value; }
 
@@ -79,15 +129,15 @@ namespace FmodAudio.Dsp
             public int InputBufferCount;
             public int OutputBufferCount;
 
-            // TODO: Implement all of the following delegates as "static delegate", if and when the language feature becomes available.
-            // Source: https://github.com/dotnet/csharplang/issues/80
+            // TODO: Implement all of the following delegates as "function pointers", when the language feature becomes available.
+            // Source: https://github.com/dotnet/csharplang/blob/master/proposals/function-pointers.md
 
-            public DspStateCallback Create;
-            public DspStateCallback Release;
-            public DspStateCallback Reset;
-            public DspReadCallback Read;
-            public DspProcessCallback Process;
-            public DspSetPositionCallback SetPosition;
+            public IntPtr Create;
+            public IntPtr Release;
+            public IntPtr Reset;
+            public IntPtr Read;
+            public IntPtr Process;
+            public IntPtr SetPosition;
 
             public int ParameterCount;
             public ParameterDescription** ParameterDescriptions;
@@ -116,7 +166,7 @@ namespace FmodAudio.Dsp
             
             private Span<byte> GetNameBufferSpan()
             {
-                return new Span<byte>(Unsafe.AsPointer(ref NameBuffer[0]), 31);
+                return MemoryMarshal.CreateSpan(ref NameBuffer[0], 31);
             }
 
             public string Name
@@ -166,5 +216,44 @@ namespace FmodAudio.Dsp
         public delegate Result DspShouldIProcessCallback(DspState* state, bool inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode);
 
         public delegate Result DspSystemMixCallback(DspState* state, int stage);
+
+        private sealed class ParameterDescriptionManager
+        {
+            private IntPtr ptrArray, descArray;
+            private int length;
+
+            public ParameterDescriptionManager(ReadOnlySpan<ParameterDescription> arr)
+            {
+                ptrArray = Memory.AllocateUnsafe(IntPtr.Size * arr.Length);
+                descArray = Memory.AllocateUnsafe(Unsafe.SizeOf<ParameterDescription>() * arr.Length);
+                length = arr.Length;
+
+                InitPtrArr(ptrArray, descArray, arr.Length);
+
+                arr.CopyTo(new Span<ParameterDescription>((void*)descArray, arr.Length));
+            }
+
+            ~ParameterDescriptionManager()
+            {
+                Memory.FreeUnsafe(ptrArray);
+                Memory.FreeUnsafe(descArray);
+            }
+
+            public IntPtr PointerArray => ptrArray;
+
+            public ReadOnlySpan<ParameterDescription> Array => new ReadOnlySpan<ParameterDescription>((void*)descArray, length);
+
+            private static void InitPtrArr(IntPtr arr, IntPtr descPtr, int size)
+            {
+                int ParamDescLen = Unsafe.SizeOf<ParameterDescription>();
+
+                Span<IntPtr> ptrArr = new Span<IntPtr>((void*)arr, size);
+
+                for (int i = 0; i < size; ++i)
+                {
+                    ptrArr[i] = descPtr + (ParamDescLen * i);
+                }
+            }
+        }
     }
 }
