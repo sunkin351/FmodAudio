@@ -101,9 +101,9 @@ namespace FmodAudio.Dsp
 
         public DSPParameterType Type;
         
-        private fixed byte NameBuffer[16];
+        public fixed byte NameBuffer[16];
         
-        private fixed byte LabelBuffer[16];
+        public fixed byte LabelBuffer[16];
 
         /// <summary>
         /// byte* encoding null terminated UTF8 string
@@ -126,13 +126,7 @@ namespace FmodAudio.Dsp
             {
                 var buf = MemoryMarshal.CreateSpan(ref NameBuffer[0], 15);
 
-                if (buf[0] != 0)
-                    buf.Clear();
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    Encoding.UTF8.GetBytes(value.AsSpan(), buf);
-                }
+                StringToBuffer(value, buf);
             }
         }
 
@@ -147,12 +141,23 @@ namespace FmodAudio.Dsp
             {
                 var buf = MemoryMarshal.CreateSpan(ref LabelBuffer[0], 15);
 
-                if (buf[0] != 0)
-                    buf.Clear();
+                StringToBuffer(value, buf);
+            }
+        }
 
-                if (!string.IsNullOrEmpty(value))
+        private static void StringToBuffer(string value, Span<byte> buffer)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                buffer[0] = 0;
+            }
+            else
+            {
+                int count = Encoding.UTF8.GetBytes(value.AsSpan(), buffer);
+                
+                if (count < buffer.Length)
                 {
-                    Encoding.UTF8.GetBytes(value.AsSpan(), buf);
+                    buffer[count] = 0;
                 }
             }
         }

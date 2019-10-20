@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE1006
+#pragma warning disable IDE1006
+#pragma warning disable IDE0052 // Remove unread private members
 
 using System;
 using System.Runtime.CompilerServices;
@@ -114,8 +115,6 @@ namespace FmodAudio
                     Struct.InclusionListCount = 0;
                     return;
                 }
-
-                value = value.ArrayClone(); //Insures the array isn't modified after or during copy by another thread
 
                 int count = value.Length;
                 InclusionListManaged = value;
@@ -236,9 +235,7 @@ namespace FmodAudio
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
 
-#pragma warning disable IDE0052 // Remove unread private members
         private FileOpenCallbackImpl fileOpenImpl;
-#pragma warning restore IDE0052 // Remove unread private members
         private FileOpenCallback fileOpen;
 
         /// <summary>

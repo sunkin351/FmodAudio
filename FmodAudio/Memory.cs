@@ -21,7 +21,7 @@ namespace FmodAudio
             Marshal.FreeHGlobal(ptr);
         }
 
-        public sealed class SaferPointer
+        public sealed class SaferPointer : IDisposable
         {
             private readonly IntPtr Ptr;
             public int AllocationSize { get; }
@@ -37,8 +37,7 @@ namespace FmodAudio
 
             ~SaferPointer()
             {
-                FreeUnsafe(Ptr);
-                GC.RemoveMemoryPressure(AllocationSize);
+                Deallocate();
             }
             
             public unsafe void* ToPointer()
@@ -93,6 +92,18 @@ namespace FmodAudio
                 }
 
                 return new Span<T>((T*)ToPointer() + start, length);
+            }
+
+            public void Dispose()
+            {
+                Deallocate();
+                GC.SuppressFinalize(this);
+            }
+
+            private void Deallocate()
+            {
+                FreeUnsafe(Ptr);
+                GC.RemoveMemoryPressure(AllocationSize);
             }
         }
     }

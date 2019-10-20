@@ -257,7 +257,7 @@ namespace FmodAudio.Dsp
             return data;
         }
 
-        public unsafe ref readonly ParameterDescription GetParameterInfo(int index)
+        public unsafe ref ParameterDescription GetParameterInfo(int index)
         {
             library.DSP_GetParameterInfo(Handle, index, out IntPtr ptr).CheckResult();
 

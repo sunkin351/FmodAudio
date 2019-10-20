@@ -90,6 +90,11 @@ namespace FmodAudio.Dsp
 
         public int ParameterCount => Struct.ParameterCount;
 
+        public void SetParameterDescriptions(ParameterDescription[] paramDescriptions)
+        {
+            SetParameterDescriptions(paramDescriptions.AsSpan());
+        }
+
         public void SetParameterDescriptions(ReadOnlySpan<ParameterDescription> paramDescriptions)
         {
             if (paramDescriptions.IsEmpty)

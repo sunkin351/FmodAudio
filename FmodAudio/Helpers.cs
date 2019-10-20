@@ -225,11 +225,14 @@ namespace FmodAudio
 
             long allocSize = (localptr == null) ? 0 : localptr.AllocationSize;
 
-            int tmp = count + 1;
-
-            if (allocSize < tmp)
+            if (allocSize < count + 1)
             {
-                pointer = localptr = Memory.Allocate(tmp);
+                if (allocSize > 0)
+                {
+                    localptr.Dispose();
+                }
+
+                pointer = localptr = Memory.Allocate(count + 1);
                 Reallocated = true;
             }
             

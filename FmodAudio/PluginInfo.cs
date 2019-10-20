@@ -1,6 +1,6 @@
 ﻿namespace FmodAudio
 {
-    public class PluginInfo
+    public readonly struct PluginInfo
     {
         public string Name { get; }
         public PluginType Type { get; }
