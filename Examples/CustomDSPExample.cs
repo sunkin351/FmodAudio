@@ -1,9 +1,9 @@
-﻿using FmodAudio;
-using FmodAudio.Dsp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using FmodAudio;
+using FmodAudio.Dsp;
 
 namespace Examples
 {
@@ -328,7 +328,7 @@ namespace Examples
 
             if (vol != vol2) //Optimization
             {
-                dsp.SetParameterFloat(1, vol);
+                dsp.SetParameterFloat(1, vol2);
             }
         }
     }
