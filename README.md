@@ -9,3 +9,5 @@ In its current state, it is usable. The Dsp namespace however, is incomplete, an
 This wrapper is now downloadable as a nuget package. https://www.nuget.org/packages/FmodAudio
 
 In order to use this wrapper, you will need to download the fmod native binaries from https://www.fmod.com/download
+
+Accepting Pull Requests to the `dev` branch of this repository.
