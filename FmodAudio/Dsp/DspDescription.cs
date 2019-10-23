@@ -1,10 +1,13 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Linq;
 
 namespace FmodAudio.Dsp
 {
+    using Dsp.Interop;
     [StructLayout(LayoutKind.Sequential)]
     public unsafe sealed class DspDescription
     {
@@ -80,35 +83,35 @@ namespace FmodAudio.Dsp
             set => Helpers.UpdateCallback(value, out SetPosition, out Struct.SetPosition);
         }
 
-        public ReadOnlySpan<ParameterDescription> ParameterDescriptions
-        {
-            get
-            {
-                return descManager is null ? default : descManager.Array;
-            }
-        }
+        private ParameterDescription[] descriptions;
 
-        public int ParameterCount => Struct.ParameterCount;
+        public int ParameterCount => descriptions.Length;
 
-        public void SetParameterDescriptions(ParameterDescription[] paramDescriptions)
-        {
-            SetParameterDescriptions(paramDescriptions.AsSpan());
-        }
+        public IReadOnlyList<ParameterDescription> ParameterDescriptions => descriptions;
 
-        public void SetParameterDescriptions(ReadOnlySpan<ParameterDescription> paramDescriptions)
+        public DspDescription SetParameterDescriptions(ParameterDescription[] descriptions)
         {
-            if (paramDescriptions.IsEmpty)
+            if (descriptions is null || descriptions.Length == 0)
             {
                 descManager = null;
+                descriptions = null;
                 Struct.ParameterCount = 0;
                 Struct.ParameterDescriptions = null;
             }
             else
             {
-                descManager = new ParameterDescriptionManager(paramDescriptions);
-                Struct.ParameterCount = paramDescriptions.Length;
-                Struct.ParameterDescriptions = (ParameterDescription**)descManager.PointerArray;
+                if (descriptions.Any(param => param == null))
+                {
+                    throw new ArgumentException("Elements in array cannot be null.");
+                }
+
+                ParameterDescription[] clone = this.descriptions = descriptions.ArrayClone();
+                descManager = new ParameterDescriptionManager(clone);
+                Struct.ParameterCount = clone.Length;
+                Struct.ParameterDescriptions = (ParameterDescriptionStruct**)descManager.PointerArray;
             }
+
+            return this;
         }
 
         public DspSetParamFloatCallback SetParamFloatCallback
@@ -215,7 +218,7 @@ namespace FmodAudio.Dsp
             public IntPtr SetPosition;
 
             public int ParameterCount;
-            public ParameterDescription** ParameterDescriptions;
+            public ParameterDescriptionStruct** ParameterDescriptions;
 
             public IntPtr SetParamFloat;
             public IntPtr SetParamInt;
@@ -297,15 +300,20 @@ namespace FmodAudio.Dsp
             private readonly IntPtr ptrArray, descArray;
             private readonly int length;
 
-            public ParameterDescriptionManager(ReadOnlySpan<ParameterDescription> arr)
+            public ParameterDescriptionManager(ParameterDescription[] arr)
             {
                 ptrArray = Memory.AllocateUnsafe(IntPtr.Size * arr.Length);
-                descArray = Memory.AllocateUnsafe(Unsafe.SizeOf<ParameterDescription>() * arr.Length);
+                descArray = Memory.AllocateUnsafe(Unsafe.SizeOf<ParameterDescriptionStruct>() * arr.Length);
                 length = arr.Length;
 
                 InitPtrArr(ptrArray, descArray, arr.Length);
 
-                arr.CopyTo(new Span<ParameterDescription>((void*)descArray, arr.Length));
+                var span = new Span<ParameterDescriptionStruct>(descArray.ToPointer(), arr.Length);
+
+                for (int i = 0; i < arr.Length; ++i)
+                {
+                    span[i] = arr[i].internalDescription;
+                }
             }
 
             ~ParameterDescriptionManager()
@@ -316,11 +324,9 @@ namespace FmodAudio.Dsp
 
             public IntPtr PointerArray => ptrArray;
 
-            public ReadOnlySpan<ParameterDescription> Array => new ReadOnlySpan<ParameterDescription>((void*)descArray, length);
-
             private static void InitPtrArr(IntPtr arr, IntPtr descPtr, int size)
             {
-                int ParamDescLen = Unsafe.SizeOf<ParameterDescription>();
+                int ParamDescLen = Unsafe.SizeOf<ParameterDescriptionStruct>();
 
                 Span<IntPtr> ptrArr = new Span<IntPtr>((void*)arr, size);
 
