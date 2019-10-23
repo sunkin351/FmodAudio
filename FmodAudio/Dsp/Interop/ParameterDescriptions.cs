@@ -1,7 +1,7 @@
-﻿using System;
+﻿#pragma warning disable CA1815
+
+using System;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FmodAudio.Dsp.Interop
 {
