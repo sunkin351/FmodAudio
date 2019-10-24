@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace FmodAudio.Dsp
 {
-    using Dsp.Interop;
-    using global::FmodAudio.Interop;
+    using FmodAudio.Interop;
     public sealed class DSP : HandleBase
     {
         private readonly INativeLibrary library;
@@ -292,8 +289,14 @@ namespace FmodAudio.Dsp
 
         public unsafe void GetInfo(Span<char> nameBuffer, out FmodVersion version, out int channels, out int configWidth, out int configHeight)
         {
+            if (nameBuffer.IsEmpty)
+            {
+                library.DSP_GetInfo(Handle, null, out version, out channels, out configWidth, out configHeight).CheckResult();
+                return;
+            }
+
             byte* namePtr = stackalloc byte[32];
-            library.DSP_GetInfo(Handle, (IntPtr)namePtr, out version, out channels, out configWidth, out configHeight).CheckResult();
+            library.DSP_GetInfo(Handle, namePtr, out version, out channels, out configWidth, out configHeight).CheckResult();
 
             var buf = new Span<byte>(namePtr, 32);
 

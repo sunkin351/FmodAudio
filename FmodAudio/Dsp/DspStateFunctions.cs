@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace FmodAudio.Dsp
 {
-    using global::FmodAudio.Interop;
+    using FmodAudio.Interop;
 
     [StructLayout(LayoutKind.Sequential)]
     public unsafe readonly struct DspStateFunctions

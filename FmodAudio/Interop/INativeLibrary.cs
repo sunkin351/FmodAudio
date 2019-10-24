@@ -854,7 +854,7 @@ namespace FmodAudio.Interop
         Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, bool show);
 
         [NativeSymbol("FMOD_DSP_GetInfo")]
-        Result DSP_GetInfo(IntPtr dsp, IntPtr name, out FmodVersion version, out int channels, out int configwidth, out int configheight);
+        Result DSP_GetInfo(IntPtr dsp, byte* name, out FmodVersion version, out int channels, out int configwidth, out int configheight);
 
         [NativeSymbol("FMOD_DSP_GetType")]
         Result DSP_GetType(IntPtr dsp, out DSPType type);
