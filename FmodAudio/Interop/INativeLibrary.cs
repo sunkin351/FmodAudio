@@ -15,7 +15,7 @@ namespace FmodAudio.Interop
         Result Memory_Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags);
 
         [NativeSymbol("FMOD_Memory_GetStats")]
-        Result Memory_GetStats(out int currentalloced, out int maxalloced, bool blocking);
+        Result Memory_GetStats(out int currentalloced, out int maxalloced, [MarshalAs(UnmanagedType.I4)] bool blocking);
 
         [NativeSymbol("FMOD_Debug_Initialize")]
         Result Debug_Initialize(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename);
@@ -143,10 +143,10 @@ namespace FmodAudio.Interop
         Result System_SetCallback(IntPtr system, SystemCallback callback, SystemCallbackType callbackmask);
 
         [NativeSymbol("FMOD_System_SetSpeakerPosition")]
-        Result System_SetSpeakerPosition(IntPtr system, Speaker speaker, float x, float y, bool active);
+        Result System_SetSpeakerPosition(IntPtr system, Speaker speaker, float x, float y, [MarshalAs(UnmanagedType.I4)] bool active);
 
         [NativeSymbol("FMOD_System_GetSpeakerPosition")]
-        Result System_GetSpeakerPosition(IntPtr system, Speaker speaker, out float x, out float y, out bool active);
+        Result System_GetSpeakerPosition(IntPtr system, Speaker speaker, out float x, out float y, [MarshalAs(UnmanagedType.I4)] out bool active);
 
         [NativeSymbol("FMOD_System_Set3DSettings")]
         Result System_Set3DSettings(IntPtr system, float dopplerscale, float distancefactor, float rolloffscale);
@@ -212,10 +212,10 @@ namespace FmodAudio.Interop
         Result System_CreateReverb3D(IntPtr system, out IntPtr reverb);
 
         [NativeSymbol("FMOD_System_PlaySound")]
-        Result System_PlaySound(IntPtr system, IntPtr sound, IntPtr channelGroup, bool paused, out IntPtr channel);
+        Result System_PlaySound(IntPtr system, IntPtr sound, IntPtr channelGroup, [MarshalAs(UnmanagedType.I4)] bool paused, out IntPtr channel);
 
         [NativeSymbol("FMOD_System_PlayDSP")]
-        Result System_PlayDSP(IntPtr systemHandle, IntPtr dspHandle, IntPtr channelGroupHandle, bool paused, out IntPtr channel);
+        Result System_PlayDSP(IntPtr systemHandle, IntPtr dspHandle, IntPtr channelGroupHandle, [MarshalAs(UnmanagedType.I4)] bool paused, out IntPtr channel);
 
         [NativeSymbol("FMOD_System_GetChannel")]
         Result System_GetChannel(IntPtr system, int channelid, out IntPtr channel);
@@ -227,7 +227,7 @@ namespace FmodAudio.Interop
         Result System_GetMasterSoundGroup(IntPtr system, out IntPtr soundgroup);
 
         [NativeSymbol("FMOD_System_AttachChannelGroupToPort")]
-        Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, bool passThru);
+        Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] bool passThru);
 
         [NativeSymbol("FMOD_System_DetachChannelGroupFromPort")]
         Result System_DetachChannelGroupFromPort(IntPtr system, IntPtr channelgroup);
@@ -254,13 +254,13 @@ namespace FmodAudio.Interop
         Result System_GetRecordPosition(IntPtr system, int id, out uint position);
 
         [NativeSymbol("FMOD_System_RecordStart")]
-        Result System_RecordStart(IntPtr system, int id, IntPtr sound, bool loop);
+        Result System_RecordStart(IntPtr system, int id, IntPtr sound, [MarshalAs(UnmanagedType.I4)] bool loop);
 
         [NativeSymbol("FMOD_System_RecordStop")]
         Result System_RecordStop(IntPtr system, int id);
 
         [NativeSymbol("FMOD_System_IsRecording")]
-        Result System_IsRecording(IntPtr system, int id, out bool recording);
+        Result System_IsRecording(IntPtr system, int id, [MarshalAs(UnmanagedType.I4)] out bool recording);
 
         [NativeSymbol("FMOD_System_CreateGeometry")]
         Result System_CreateGeometry(IntPtr system, int maxpolygons, int maxvertices, out IntPtr geometry);
@@ -357,7 +357,7 @@ namespace FmodAudio.Interop
         Result Sound_GetTag(IntPtr sound, string name, int index, out Tag tag);
 
         [NativeSymbol("FMOD_Sound_GetOpenState")]
-        Result Sound_GetOpenState(IntPtr sound, out OpenState openstate, out uint percentbuffered, out bool starving, out bool diskbusy);
+        Result Sound_GetOpenState(IntPtr sound, out OpenState openstate, out uint percentbuffered, [MarshalAs(UnmanagedType.I4)] out bool starving, [MarshalAs(UnmanagedType.I4)] out bool diskbusy);
 
         [NativeSymbol("FMOD_Sound_ReadData")]
         Result Sound_ReadData(IntPtr sound, void* buffer, uint length, out uint read);
@@ -503,7 +503,7 @@ namespace FmodAudio.Interop
         Result Channel_GetChannelGroup(IntPtr channel, out IntPtr channelgroup);
 
         [NativeSymbol("FMOD_Channel_IsVirtual")]
-        Result Channel_IsVirtual(IntPtr channel, out bool isvirtual);
+        Result Channel_IsVirtual(IntPtr channel, [MarshalAs(UnmanagedType.I4)] out bool isvirtual);
 
         [NativeSymbol("FMOD_Channel_GetCurrentSound")]
         Result Channel_GetCurrentSound(IntPtr channel, out IntPtr sound);
@@ -549,19 +549,19 @@ namespace FmodAudio.Interop
         Result ChannelGroup_Stop(IntPtr channelgroup);
 
         [NativeSymbol("FMOD_ChannelGroup_SetPaused")]
-        Result ChannelGroup_SetPaused(IntPtr channelgroup, bool paused);
+        Result ChannelGroup_SetPaused(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] bool paused);
 
         [NativeSymbol("FMOD_ChannelGroup_GetPaused")]
-        Result ChannelGroup_GetPaused(IntPtr channelgroup, out bool paused);
+        Result ChannelGroup_GetPaused(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] out bool paused);
 
         [NativeSymbol("FMOD_ChannelGroup_GetVolume")]
         Result ChannelGroup_GetVolume(IntPtr channelgroup, out float volume);
 
         [NativeSymbol("FMOD_ChannelGroup_SetVolumeRamp")]
-        Result ChannelGroup_SetVolumeRamp(IntPtr channelgroup, bool ramp);
+        Result ChannelGroup_SetVolumeRamp(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] bool ramp);
 
         [NativeSymbol("FMOD_ChannelGroup_GetVolumeRamp")]
-        Result ChannelGroup_GetVolumeRamp(IntPtr channelgroup, out bool ramp);
+        Result ChannelGroup_GetVolumeRamp(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] out bool ramp);
 
         [NativeSymbol("FMOD_ChannelGroup_GetAudibility")]
         Result ChannelGroup_GetAudibility(IntPtr channelgroup, out float audibility);
@@ -573,10 +573,10 @@ namespace FmodAudio.Interop
         Result ChannelGroup_GetPitch(IntPtr channelgroup, out float pitch);
 
         [NativeSymbol("FMOD_ChannelGroup_SetMute")]
-        Result ChannelGroup_SetMute(IntPtr channelgroup, bool mute);
+        Result ChannelGroup_SetMute(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] bool mute);
 
         [NativeSymbol("FMOD_ChannelGroup_GetMute")]
-        Result ChannelGroup_GetMute(IntPtr channelgroup, out bool mute);
+        Result ChannelGroup_GetMute(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] out bool mute);
 
         [NativeSymbol("FMOD_ChannelGroup_SetReverbProperties")]
         Result ChannelGroup_SetReverbProperties(IntPtr channelgroup, int instance, float wet);
@@ -600,7 +600,7 @@ namespace FmodAudio.Interop
         Result ChannelGroup_SetCallback(IntPtr channelgroup, ChannelCallbackInternal callback);
 
         [NativeSymbol("FMOD_ChannelGroup_IsPlaying")]
-        Result ChannelGroup_IsPlaying(IntPtr channelgroup, out bool isplaying);
+        Result ChannelGroup_IsPlaying(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] out bool isplaying);
 
         [NativeSymbol("FMOD_ChannelGroup_SetPan")]
         Result ChannelGroup_SetPan(IntPtr channelgroup, float pan);
@@ -621,10 +621,10 @@ namespace FmodAudio.Interop
         Result ChannelGroup_GetDSPClock(IntPtr channelgroup, out ulong dspclock, out ulong parentclock);
 
         [NativeSymbol("FMOD_ChannelGroup_SetDelay")]
-        Result ChannelGroup_SetDelay(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end, bool stopchannels);
+        Result ChannelGroup_SetDelay(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end, [MarshalAs(UnmanagedType.I4)] bool stopchannels);
 
         [NativeSymbol("FMOD_ChannelGroup_GetDelay")]
-        Result ChannelGroup_GetDelay(IntPtr channelgroup, out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels);
+        Result ChannelGroup_GetDelay(IntPtr channelgroup, out ulong dspclock_start, out ulong dspclock_end, [MarshalAs(UnmanagedType.I4)] out bool stopchannels);
 
         [NativeSymbol("FMOD_ChannelGroup_AddFadePoint")]
         Result ChannelGroup_AddFadePoint(IntPtr channelgroup, ulong dspclock, float volume);
@@ -693,10 +693,10 @@ namespace FmodAudio.Interop
         Result ChannelGroup_Get3DDopplerLevel(IntPtr channelgroup, out float level);
 
         [NativeSymbol("FMOD_ChannelGroup_Set3DDistanceFilter")]
-        Result ChannelGroup_Set3DDistanceFilter(IntPtr channelgroup, bool custom, float customLevel, float centerFreq);
+        Result ChannelGroup_Set3DDistanceFilter(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] bool custom, float customLevel, float centerFreq);
 
         [NativeSymbol("FMOD_ChannelGroup_Get3DDistanceFilter")]
-        Result ChannelGroup_Get3DDistanceFilter(IntPtr channelgroup, out bool custom, out float customLevel, out float centerFreq);
+        Result ChannelGroup_Get3DDistanceFilter(IntPtr channelgroup, [MarshalAs(UnmanagedType.I4)] out bool custom, out float customLevel, out float centerFreq);
 
         [NativeSymbol("FMOD_ChannelGroup_GetSystemObject")]
         Result ChannelGroup_GetSystemObject(IntPtr channelgroup, out IntPtr system); //Unused
@@ -736,7 +736,7 @@ namespace FmodAudio.Interop
         Result ChannelGroup_Release(IntPtr Handle);
 
         [NativeSymbol("FMOD_ChannelGroup_AddGroup")]
-        Result ChannelGroup_AddGroup(IntPtr channelgroup, IntPtr group, bool propagatedspclock, out IntPtr connection);
+        Result ChannelGroup_AddGroup(IntPtr channelgroup, IntPtr group, [MarshalAs(UnmanagedType.I4)] bool propagatedspclock, out IntPtr connection);
 
         [NativeSymbol("FMOD_ChannelGroup_GetNumGroups")]
         Result ChannelGroup_GetNumGroups(IntPtr channelgroup, out int numgroups);
@@ -773,7 +773,7 @@ namespace FmodAudio.Interop
         Result DSP_DisconnectFrom(IntPtr dsp, IntPtr target, IntPtr connection);
 
         [NativeSymbol("FMOD_DSP_DisconnectAll")]
-        Result DSP_DisconnectAll(IntPtr dsp, bool inputs, bool outputs);
+        Result DSP_DisconnectAll(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] bool inputs, [MarshalAs(UnmanagedType.I4)] bool outputs);
 
         [NativeSymbol("FMOD_DSP_GetNumInputs")]
         Result DSP_GetNumInputs(IntPtr dsp, out int numinputs);
@@ -788,16 +788,16 @@ namespace FmodAudio.Interop
         Result DSP_GetOutput(IntPtr dsp, int index, out IntPtr output, out IntPtr outputconnection);
 
         [NativeSymbol("FMOD_DSP_SetActive")]
-        Result DSP_SetActive(IntPtr dsp, bool active);
+        Result DSP_SetActive(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] bool active);
 
         [NativeSymbol("FMOD_DSP_GetActive")]
-        Result DSP_GetActive(IntPtr dsp, out bool active);
+        Result DSP_GetActive(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] out bool active);
 
         [NativeSymbol("FMOD_DSP_SetBypass")]
-        Result DSP_SetBypass(IntPtr dsp, bool bypass);
+        Result DSP_SetBypass(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] bool bypass);
 
         [NativeSymbol("FMOD_DSP_GetBypass")]
-        Result DSP_GetBypass(IntPtr dsp, out bool bypass);
+        Result DSP_GetBypass(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] out bool bypass);
 
         [NativeSymbol("FMOD_DSP_SetWetDryMix")]
         Result DSP_SetWetDryMix(IntPtr dsp, float prewet, float postwet, float dry);
@@ -824,7 +824,7 @@ namespace FmodAudio.Interop
         Result DSP_SetParameterInt(IntPtr dsp, int index, int value);
 
         [NativeSymbol("FMOD_DSP_SetParameterBool")]
-        Result DSP_SetParameterBool(IntPtr dsp, int index, bool value);
+        Result DSP_SetParameterBool(IntPtr dsp, int index, [MarshalAs(UnmanagedType.I4)] bool value);
 
         [NativeSymbol("FMOD_DSP_SetParameterData")]
         Result DSP_SetParameterData(IntPtr dsp, int index, IntPtr data, uint length);
@@ -836,7 +836,7 @@ namespace FmodAudio.Interop
         Result DSP_GetParameterInt(IntPtr dsp, int index, out int value, byte* valuestr, int valuestrlen);
 
         [NativeSymbol("FMOD_DSP_GetParameterBool")]
-        Result DSP_GetParameterBool(IntPtr dsp, int index, out bool value, byte* valuestr, int valuestrlen);
+        Result DSP_GetParameterBool(IntPtr dsp, int index, [MarshalAs(UnmanagedType.I4)] out bool value, byte* valuestr, int valuestrlen);
 
         [NativeSymbol("FMOD_DSP_GetParameterData")]
         Result DSP_GetParameterData(IntPtr dsp, int index, out IntPtr data, out uint length, IntPtr valuestr, int valuestrlen);
@@ -851,7 +851,7 @@ namespace FmodAudio.Interop
         Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, out int index);
 
         [NativeSymbol("FMOD_DSP_ShowConfigDialog")]
-        Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, bool show);
+        Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, [MarshalAs(UnmanagedType.I4)] bool show);
 
         [NativeSymbol("FMOD_DSP_GetInfo")]
         Result DSP_GetInfo(IntPtr dsp, byte* name, out FmodVersion version, out int channels, out int configwidth, out int configheight);
@@ -860,7 +860,7 @@ namespace FmodAudio.Interop
         Result DSP_GetType(IntPtr dsp, out DSPType type);
 
         [NativeSymbol("FMOD_DSP_GetIdle")]
-        Result DSP_GetIdle(IntPtr dsp, out bool idle);
+        Result DSP_GetIdle(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] out bool idle);
 
         [NativeSymbol("FMOD_DSP_SetUserData")]
         Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
@@ -869,10 +869,10 @@ namespace FmodAudio.Interop
         Result DSP_GetUserData(IntPtr dsp, out IntPtr userdata);
 
         [NativeSymbol("FMOD_DSP_SetMeteringEnabled")]
-        Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
+        Result DSP_SetMeteringEnabled(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] bool inputEnabled, [MarshalAs(UnmanagedType.I4)] bool outputEnabled);
 
         [NativeSymbol("FMOD_DSP_GetMeteringEnabled")]
-        Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);
+        Result DSP_GetMeteringEnabled(IntPtr dsp, [MarshalAs(UnmanagedType.I4)] out bool inputEnabled, [MarshalAs(UnmanagedType.I4)] out bool outputEnabled);
 
         [NativeSymbol("FMOD_DSP_GetMeteringInfo")]
         Result DSP_GetMeteringInfo(IntPtr dsp, out DSPMeteringInfo inputInfo, out DSPMeteringInfo outputInfo);
@@ -916,7 +916,7 @@ namespace FmodAudio.Interop
         Result Geometry_Release(IntPtr geometry);
 
         [NativeSymbol("FMOD_Geometry_AddPolygon")]
-        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, out int polygonindex);
+        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, [MarshalAs(UnmanagedType.I4)] bool doublesided, int numvertices, Vector3* vertices, out int polygonindex);
 
         [NativeSymbol("FMOD_Geometry_GetNumPolygons")]
         Result Geometry_GetNumPolygons(IntPtr geometry, out int numpolygons);
@@ -934,16 +934,16 @@ namespace FmodAudio.Interop
         Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, out Vector3 vertex);
 
         [NativeSymbol("FMOD_Geometry_SetPolygonAttributes")]
-        Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
+        Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, [MarshalAs(UnmanagedType.I4)] bool doublesided);
 
         [NativeSymbol("FMOD_Geometry_GetPolygonAttributes")]
-        Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, out float directocclusion, out float reverbocclusion, out bool doublesided);
+        Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, out float directocclusion, out float reverbocclusion, [MarshalAs(UnmanagedType.I4)] out bool doublesided);
 
         [NativeSymbol("FMOD_Geometry_SetActive")]
-        Result Geometry_SetActive(IntPtr geometry, bool active);
+        Result Geometry_SetActive(IntPtr geometry, [MarshalAs(UnmanagedType.I4)] bool active);
 
         [NativeSymbol("FMOD_Geometry_GetActive")]
-        Result Geometry_GetActive(IntPtr geometry, out bool active);
+        Result Geometry_GetActive(IntPtr geometry, [MarshalAs(UnmanagedType.I4)] out bool active);
 
         [NativeSymbol("FMOD_Geometry_SetRotation")]
         Result Geometry_SetRotation(IntPtr geometry, ref Vector3 forward, ref Vector3 up);
