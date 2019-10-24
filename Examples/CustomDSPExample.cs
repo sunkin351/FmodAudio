@@ -33,12 +33,6 @@ namespace Examples
             return ref Unsafe.AsRef<T>(ptr);
         }
 
-        static float FunAbs(float val) //A fun implementation of Abs for floats that is branchless
-        {
-            Unsafe.As<float, int>(ref val) &= int.MaxValue;
-            return val;
-        }
-
         static unsafe Result MyDSPCallback(DspState* state, IntPtr inBuffer, IntPtr outBuffer, uint length, int inChannels, ref int outChannels)
         {
             Debug.Assert(inChannels == outChannels);
@@ -165,11 +159,8 @@ namespace Examples
 
         static unsafe Plugin CreateDSPPlugin(FmodSystem system)
         {
-            //Save some heap space by allocating everything on the stack
             ParameterDescription WaveDataDesc = new DataParameterDescription("wave data", null, ParameterDataType.User);
             ParameterDescription VolumeDesc = new FloatParameterDescription("volume", "%", 0, 1, 1);
-
-            ParameterDescription[] descriptions = new ParameterDescription[] { WaveDataDesc, VolumeDesc };
 
             var dspDesc = new DspDescription()
             {
@@ -186,7 +177,7 @@ namespace Examples
                 GetParamFloatCallback = MyDSPGetParameterFloat
             };
 
-            dspDesc.SetParameterDescriptions(descriptions);
+            dspDesc.SetParameterDescriptions(WaveDataDesc, VolumeDesc);
 
             return system.RegisterDSP(dspDesc);
         }

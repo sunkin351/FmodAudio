@@ -1,9 +1,11 @@
+#pragma warning disable CA1815
+
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FmodAudio.Dsp
 {
@@ -89,7 +91,7 @@ namespace FmodAudio.Dsp
 
         public IReadOnlyList<ParameterDescription> ParameterDescriptions => descriptions;
 
-        public DspDescription SetParameterDescriptions(ParameterDescription[] descriptions)
+        public DspDescription SetParameterDescriptions(params ParameterDescription[] descriptions)
         {
             if (descriptions is null || descriptions.Length == 0)
             {
@@ -105,9 +107,9 @@ namespace FmodAudio.Dsp
                     throw new ArgumentException("Elements in array cannot be null.");
                 }
 
-                ParameterDescription[] clone = this.descriptions = descriptions.ArrayClone();
-                descManager = new ParameterDescriptionManager(clone);
-                Struct.ParameterCount = clone.Length;
+                this.descriptions = descriptions;
+                descManager = new ParameterDescriptionManager(descriptions);
+                Struct.ParameterCount = descManager.Length;
                 Struct.ParameterDescriptions = (ParameterDescriptionStruct**)descManager.PointerArray;
             }
 
@@ -241,22 +243,16 @@ namespace FmodAudio.Dsp
             /// <summary>
             /// [w] Name of the unit to be displayed in the network.
             /// </summary>
-            
-            private Span<byte> GetNameBufferSpan()
-            {
-                return MemoryMarshal.CreateSpan(ref NameBuffer[0], 31);
-            }
-
             public string Name
             {
                 get
                 {
-                    return Helpers.MemoryToString(GetNameBufferSpan());
+                    return Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref NameBuffer[0], 31));
                 }
 
                 set
                 {
-                    var span = GetNameBufferSpan();
+                    var span = MemoryMarshal.CreateSpan(ref NameBuffer[0], 31);
 
                     if (span[0] != 0)
                     {
@@ -323,6 +319,7 @@ namespace FmodAudio.Dsp
             }
 
             public IntPtr PointerArray => ptrArray;
+            public int Length => length;
 
             private static void InitPtrArr(IntPtr arr, IntPtr descPtr, int size)
             {
