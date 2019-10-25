@@ -33,15 +33,56 @@ namespace FmodAudio.Dsp
         public int SidechainEnable;
     }
 
-    /// <summary>
-    /// Warning: Do not use if you don't know what you are doing. Compare with the native structure
-    /// </summary>
     public unsafe struct ParameterFFT
     {
+        static ParameterFFT()
+        {
+            if (sizeof(SpectrumArray) != IntPtr.Size * 32)
+            {
+                throw new Exception("The size of ParameterFFT.SpectrumArray is not the size of 32 pointers.");
+            }
+        }
+
         public int Length;
         public int ChannelCount;
-        private IntPtr Spectrum_FirstElement;
+        private SpectrumArray _spectrum;
 
-        public Span<IntPtr> Spectrum => MemoryMarshal.CreateSpan(ref Spectrum_FirstElement, 32);
+        public Span<IntPtr> Spectrum => MemoryMarshal.CreateSpan(ref _spectrum.FirstElement, 32);
+
+        private struct SpectrumArray
+        {
+            public IntPtr FirstElement;
+            public IntPtr Element01;
+            public IntPtr Element02;
+            public IntPtr Element03;
+            public IntPtr Element04;
+            public IntPtr Element05;
+            public IntPtr Element06;
+            public IntPtr Element07;
+            public IntPtr Element08;
+            public IntPtr Element09;
+            public IntPtr Element10;
+            public IntPtr Element11;
+            public IntPtr Element12;
+            public IntPtr Element13;
+            public IntPtr Element14;
+            public IntPtr Element15;
+            public IntPtr Element16;
+            public IntPtr Element17;
+            public IntPtr Element18;
+            public IntPtr Element19;
+            public IntPtr Element20;
+            public IntPtr Element21;
+            public IntPtr Element22;
+            public IntPtr Element23;
+            public IntPtr Element24;
+            public IntPtr Element25;
+            public IntPtr Element26;
+            public IntPtr Element27;
+            public IntPtr Element28;
+            public IntPtr Element29;
+            public IntPtr Element30;
+            public IntPtr Element31;
+        }
     }
 }
