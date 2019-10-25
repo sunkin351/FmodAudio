@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE1006
+#pragma warning disable IDE1006
+#pragma warning disable IDE0052 // Remove unread private members
 
 using System;
 using System.Runtime.CompilerServices;
@@ -115,8 +116,6 @@ namespace FmodAudio
                     return;
                 }
 
-                value = value.ArrayClone(); //Insures the array isn't modified after or during copy by another thread
-
                 int count = value.Length;
                 InclusionListManaged = value;
                 InclusionListMemory = Memory.Allocate(count * sizeof(int));
@@ -138,7 +137,7 @@ namespace FmodAudio
             get => pcmReadCallback;
             set
             {
-                UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
+                Helpers.UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
             }
         }
 
@@ -152,7 +151,7 @@ namespace FmodAudio
             get => pcmSetPosCallback;
             set
             {
-                UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
+                Helpers.UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
             }
         }
 
@@ -166,7 +165,7 @@ namespace FmodAudio
             get => nonBlockCallback;
             set
             {
-                UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
+                Helpers.UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
             }
         }
         /// <summary>
@@ -236,9 +235,7 @@ namespace FmodAudio
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
 
-#pragma warning disable IDE0052 // Remove unread private members
         private FileOpenCallbackImpl fileOpenImpl;
-#pragma warning restore IDE0052 // Remove unread private members
         private FileOpenCallback fileOpen;
 
         /// <summary>
@@ -249,7 +246,7 @@ namespace FmodAudio
             get => fileOpen;
             set
             {
-                UpdateCallback(value?.Wrap(), out fileOpenImpl, out Struct.FileUserOpen);
+                Helpers.UpdateCallback(value?.Wrap(), out fileOpenImpl, out Struct.FileUserOpen);
                 fileOpen = value;
             }
         }
@@ -264,7 +261,7 @@ namespace FmodAudio
             get => fileUserClose;
             set
             {
-                UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
+                Helpers.UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
             }
         }
 
@@ -278,7 +275,7 @@ namespace FmodAudio
             get => fileUserRead;
             set
             {
-                UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
+                Helpers.UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
             }
         }
 
@@ -292,7 +289,7 @@ namespace FmodAudio
             get => fileUserSeek;
             set
             {
-                UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
+                Helpers.UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
             }
         }
 
@@ -306,7 +303,7 @@ namespace FmodAudio
             get => fileUserAsyncRead;
             set
             {
-                UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
+                Helpers.UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
             }
         }
 
@@ -320,7 +317,7 @@ namespace FmodAudio
             get => fileUserAsyncCancel;
             set
             {
-                UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
+                Helpers.UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
             }
         }
         /// <summary>
@@ -439,14 +436,6 @@ namespace FmodAudio
             {
                 Struct.EncryptionKey = encryptionKeyMemory;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void UpdateCallback<TDel>(TDel del, out TDel managedSite, out IntPtr unmanagedSite)
-            where TDel: Delegate
-        {
-            unmanagedSite = (del != null) ? Marshal.GetFunctionPointerForDelegate(del) : (default);
-            managedSite = del;
         }
 
         [StructLayout(LayoutKind.Sequential)]

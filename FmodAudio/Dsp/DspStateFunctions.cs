@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace FmodAudio.Dsp
 {
-    using global::FmodAudio.Interop;
+    using FmodAudio.Interop;
 
     [StructLayout(LayoutKind.Sequential)]
     public unsafe readonly struct DspStateFunctions
@@ -179,12 +179,12 @@ namespace FmodAudio.Dsp
         [StructLayout(LayoutKind.Sequential)]
         public unsafe readonly struct DspDFTFFTRealCallback
         {
-            private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, float* signal, ref Complex dft, float* window, int signalHop);
+            private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, float* signal, ref Fmod_Complex dft, float* window, int signalHop);
             private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
-            public Result Invoke(DspState* state, int size, float* signal, ref Complex dft, float* window, int signalHop)
+            public Result Invoke(DspState* state, int size, float* signal, ref Fmod_Complex dft, float* window, int signalHop)
             {
                 return InvokeImpl(FuncPtr, state, size, signal, ref dft, window, signalHop);
             }
@@ -195,12 +195,12 @@ namespace FmodAudio.Dsp
         [StructLayout(LayoutKind.Sequential)]
         public unsafe readonly struct DspDFTIFFTRealCallback
         {
-            private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, ref Complex dft, float* signal, float* window, int signalHop);
+            private delegate Result Delegate(IntPtr funcPtr, DspState* state, int size, ref Fmod_Complex dft, float* signal, float* window, int signalHop);
             private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
 
             private readonly IntPtr FuncPtr;
 
-            public Result Invoke(DspState* state, int size, ref Complex dft, float* signal, float* window, int signalHop)
+            public Result Invoke(DspState* state, int size, ref Fmod_Complex dft, float* signal, float* window, int signalHop)
             {
                 return InvokeImpl(FuncPtr, state, size, ref dft, signal, window, signalHop);
             }

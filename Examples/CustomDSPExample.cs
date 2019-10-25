@@ -1,9 +1,9 @@
-﻿using FmodAudio;
-using FmodAudio.Dsp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using FmodAudio;
+using FmodAudio.Dsp;
 
 namespace Examples
 {
@@ -31,12 +31,6 @@ namespace Examples
             Debug.Assert(ptr != null);
 
             return ref Unsafe.AsRef<T>(ptr);
-        }
-
-        static float FunAbs(float val) //A fun implementation of Abs for floats that is branchless
-        {
-            Unsafe.As<float, int>(ref val) &= int.MaxValue;
-            return val;
         }
 
         static unsafe Result MyDSPCallback(DspState* state, IntPtr inBuffer, IntPtr outBuffer, uint length, int inChannels, ref int outChannels)
@@ -165,31 +159,27 @@ namespace Examples
 
         static unsafe Plugin CreateDSPPlugin(FmodSystem system)
         {
-            //Save some heap space by allocating everything on the stack
-            ParameterDescription WaveDataDesc = ParameterDescription.CreateDataDescription("wave data", null, ParameterDataType.User);
-            ParameterDescription VolumeDesc = ParameterDescription.CreateFloatDescription("volume", "%", 0, 1, 1);
-            
-            ParameterDescription** list = stackalloc ParameterDescription*[2] { &WaveDataDesc, &VolumeDesc };
+            ParameterDescription WaveDataDesc = new DataParameterDescription("wave data", null, ParameterDataType.User);
+            ParameterDescription VolumeDesc = new FloatParameterDescription("volume", "%", 0, 1, 1);
 
-            var dspDesc = new DspDescription.Structure()
+            var dspDesc = new DspDescription()
             {
                 PluginSDKVersion = FmodSystem.BindingVersion,
 
                 InputBufferCount = 1,
                 OutputBufferCount = 1,
 
-                Read = MyDSPCallback,
-                Create = MyDSPCreateCallback,
-                Release = MyDSPReleaseCallback,
-                GetParamData = MyDSPGetParameterDataCallback,
-                SetParamFloat = MyDSPSetParameterFloat,
-                GetParamFloat = MyDSPGetParameterFloat,
-
-                ParameterCount = 2,
-                ParameterDescriptions = list
+                ReadCallback = MyDSPCallback,
+                CreateCallback = MyDSPCreateCallback,
+                ReleaseCallback = MyDSPReleaseCallback,
+                GetParamDataCallback = MyDSPGetParameterDataCallback,
+                SetParamFloatCallback = MyDSPSetParameterFloat,
+                GetParamFloatCallback = MyDSPGetParameterFloat
             };
 
-            return system.RegisterDSP(ref dspDesc);
+            dspDesc.SetParameterDescriptions(WaveDataDesc, VolumeDesc);
+
+            return system.RegisterDSP(dspDesc);
         }
 
         readonly FmodSystem system;
@@ -262,7 +252,7 @@ namespace Examples
 
                 system.Update();
 
-                ref readonly ParameterDescription desc = ref dsp.GetParameterInfo(1);
+                ParameterDescription desc = dsp.GetParameterInfo(1);
 
                 ref MyDSPData data = ref AsRef<MyDSPData>(dsp.GetParameterData(0, out _));
 
@@ -329,7 +319,7 @@ namespace Examples
 
             if (vol != vol2) //Optimization
             {
-                dsp.SetParameterFloat(1, vol);
+                dsp.SetParameterFloat(1, vol2);
             }
         }
     }

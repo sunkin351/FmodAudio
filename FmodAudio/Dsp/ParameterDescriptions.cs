@@ -1,218 +1,156 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FmodAudio.Dsp
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ParameterDescFloat
+    using Dsp.Interop;
+    public abstract class ParameterDescription
     {
-        public float Min;
-        public float Max;
-        public float DefaultValue;
-        public ParameterFloatMapping Mapping;
+        internal ParameterDescriptionStruct internalDescription;
 
-        public ParameterDescFloat(float min, float max, float defaultValue)
+        internal static unsafe ParameterDescription CreateFromPointer(IntPtr ptr)
         {
-            Min = min;
-            Max = max;
-            DefaultValue = defaultValue;
-            Mapping = default;
-        }
+            ParameterDescriptionStruct* structPtr = (ParameterDescriptionStruct*)ptr;
 
-        public ParameterDescFloat(float min, float max, float defaultValue, ref ParameterFloatMapping mapping)
-        {
-            Min = min;
-            Max = max;
-            DefaultValue = defaultValue;
-            Mapping = mapping;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ParameterDescInt
-    {
-        public int Min, Max, DefaultValue;
-
-        /// <summary>
-        /// Whether the last value represents infinity
-        /// </summary>
-        public bool GoesToInf;
-
-        /// <summary>
-        /// [Optional] Names for each value. There should be as many strings as there are possible values (max - min + 1).
-        /// </summary>
-        public IntPtr ValueNames;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ParameterDescBool
-    {
-        public bool DefaultValue;
-
-        /// <summary>
-        /// [Optional] Names for true and false respectively. There should be 2 strings.
-        /// </summary>
-        public IntPtr ValueNames;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ParameterDescData
-    {
-        public int DataType;
-
-        public ParameterDescData(int dataType)
-        {
-            DataType = dataType;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct ParameterDescription
-    {
-        public static ParameterDescription CreateDataDescription(string name, string label, ParameterDataType dataType)
-        {
-            return CreateDataDescription(name, label, (int)dataType);
-        }
-
-        public static ParameterDescription CreateDataDescription(string name, string label, int dataType)
-        {
-            ParameterDescription desc = default;
-            desc.Type = ParameterType.Data;
-            desc.Name = name;
-            desc.Label = label;
-            desc.DescData = new ParameterDescData(dataType);
-            return desc;
-        }
-
-        public static ParameterDescription CreateFloatDescription(string name, string label, float min, float max, float defaultValue)
-        {
-            ParameterDescription desc = default;
-            desc.Type = ParameterType.Float;
-            desc.Name = name;
-            desc.Label = label;
-            desc.DescData = new ParameterDescFloat(min, max, defaultValue);
-            return desc;
-        }
-
-        public ParameterType Type;
-        
-        private fixed byte NameBuffer[16];
-        
-        private fixed byte LabelBuffer[16];
-
-        /// <summary>
-        /// byte* encoding null terminated UTF8 string
-        /// </summary>
-        public IntPtr Description;
-
-        public DescriptionUnion DescData;
-        
-
-        /// <summary>
-        /// Max string length is 16 UTF8 bytes
-        /// </summary>
-        public string Name
-        {
-            get
+            return structPtr->Type switch
             {
-                return Helpers.MemoryToString(MemoryMarshal.CreateReadOnlySpan(ref NameBuffer[0], 15));
+                DSPParameterType.Float => new FloatParameterDescription(structPtr),
+                DSPParameterType.Int => new IntParameterDescription(structPtr),
+                DSPParameterType.Bool => new BoolParameterDescription(structPtr),
+                DSPParameterType.Data => new DataParameterDescription(structPtr),
+                _ => throw new InvalidOperationException("Unknown Parameter type encountered")
+            };
+        }
+
+        protected unsafe ParameterDescription(DSPParameterType type, string name, string label)
+        {
+            internalDescription.Type = type;
+
+            StringToBuffer(name, MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
+
+            StringToBuffer(label, MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
+
+            Name = name;
+            Label = label;
+        }
+
+        internal unsafe ParameterDescription(ParameterDescriptionStruct* ptr)
+        {
+            internalDescription = *ptr;
+
+            Name = Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
+            Label = Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
+        }
+
+        public string Name { get; }
+        public string Label { get; }
+
+        private static void StringToBuffer(string value, Span<byte> buffer)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                buffer[0] = 0;
             }
-
-            set
+            else
             {
-                var buf = MemoryMarshal.CreateSpan(ref NameBuffer[0], 15);
+                int count = Encoding.UTF8.GetBytes(value.AsSpan(), buffer);
 
-                if (buf[0] != 0)
-                    buf.Clear();
-
-                if (!string.IsNullOrEmpty(value))
+                if (count < buffer.Length)
                 {
-                    Encoding.UTF8.GetBytes(value.AsSpan(), buf);
+                    buffer[count] = 0;
                 }
             }
         }
+    }
 
-        public string Label
+    public sealed class IntParameterDescription : ParameterDescription
+    {
+        public IntParameterDescription(string name, string label, int min, int max, int defaultValue, bool lastValueIsInfinity = false) : base(DSPParameterType.Int, name, label)
         {
-            get
-            {
-                return Helpers.MemoryToString(MemoryMarshal.CreateReadOnlySpan(ref LabelBuffer[0], 15));
-            }
-
-            set
-            {
-                var buf = MemoryMarshal.CreateSpan(ref LabelBuffer[0], 15);
-
-                if (buf[0] != 0)
-                    buf.Clear();
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    Encoding.UTF8.GetBytes(value.AsSpan(), buf);
-                }
-            }
+            Description.Min = min;
+            Description.Max = max;
+            Description.DefaultValue = defaultValue;
+            Description.Infinity = lastValueIsInfinity ? 1 : 0;
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        public struct DescriptionUnion
+        internal unsafe IntParameterDescription(ParameterDescriptionStruct* ptr) : base(ptr)
         {
-            [FieldOffset(0)]
-            public ParameterDescFloat FloatDescription;
-
-            [FieldOffset(0)]
-            public ParameterDescInt IntDescription;
-
-            [FieldOffset(0)]
-            public ParameterDescBool BoolDescription;
-
-            [FieldOffset(0)]
-            public ParameterDescData DataDescription;
-
-            private DescriptionUnion(ParameterDescFloat desc)
-            {
-                this = default;
-                FloatDescription = desc;
-            }
-
-            private DescriptionUnion(ParameterDescInt desc)
-            {
-                this = default;
-                IntDescription = desc;
-            }
-
-            private DescriptionUnion(ParameterDescBool desc)
-            {
-                this = default;
-                BoolDescription = desc;
-            }
-
-            private DescriptionUnion(ParameterDescData desc)
-            {
-                this = default;
-                DataDescription = desc;
-            }
-
-            public static implicit operator DescriptionUnion(ParameterDescFloat desc)
-            {
-                return new DescriptionUnion(desc);
-            }
-
-            public static implicit operator DescriptionUnion(ParameterDescInt desc)
-            {
-                return new DescriptionUnion(desc);
-            }
-
-            public static implicit operator DescriptionUnion(ParameterDescBool desc)
-            {
-                return new DescriptionUnion(desc);
-            }
-
-            public static implicit operator DescriptionUnion(ParameterDescData desc)
-            {
-                return new DescriptionUnion(desc);
-            }
         }
+
+        private ref IntDescription Description => ref internalDescription.DescUnion.IntDescription;
+
+        public int Min => Description.Min;
+
+        public int Max => Description.Max;
+
+        public int DefaultValue => Description.DefaultValue;
+
+        public bool LastValueIsInfinity => Description.Infinity != 0;
+    }
+
+    public sealed class BoolParameterDescription : ParameterDescription
+    {
+        bool _managedDefault;
+
+        public BoolParameterDescription(string name, string label, bool defaultValue)
+            : base(DSPParameterType.Bool, name, label)
+        {
+            _managedDefault = defaultValue;
+            Description.DefaultValue = defaultValue ? 1 : 0;
+        }
+
+        internal unsafe BoolParameterDescription(ParameterDescriptionStruct* ptr) : base(ptr)
+        {
+            _managedDefault = Description.DefaultValue != 0;
+        }
+
+        private ref BoolDescription Description => ref internalDescription.DescUnion.BoolDescription;
+
+        public bool DefaultValue => _managedDefault;
+    }
+
+    public sealed class DataParameterDescription : ParameterDescription
+    {
+        public DataParameterDescription(string name, string label, int dataType)
+            : base(DSPParameterType.Data, name, label)
+        {
+            Description.DataType = dataType;
+        }
+
+        public DataParameterDescription(string name, string label, ParameterDataType dataType)
+            : this(name, label, (int)dataType)
+        {
+        }
+
+        internal unsafe DataParameterDescription(ParameterDescriptionStruct* ptr) : base(ptr)
+        {
+        }
+
+        private ref DataDescription Description => ref internalDescription.DescUnion.DataDescription;
+
+        public ParameterDataType DataType => (ParameterDataType)Description.DataType;
+    }
+
+    public sealed class FloatParameterDescription : ParameterDescription
+    {
+        public FloatParameterDescription(string name, string label, float min, float max, float defaultValue) : base(DSPParameterType.Float, name, label)
+        {
+            Description.Min = min;
+            Description.Max = max;
+            Description.DefaultValue = defaultValue;
+        }
+
+        internal unsafe FloatParameterDescription(ParameterDescriptionStruct* ptr) : base(ptr)
+        {
+        }
+
+        private ref FloatDescription Description => ref internalDescription.DescUnion.FloatDescription;
+
+        public float Min => Description.Min;
+
+        public float Max => Description.Max;
+
+        public float DefaultValue => Description.DefaultValue;
     }
 }

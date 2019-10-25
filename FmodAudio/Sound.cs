@@ -157,7 +157,7 @@ namespace FmodAudio
             return tmp;
         }
 
-        public string Name
+        public unsafe string Name
         {
             get
             {
@@ -165,7 +165,7 @@ namespace FmodAudio
                 {
                     const int buflen = FmodSystem.MaxInteropNameStringLength;
 
-                    var buf = Memory.Allocate(buflen);
+                    byte* buf = stackalloc byte[buflen];
 
                     library.Sound_GetName(Handle, buf, buflen).CheckResult();
 
@@ -287,7 +287,7 @@ namespace FmodAudio
             return new SyncPoint(this, handle);
         }
         
-        public void GetSyncPointInfo(SyncPoint point, TimeUnit unit, out string name, out uint offset)
+        public unsafe void GetSyncPointInfo(SyncPoint point, TimeUnit unit, out string name, out uint offset)
         {
             const int buflen = FmodSystem.MaxInteropNameStringLength;
             
@@ -300,23 +300,25 @@ namespace FmodAudio
                 throw new ArgumentException("SyncPoint is not of this Sound object.");
             }
 
-            var buffer = Memory.Allocate(buflen);
+            byte* buffer = stackalloc byte[buflen];
 
             library.Sound_GetSyncPointInfo(Handle, point.Handle, buffer, buflen, out offset, unit).CheckResult();
 
             name = Helpers.PtrToString(buffer, buflen);
         }
 
-        public SyncPoint CreateSyncPoint(string name, TimeUnit unit, uint offset)
+        public unsafe SyncPoint CreateSyncPoint(string name, TimeUnit unit, uint offset)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            library.Sound_AddSyncPoint(Handle, offset, unit, name, out IntPtr handle).CheckResult();
-
-            return new SyncPoint(this, handle);
+            fixed (byte* namePtr = Helpers.ToUTF8NullTerminated(name))
+            {
+                library.Sound_AddSyncPoint(Handle, offset, unit, namePtr, out IntPtr handle).CheckResult();
+                return new SyncPoint(this, handle);
+            }
         }
 
         public void DeleteSyncPoint(SyncPoint point)

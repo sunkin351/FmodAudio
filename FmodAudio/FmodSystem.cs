@@ -221,15 +221,10 @@ namespace FmodAudio
 
         public Plugin RegisterDSP(DspDescription description)
         {
-            return RegisterDSP(ref description.Struct);
-        }
-
-        public Plugin RegisterDSP(ref DspDescription.Structure description)
-        {
-            library.System_RegisterDSP(Handle, ref description, out uint handle).CheckResult();
+            library.System_RegisterDSP(Handle, ref description.Struct, out uint handle).CheckResult();
             var plug = new Plugin(handle);
 
-            if (!UserRegisteredDSPs.TryAdd(plug, new Dsp.DspDescription() { Struct = description }))
+            if (!UserRegisteredDSPs.TryAdd(plug, description))
             {
                 throw new InvalidOperationException();
             }

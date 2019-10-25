@@ -206,7 +206,7 @@
         RotationNotBiased = 1
     }
 
-    public enum ParameterType
+    public enum DSPParameterType
     {
         Float = 0,
         Int,

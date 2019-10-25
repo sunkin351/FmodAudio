@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Numerics;
 
 namespace FmodAudio
 {
@@ -132,19 +132,9 @@ namespace FmodAudio
             return ptr;
         }
 
-        public static unsafe string PtrToString(IntPtr buffer, int buflen)
-        {
-            return PtrToString((byte*)buffer, buflen);
-        }
-
         public static unsafe string PtrToString(byte* buffer, int buflen)
         {
             return PtrToString(buffer, buflen, Encoding.UTF8);
-        }
-
-        public static unsafe string PtrToString(IntPtr buffer, int buflen, Encoding encoding)
-        {
-            return PtrToString((byte*)buffer, buflen, encoding);
         }
 
         public static unsafe string PtrToString(byte* buffer, int buflen, Encoding encoding)
@@ -186,18 +176,6 @@ namespace FmodAudio
             return data;
         }
 
-        public static int Abs(int x)
-        {
-            int mask = x >> 31;
-            return (x + mask) ^ mask;
-        }
-
-        public static long Abs(long x)
-        {
-            long mask = x >> 63;
-            return (x + mask) ^ mask;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] ArrayClone<T>(this T[] arr)
         {
@@ -225,11 +203,14 @@ namespace FmodAudio
 
             long allocSize = (localptr == null) ? 0 : localptr.AllocationSize;
 
-            int tmp = count + 1;
-
-            if (allocSize < tmp)
+            if (allocSize < count + 1)
             {
-                pointer = localptr = Memory.Allocate(tmp);
+                if (allocSize > 0)
+                {
+                    localptr.Dispose();
+                }
+
+                pointer = localptr = Memory.Allocate(count + 1);
                 Reallocated = true;
             }
             
@@ -258,22 +239,20 @@ namespace FmodAudio
             return string.Empty;
         }
 
-        [Conditional("DEBUG")]
-        public static void VerifySizeof<T>() where T: unmanaged
-        {
-            int tmp = Unsafe.SizeOf<T>();
-
-            int tmp2 = Marshal.SizeOf<T>();
-
-            Debug.Assert(tmp == tmp2, $"Sizeof Mismatch: sizeof() operator returns {tmp} while Marshal.Sizeof() returns {tmp2} for type {typeof(T).FullName}");
-        }
-
         public static FileOpenCallbackImpl Wrap(this FileOpenCallback callback)
         {
             return delegate (IntPtr Filename, ref uint filesize, ref IntPtr handle, IntPtr userdata)
             {
                 return callback(PtrToStringUnknownSize(Filename), out filesize, out handle, userdata);
             };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void UpdateCallback<TDel>(TDel del, out TDel managedSite, out IntPtr unmanagedSite)
+            where TDel : Delegate
+        {
+            unmanagedSite = (del != null) ? Marshal.GetFunctionPointerForDelegate(del) : (default);
+            managedSite = del;
         }
     }
 }
