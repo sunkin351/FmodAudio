@@ -1,5 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿#pragma warning disable CA1815
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace FmodAudio.Dsp
@@ -12,8 +13,7 @@ namespace FmodAudio.Dsp
         private fixed float rmsLevel[32];
         public short NumChannels;
 
-        //Warning: Not .NET Framework Friendly
-        public Span<float> PeakLevel => new Span<float>(Unsafe.AsPointer(ref peakLevel[0]), 32);
-        public Span<float> RMSLevel => new Span<float>(Unsafe.AsPointer(ref rmsLevel[0]), 32);
+        public Span<float> PeakLevel => MemoryMarshal.CreateSpan(ref peakLevel[0], 32);
+        public Span<float> RMSLevel => MemoryMarshal.CreateSpan(ref rmsLevel[0], 32);
     }
 }
