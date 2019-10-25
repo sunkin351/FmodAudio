@@ -132,19 +132,9 @@ namespace FmodAudio
             return ptr;
         }
 
-        public static unsafe string PtrToString(IntPtr buffer, int buflen)
-        {
-            return PtrToString((byte*)buffer, buflen);
-        }
-
         public static unsafe string PtrToString(byte* buffer, int buflen)
         {
             return PtrToString(buffer, buflen, Encoding.UTF8);
-        }
-
-        public static unsafe string PtrToString(IntPtr buffer, int buflen, Encoding encoding)
-        {
-            return PtrToString((byte*)buffer, buflen, encoding);
         }
 
         public static unsafe string PtrToString(byte* buffer, int buflen, Encoding encoding)
@@ -184,18 +174,6 @@ namespace FmodAudio
             Debug.Assert(data[count] == byte.MinValue);
 
             return data;
-        }
-
-        public static int Abs(int x)
-        {
-            int mask = x >> 31;
-            return (x + mask) ^ mask;
-        }
-
-        public static long Abs(long x)
-        {
-            long mask = x >> 63;
-            return (x + mask) ^ mask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -259,16 +237,6 @@ namespace FmodAudio
             }
 
             return string.Empty;
-        }
-
-        [Conditional("DEBUG")]
-        public static void VerifySizeof<T>() where T: unmanaged
-        {
-            int tmp = Unsafe.SizeOf<T>();
-
-            int tmp2 = Marshal.SizeOf<T>();
-
-            Debug.Assert(tmp == tmp2, $"Sizeof Mismatch: sizeof() operator returns {tmp} while Marshal.Sizeof() returns {tmp2} for type {typeof(T).FullName}");
         }
 
         public static FileOpenCallbackImpl Wrap(this FileOpenCallback callback)
