@@ -339,7 +339,7 @@ namespace FmodAudio.Interop
         Result Sound_GetSubSoundParent(IntPtr sound, out IntPtr parentsound);
 
         [NativeSymbol("FMOD_Sound_GetName")]
-        Result Sound_GetName(IntPtr sound, IntPtr name, int namelen);
+        Result Sound_GetName(IntPtr sound, byte* name, int namelen);
 
         [NativeSymbol("FMOD_Sound_GetLength")]
         Result Sound_GetLength(IntPtr sound, out uint length, TimeUnit lengthtype);
@@ -378,10 +378,10 @@ namespace FmodAudio.Interop
         Result Sound_GetSyncPoint(IntPtr sound, int index, out IntPtr point);
 
         [NativeSymbol("FMOD_Sound_GetSyncPointInfo")]
-        Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, IntPtr name, int namelen, out uint offset, TimeUnit offsettype);
+        Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, out uint offset, TimeUnit offsettype);
 
         [NativeSymbol("FMOD_Sound_AddSyncPoint")]
-        Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsettype, string name, out IntPtr point);
+        Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsettype, byte* name, out IntPtr point);
 
         [NativeSymbol("FMOD_Sound_DeleteSyncPoint")]
         Result Sound_DeleteSyncPoint(IntPtr sound, IntPtr point);
