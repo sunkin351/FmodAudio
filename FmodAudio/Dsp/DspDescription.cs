@@ -272,25 +272,6 @@ namespace FmodAudio.Dsp
             return (DspDescription)this.MemberwiseClone();
         }
 
-        public delegate Result DspStateCallback(DspState* state);
-        public delegate Result DspReadCallback(DspState* state, IntPtr inbuffer, IntPtr outbuffer, uint length, int inchannels, ref int outchannels);
-        public delegate Result DspProcessCallback(DspState* state, uint length, ref DspBufferArray inBufferArray, ref DspBufferArray outBufferArray, bool inputsIdle, ProcessOperation operation);
-        public delegate Result DspSetPositionCallback(DspState* state, uint pos);
-
-        public delegate Result DspSetParamFloatCallback(DspState* state, int index, float value);
-        public delegate Result DspSetParamIntCallback(DspState* state, int index, int value);
-        public delegate Result DspSetParamBoolCallback(DspState* state, int index, bool value);
-        public delegate Result DspSetParamDataCallback(DspState* state, int index, IntPtr data, uint dataLength);
-
-        public delegate Result DspGetParamFloatCallback(DspState* state, int index, out float value, IntPtr valueString);
-        public delegate Result DspGetParamIntCallback(DspState* state, int index, out int value, IntPtr valueString);
-        public delegate Result DspGetParamBoolCallback(DspState* state, int index, out bool value, IntPtr valueString);
-        public delegate Result DspGetParamDataCallback(DspState* state, int index, out IntPtr data, out uint dataLength, IntPtr valueString);
-
-        public delegate Result DspShouldIProcessCallback(DspState* state, bool inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode);
-
-        public delegate Result DspSystemMixCallback(DspState* state, int stage);
-
         private sealed class ParameterDescriptionManager
         {
             private readonly IntPtr ptrArray, descArray;

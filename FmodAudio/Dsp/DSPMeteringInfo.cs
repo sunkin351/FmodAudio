@@ -1,5 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿#pragma warning disable CA1815
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace FmodAudio.Dsp
@@ -7,13 +8,9 @@ namespace FmodAudio.Dsp
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct DSPMeteringInfo
     {
-        public int NumSamples;
-        private fixed float peakLevel[32];
-        private fixed float rmsLevel[32];
-        public short NumChannels;
-
-        //Warning: Not .NET Framework Friendly
-        public Span<float> PeakLevel => new Span<float>(Unsafe.AsPointer(ref peakLevel[0]), 32);
-        public Span<float> RMSLevel => new Span<float>(Unsafe.AsPointer(ref rmsLevel[0]), 32);
+        public int SampleCount;
+        public fixed float peakLevel[32];
+        public fixed float rmsLevel[32];
+        public short ChannelCount;
     }
 }
