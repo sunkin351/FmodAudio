@@ -632,10 +632,9 @@ namespace FmodAudio
                 throw new ArgumentNullException(nameof(Filename));
             }
 
-            byte[] data = Helpers.ToUTF8NullTerminated(Filename);
             IntPtr handle;
 
-            fixed(byte* dataPtr = data)
+            fixed(byte* dataPtr = Helpers.ToUTF8NullTerminated(Filename))
             {
                 if (info is null)
                 {
@@ -652,7 +651,7 @@ namespace FmodAudio
 
             var sound = GetSound(handle);
 
-            sound.soundGroup = info.InitialSoundGroup;
+            sound.soundGroup = info?.InitialSoundGroup;
 
             return sound;
         }

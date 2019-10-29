@@ -49,6 +49,7 @@ namespace FmodAudio.Dsp
 
         public Span<IntPtr> Spectrum => MemoryMarshal.CreateSpan(ref _spectrum.FirstElement, 32);
 
+#pragma warning disable CS0649
         private struct SpectrumArray
         {
             public IntPtr FirstElement;
@@ -84,5 +85,6 @@ namespace FmodAudio.Dsp
             public IntPtr Element30;
             public IntPtr Element31;
         }
+#pragma warning restore CS0649
     }
 }
