@@ -8,4 +8,4 @@ This wrapper is now downloadable as a nuget package. https://www.nuget.org/packa
 
 In order to use this wrapper, you will need to download the fmod native binaries from https://www.fmod.com/download
 
-If you wish to report a bug, or have a feature request, file an issue on github. If you wish to contribute, see `CONTRIBUTING.md`
+If you find a bug, or have a feature request, please file an issue on github, and I'll review it as soon as possible. If you wish to contribute, see `CONTRIBUTING.md`
