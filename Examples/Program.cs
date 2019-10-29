@@ -32,11 +32,14 @@ namespace Examples
                 case 5:
                     example = new CustomDSPExample();
                     break;
+                case 6:
+                    Console.WriteLine("DSP Inspector Example not written yet.");
+                    break;
+                case 7:
+                    example = new EffectsExample();
+                    break;
                 case 18:
                     example = new RecordExample();
-                    break;
-                case 30:
-                    example = new TestExample();
                     break;
             }
 

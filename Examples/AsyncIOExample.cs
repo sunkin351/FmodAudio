@@ -289,7 +289,7 @@ namespace Examples
 
                         ptr->BytesRead = (uint)stream.Read(buffer);
                     }
-                    catch(Exception e)
+                    catch
                     {
                         ptr->InvokeDoneCallback(Result.Err_Internal);
                         //TODO Implement Error Logging
