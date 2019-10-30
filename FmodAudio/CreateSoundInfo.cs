@@ -10,8 +10,6 @@ namespace FmodAudio
 {
     public class CreateSoundInfo
     {
-        static readonly int StructSize = Unsafe.SizeOf<_interopStruct>();
-
         internal _interopStruct Struct = default;
 
         private Memory.SaferPointer InclusionListMemory = null;
@@ -57,7 +55,7 @@ namespace FmodAudio
         
         public CreateSoundInfo()
         {
-            Struct.cbsize = StructSize;
+            Struct.cbsize = Unsafe.SizeOf<_interopStruct>();
         }
 
         /// <summary>
@@ -320,22 +318,22 @@ namespace FmodAudio
                 Helpers.UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
             }
         }
+        
         /// <summary>
         /// [w] Optional. User data to be passed into the file callbacks.
         /// </summary>
         public IntPtr FileUserData { get => Struct.FileUserData; set => Struct.FileUserData = value; }
+        
         /// <summary>
         /// [w] Optional. Buffer size for reading the file, -1 to disable buffering, or 0 for system default.
         /// </summary>
         public int FileBufferSize { get => Struct.FileBufferSize; set => Struct.FileBufferSize = value; }
+        
         /// <summary>
         /// [w] Optional. Use this to differ the way fmod maps multichannel sounds to speakers.  See FMOD_CHANNELORDER for more.
         /// </summary>
         public ChannelOrder ChannelOrder { get => Struct.ChannelOrder; set => Struct.ChannelOrder = value; }
-        /// <summary>
-        /// [w] Optional. Use this to differ the way fmod maps multichannel sounds to speakers.  See FMOD_CHANNELMASK for more.
-        /// </summary>
-        public ChannelMask ChannelMask { get => Struct.ChannelMask; set => Struct.ChannelMask = value; }
+
         /// <summary>
         /// [w] Optional. Specify a sound group if required, to put sound in as it is created.
         /// </summary>
@@ -499,8 +497,6 @@ namespace FmodAudio
             public int FileBufferSize;
 
             public ChannelOrder ChannelOrder;
-
-            public ChannelMask ChannelMask;
 
             public IntPtr InitialSoundGroup;
 

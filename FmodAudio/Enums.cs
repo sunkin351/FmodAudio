@@ -334,12 +334,6 @@ namespace FmodAudio
         /// </summary>
         Profile_Meter_All = 0x00200000,
 
-        /// <summary>
-        /// Using FMOD_SPEAKERMODE_5POINT1 with a stereo output device will enable the SRS Circle Surround downmixer.
-        /// By default the SRS downmixer applies a high pass filter with a cutoff frequency of 80Hz.
-        /// Use this flag to diable the high pass fitler, or use FMOD_INIT_PREFER_DOLBY_DOWNMIX to use the Dolby Pro Logic II downmix algorithm instead.
-        /// </summary>
-        Disable_SRS_HighpassFilter = 0x00400000
     }
 
     [Flags]
@@ -376,19 +370,9 @@ namespace FmodAudio
         Plugin = 0x00000010,
 
         /// <summary>
-        /// Requires XPhysicalAlloc / XPhysicalFree.
-        /// </summary>
-        XBox360_Physical = 0x00100000,
-
-        /// <summary>
         /// Persistent memory. Memory will be freed when FmodSystem.Release() is called.
         /// </summary>
         Persistent = 0x00200000,
-
-        /// <summary>
-        /// Secondary memory. Allocation should be in secondary memory. For example RSX on the PS3.
-        /// </summary>
-        Secondary = 0x00400000,
 
         All = 0xFFFFFFFF
     }
@@ -585,8 +569,6 @@ namespace FmodAudio
         NoSound_NRT,     /* All - Non-realtime version of FMOD_OUTPUTTYPE_NOSOUND. User can drive mixer with System::update at whatever rate they want. */
         WavWriter_NRT,   /* All - Non-realtime version of FMOD_OUTPUTTYPE_WAVWRITER. User can drive mixer with System::update at whatever rate they want. */
 
-        DSound,          /* Win                  - Direct Sound.                        (Default on Windows XP and below) */
-        WINMM,           /* Win                  - Windows Multimedia. */
         WASAPI,          /* Win/WinStore/XboxOne - Windows Audio Session API.           (Default on Windows Vista and above, Xbox One and Windows Store Applications) */
         ASIO,            /* Win                  - Low latency ASIO 2.0. */
         PulseAudio,      /* Linux                - Pulse Audio.                         (Default on Linux if available) */
@@ -596,13 +578,12 @@ namespace FmodAudio
         PS3,             /* PS3                  - Audio Out.                           (Default on PS3) */
         AudioTrack,      /* Android              - Java Audio Track.                    (Default on Android 2.2 and below) */
         OpenSL,          /* Android              - OpenSL ES.                           (Default on Android 2.3 and above) */
-        WIIU,            /* Wii U                - AX.                                  (Default on Wii U) */
         AudioOut,        /* PS4/PSVita           - Audio Out.                           (Default on PS4 and PS Vita) */
         Audio3D,         /* PS4                  - Audio3D. */
-        ATMOS,           /* Win                  - Dolby Atmos (WASAPI). */
         WebAudio,        /* Web Browser          - JavaScript webaudio output.          (Default on JavaScript) */
         NNAudio,         /* NX                   - NX nn::audio.                        (Default on NX) */
         WINSonic,        /* XboxOne              - Windows Sonic. */
+        AAudio,
 
         Max,             /* Maximum number of output types supported. */
     }
@@ -1219,10 +1200,11 @@ namespace FmodAudio
 
     public enum Speaker : int
     {
+        None = -1,
         /// <summary>
         /// The front left speaker
         /// </summary>
-        Front_Left,
+        Front_Left = 0,
 
         /// <summary>
         /// The front right speaker
@@ -1443,11 +1425,11 @@ namespace FmodAudio
         Max                /* Maximum number of tag types supported. */
     }
 
-    public static class ChannelControlDSPIndex
+    public enum ChannelControlDSPIndex
     {
-        public const int DspHead = -1;
-        public const int DSPFader = -2;
-        public const int DSPTail = -3;
+        DspHead = -1,
+        DSPFader = -2,
+        DSPTail = -3
     }
 
     public enum SoundGroupBehavior : int

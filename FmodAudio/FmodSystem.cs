@@ -656,7 +656,7 @@ namespace FmodAudio
             return sound;
         }
 
-        public unsafe Sound CreateSound(Span<byte> data, Mode mode, CreateSoundInfo info)
+        public unsafe Sound CreateSound(ReadOnlySpan<byte> data, Mode mode, CreateSoundInfo info)
         {
             if (info == null)
             {
