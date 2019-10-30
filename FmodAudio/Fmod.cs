@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0052
+#pragma warning disable IDE0052
 using System;
 using System.Collections.Concurrent;
 using System.Text;
@@ -14,6 +14,8 @@ namespace FmodAudio
 
     public static class Fmod
     {
+        public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
+
         #region Pre-Native Setup
 
         private static string defaultLibName;

@@ -24,10 +24,7 @@ namespace FmodAudio
         /// Affects string interop marshalling. If the buffer turns out to be too small, this will decide whether to throw an exception, or continue with the truncated string.
         /// </summary>
         public static bool AllowStringTruncation { get; set; }
-        public static FmodVersion BindingVersion => new FmodVersion(0x00011008);
-
-
-
+        
         internal INativeLibrary library;
 
         private int? driverCount;
