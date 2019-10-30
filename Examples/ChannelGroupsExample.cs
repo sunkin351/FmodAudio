@@ -7,29 +7,34 @@ namespace Examples
 
     public class ChannelGroupsExample : Example
     {
+        readonly FmodSystem System;
+
+        public ChannelGroupsExample()
+        {
+            System = Fmod.CreateSystem();
+
+            TestVersion(System);
+        }
+
         public override void Run()
         {
-            FmodSystem system = Fmod.CreateSystem();
-
-            TestVersion(system);
-
             Sound[] sounds = new Sound[6];
             Channel[] channels = new Channel[6];
 
             ChannelGroup A, B, Master;
             
-            system.Init(32);
+            System.Init(32);
 
-            sounds[0] = system.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
-            sounds[1] = system.CreateSound(MediaPath("jaguar.wav"), Mode.Loop_Normal);
-            sounds[2] = system.CreateSound(MediaPath("swish.wav"), Mode.Loop_Normal);
-            sounds[3] = system.CreateSound(MediaPath("c.ogg"), Mode.Loop_Normal);
-            sounds[4] = system.CreateSound(MediaPath("d.ogg"), Mode.Loop_Normal);
-            sounds[5] = system.CreateSound(MediaPath("e.ogg"), Mode.Loop_Normal);
+            sounds[0] = System.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
+            sounds[1] = System.CreateSound(MediaPath("jaguar.wav"), Mode.Loop_Normal);
+            sounds[2] = System.CreateSound(MediaPath("swish.wav"), Mode.Loop_Normal);
+            sounds[3] = System.CreateSound(MediaPath("c.ogg"), Mode.Loop_Normal);
+            sounds[4] = System.CreateSound(MediaPath("d.ogg"), Mode.Loop_Normal);
+            sounds[5] = System.CreateSound(MediaPath("e.ogg"), Mode.Loop_Normal);
 
-            A = system.CreateChannelGroup("Group A");
-            B = system.CreateChannelGroup("Group B");
-            Master = system.MasterChannelGroup;
+            A = System.CreateChannelGroup("Group A");
+            B = System.CreateChannelGroup("Group B");
+            Master = System.MasterChannelGroup;
 
             //Instead of being independent, set the group A and B to be children of the master group.
             Master.AddGroup(A, false);
@@ -37,7 +42,7 @@ namespace Examples
 
             for(int i = 0; i < 6; ++i)
             {
-                channels[i] = system.PlaySound(sounds[i], i < 3 ? A : B);
+                channels[i] = System.PlaySound(sounds[i], i < 3 ? A : B);
             }
 
             //Change the volume of each group, just because we can! (reduce overall noise).
@@ -69,6 +74,27 @@ namespace Examples
                         }
                     }
                 }
+
+                System.Update();
+
+                System.GetChannelsPlaying(out int channelsPlaying, out _);
+
+                DrawText("==================================================");
+                DrawText("Channel Groups Example.");
+                DrawText("Copyright (c) Firelight Technologies 2004-2018.");
+                DrawText("==================================================");
+                DrawText();
+                DrawText("Group A : drumloop.wav, jaguar.wav, swish.wav");
+                DrawText("Group B : c.ogg, d.ogg, e.ogg");
+                DrawText();
+                DrawText("Press 1 to toggle mute group A");
+                DrawText("Press 2 to toggle mute group B");
+                DrawText("Press 3 to toggle mute master group");
+                DrawText("Press Esc to quit");
+                DrawText();
+                DrawText($"Channels playing: {channelsPlaying}");
+
+                Sleep(50);
             } while (true);
 
             Exit:
@@ -93,7 +119,7 @@ namespace Examples
             A.Dispose();
             B.Dispose();
 
-            system.Dispose();
+            System.Dispose();
         }
     }
 }

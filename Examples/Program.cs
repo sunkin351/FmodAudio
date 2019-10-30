@@ -13,7 +13,7 @@ namespace Examples
                 return;
             }
 
-            IExample example = null;
+            Example example = null;
 
             switch (value)
             {
@@ -33,9 +33,12 @@ namespace Examples
                     example = new CustomDSPExample();
                     break;
                 case 6:
-                    Console.WriteLine("DSP Inspector Example not written yet.");
+                    example = new DspEffectPerSpeakerExample();
                     break;
                 case 7:
+                    Console.WriteLine("DSP Inspector Example not written yet.");
+                    return;
+                case 8:
                     example = new EffectsExample();
                     break;
                 case 18:
@@ -60,8 +63,6 @@ namespace Examples
                 {
                     ConsoleHelpers.OnExit();
                 }
-
-                Console.ReadKey();
             }
             else
             {

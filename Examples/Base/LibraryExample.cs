@@ -8,11 +8,8 @@ using System.Threading;
 
 namespace Examples.Base
 {
-    public abstract class Example : IExample
+    public abstract class Example
     {
-        protected const int ColumnCount = 50;
-        protected const int RowCount = 25;
-
         protected ConcurrentQueue<Button> Commands => ConsoleHelpers.CommandQueue;
         
         public virtual string Title => "Fmod Example";
