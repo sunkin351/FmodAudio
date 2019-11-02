@@ -99,7 +99,7 @@ namespace FmodAudio
         public void SetCustomRolloff3D(ReadOnlySpan<Vector3> points)
         {
             int num = 0;
-            Memory.SaferPointer arrptr = Helpers.AllocateCustomRolloff(points);
+            Memory.SaferPointer arrptr = FmodHelpers.AllocateCustomRolloff(points);
 
             if (arrptr != null)
             {
@@ -169,7 +169,7 @@ namespace FmodAudio
 
                     library.Sound_GetName(Handle, buf, buflen).CheckResult();
 
-                    name = Helpers.PtrToString(buf, buflen);
+                    name = FmodHelpers.PtrToString(buf, buflen);
                 }
 
                 return name;
@@ -304,7 +304,7 @@ namespace FmodAudio
 
             library.Sound_GetSyncPointInfo(Handle, point.Handle, buffer, buflen, out offset, unit).CheckResult();
 
-            name = Helpers.PtrToString(buffer, buflen);
+            name = FmodHelpers.PtrToString(buffer, buflen);
         }
 
         public unsafe SyncPoint CreateSyncPoint(string name, TimeUnit unit, uint offset)
@@ -314,7 +314,7 @@ namespace FmodAudio
                 throw new ArgumentNullException(nameof(name));
             }
 
-            fixed (byte* namePtr = Helpers.ToUTF8NullTerminated(name))
+            fixed (byte* namePtr = FmodHelpers.ToUTF8NullTerminated(name))
             {
                 library.Sound_AddSyncPoint(Handle, offset, unit, namePtr, out IntPtr handle).CheckResult();
                 return new SyncPoint(this, handle);

@@ -36,7 +36,7 @@ namespace FmodAudio.Codec
                 }
                 else
                 {
-                    NameBuffer = Helpers.StringToPointer(value, Encoding.UTF8);
+                    NameBuffer = FmodHelpers.StringToPointer(value, Encoding.UTF8);
                     managedName = value;
                     _struct.Name = NameBuffer;
                 }
@@ -53,49 +53,49 @@ namespace FmodAudio.Codec
         {
             get => openCallback;
 
-            set => Helpers.UpdateCallback(value, out openCallback, out _struct.Open);
+            set => FmodHelpers.UpdateCallback(value, out openCallback, out _struct.Open);
         }
 
         public CodecCloseCallback CloseCallback
         {
             get => closeCallback;
-            set => Helpers.UpdateCallback(value, out closeCallback, out _struct.Close);
+            set => FmodHelpers.UpdateCallback(value, out closeCallback, out _struct.Close);
         }
 
         public CodecReadCallback ReadCallback
         {
             get => readCallback;
-            set => Helpers.UpdateCallback(value, out readCallback, out _struct.Read);
+            set => FmodHelpers.UpdateCallback(value, out readCallback, out _struct.Read);
         }
 
         public CodecGetLengthCallback GetLengthCallback
         {
             get => getLengthCallback;
-            set => Helpers.UpdateCallback(value, out getLengthCallback, out _struct.GetLength);
+            set => FmodHelpers.UpdateCallback(value, out getLengthCallback, out _struct.GetLength);
         }
 
         public CodecSetPositionCallback SetPositionCallback
         {
             get => setPositionCallback;
-            set => Helpers.UpdateCallback(value, out setPositionCallback, out _struct.SetPosition);
+            set => FmodHelpers.UpdateCallback(value, out setPositionCallback, out _struct.SetPosition);
         }
 
         public CodecGetPositionCallback GetPositionCallback
         {
             get => getPositionCallback;
-            set => Helpers.UpdateCallback(value, out getPositionCallback, out _struct.GetPosition);
+            set => FmodHelpers.UpdateCallback(value, out getPositionCallback, out _struct.GetPosition);
         }
 
         public CodecSoundCreateCallback CreateSoundFormat
         {
             get => soundCreateCallback;
-            set => Helpers.UpdateCallback(value, out soundCreateCallback, out _struct.SoundCreate);
+            set => FmodHelpers.UpdateCallback(value, out soundCreateCallback, out _struct.SoundCreate);
         }
 
         public CodecGetWaveFormatCallback GetWaveFormatCallback
         {
             get => getWaveFormatCallback;
-            set => Helpers.UpdateCallback(value, out getWaveFormatCallback, out _struct.GetWaveFormat);
+            set => FmodHelpers.UpdateCallback(value, out getWaveFormatCallback, out _struct.GetWaveFormat);
         }
 
         public struct Structure

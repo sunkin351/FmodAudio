@@ -30,8 +30,8 @@ namespace FmodAudio
                 InstanceType = native.InstanceType;
             }
 
-            FunctionName = Helpers.PtrToStringUnknownSize(native.FunctionName);
-            FunctionParams = Helpers.PtrToStringUnknownSize(native.FunctionParams);
+            FunctionName = FmodHelpers.PtrToStringUnknownSize(native.FunctionName);
+            FunctionParams = FmodHelpers.PtrToStringUnknownSize(native.FunctionParams);
         }
     }
 }

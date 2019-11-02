@@ -9,11 +9,11 @@ namespace FmodAudio
     /// </summary>
     public class AdvancedSettings
     {
-        internal _interopStruct Struct;
+        internal Structure Struct;
 
         public AdvancedSettings()
         {
-            Struct.cbSize = Unsafe.SizeOf<_interopStruct>();
+            Struct.cbSize = Unsafe.SizeOf<Structure>();
         }
 
         public int MaxMPEGCodecs { get => Struct.maxMPEGCodecs; set => Struct.maxMPEGCodecs = value; }
@@ -78,7 +78,7 @@ namespace FmodAudio
         public uint RandomSeed { get => Struct.randomSeed; set => Struct.randomSeed = value; }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct _interopStruct
+        public struct Structure
         {
             public int cbSize;                     /* [w]   Size of this structure.  Use sizeof(FMOD_ADVANCEDSETTINGS) */
             public int maxMPEGCodecs;              /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_CREATECOMPRESSEDSAMPLE only.  MPEG   codecs consume 30,528 bytes per instance and this number will determine how many MPEG   channels can be played simultaneously. Default = 32. */

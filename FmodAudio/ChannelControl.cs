@@ -446,7 +446,7 @@ namespace FmodAudio
             if (this is Channel)
                 throw new NotSupportedException();
 
-            var ptr = Helpers.AllocateCustomRolloff(rolloff);
+            var ptr = FmodHelpers.AllocateCustomRolloff(rolloff);
             int count = 0;
 
             if (ptr != null)

@@ -110,7 +110,7 @@ namespace FmodAudio.Codec
 
             public Result Invoke(CodecState* state, TagType tagType, string name, byte* data, uint dataLen, TagDataType dataType, bool unique)
             {
-                fixed (byte* namePtr = Helpers.ToUTF8NullTerminated(name))
+                fixed (byte* namePtr = FmodHelpers.ToUTF8NullTerminated(name))
                 {
                     return InvokeImpl(FuncPtr, state, tagType, namePtr, data, dataLen, dataType, unique ? 1 : 0);
                 }

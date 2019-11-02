@@ -110,7 +110,7 @@ namespace FmodAudio
                 return;
 
             Console.WriteLine($"Unexpected Error Crash: {res} caught while releasing FmodAudio Resource in destructor.");
-            Console.WriteLine($"Details: {Helpers.GetErrorMessage(res)}");
+            Console.WriteLine($"Details: {FmodHelpers.GetErrorMessage(res)}");
 
             Environment.Exit(-255);
         }
@@ -134,7 +134,7 @@ namespace FmodAudio
         /// <returns>The plugin Handle</returns>
         public Plugin LoadPlugin(string Filename, uint Priority = 0)
         {
-            byte[] buffer = Helpers.ToUTF8NullTerminated(Filename);
+            byte[] buffer = FmodHelpers.ToUTF8NullTerminated(Filename);
 
             library.System_LoadPlugin(Handle, buffer, out uint handle, Priority).CheckResult();
 
@@ -177,7 +177,7 @@ namespace FmodAudio
 
             library.System_GetPluginInfo(Handle, plugin.Handle, out PluginType type, buffer, buflen, out uint version).CheckResult();
 
-            string name = Helpers.PtrToString(buffer, buflen);
+            string name = FmodHelpers.PtrToString(buffer, buflen);
             return new PluginInfo(name, type, new FmodVersion(version));
         }
 
@@ -300,7 +300,7 @@ namespace FmodAudio
 
             library.System_GetDriverInfo(Handle, DriverId, NamePtr, AllocSize, out info.dguid, out info.systemRate, out info.speakerMode, out info.speakerModeChannels).CheckResult();
 
-            info.dname = Helpers.PtrToString(NamePtr, AllocSize);
+            info.dname = FmodHelpers.PtrToString(NamePtr, AllocSize);
 
             return info;
         }
@@ -631,7 +631,7 @@ namespace FmodAudio
 
             IntPtr handle;
 
-            fixed(byte* dataPtr = Helpers.ToUTF8NullTerminated(Filename))
+            fixed(byte* dataPtr = FmodHelpers.ToUTF8NullTerminated(Filename))
             {
                 if (info is null)
                 {
@@ -639,7 +639,7 @@ namespace FmodAudio
                 }
                 else
                 {
-                    fixed (CreateSoundInfo._interopStruct* @struct = &info.Struct)
+                    fixed (CreateSoundInfo.Structure* @struct = &info.Struct)
                     {
                         library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), @struct, out handle).CheckResult();
                     }
@@ -673,7 +673,7 @@ namespace FmodAudio
             IntPtr handle;
 
             fixed(byte* dataPtr = data)
-            fixed(CreateSoundInfo._interopStruct* @struct = &info.Struct)
+            fixed(CreateSoundInfo.Structure* @struct = &info.Struct)
             {
                 library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), @struct, out handle).CheckResult();
             }
@@ -702,7 +702,7 @@ namespace FmodAudio
 
             IntPtr handle;
 
-            fixed (CreateSoundInfo._interopStruct* @struct = &info.Struct)
+            fixed (CreateSoundInfo.Structure* @struct = &info.Struct)
             {
                 library.System_CreateSound(Handle, null, mode, @struct, out handle).CheckResult();
             }

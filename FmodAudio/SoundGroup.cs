@@ -86,7 +86,7 @@ namespace FmodAudio
 
                 library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
 
-                return Helpers.PtrToString(ptr, len);
+                return FmodHelpers.PtrToString(ptr, len);
             }
         }
 

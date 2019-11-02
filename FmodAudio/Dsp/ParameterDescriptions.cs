@@ -39,8 +39,8 @@ namespace FmodAudio.Dsp
         {
             internalDescription = *ptr;
 
-            Name = Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
-            Label = Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
+            Name = FmodHelpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
+            Label = FmodHelpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
         }
 
         public string Name { get; }

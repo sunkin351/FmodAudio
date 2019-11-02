@@ -46,7 +46,7 @@ namespace FmodAudio
 
                 var res = library.ChannelGroup_GetName(Handle, ptr, len);
 
-                return Helpers.PtrToString(ptr, len);
+                return FmodHelpers.PtrToString(ptr, len);
             }
         }
 

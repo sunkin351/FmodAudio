@@ -9,7 +9,7 @@ using System.Text;
 
 namespace FmodAudio
 {
-    internal static class Helpers
+    internal static class FmodHelpers
     {
         static readonly SortedDictionary<Result, string> ErrorMessageLookup = new SortedDictionary<Result, string>()
         {
@@ -219,6 +219,14 @@ namespace FmodAudio
             buf[count] = 0;
 
             return Reallocated;
+        }
+
+        public static unsafe Memory.SaferPointer StringToPointer(string value, Encoding encoding)
+        {
+            int count = encoding.GetByteCount(value);
+            var ptr = Memory.Allocate(count + 1);
+            encoding.GetBytes(value, ptr.AsSpan<byte>(0, count));
+            return ptr;
         }
 
         public static unsafe string PtrToStringUnknownSize(IntPtr buffer)
