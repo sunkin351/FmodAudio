@@ -21,7 +21,17 @@ namespace FmodAudio
         private static string defaultLibName;
         private static string location;
 
-        private static INativeLibrary nativeLibrary;
+        private static NativeLibrary nativeLibrary;
+
+        public static NativeLibrary Library
+        {
+            get
+            {
+                EnsureInitialized();
+
+                return nativeLibrary;
+            }
+        }
 
         // <summary>
         // Subscribe to this to log when fatal errors occur.String passed is the error message.
@@ -90,7 +100,7 @@ namespace FmodAudio
 
                 NativeLibraryBuilder builder = new NativeLibraryBuilder(options);
                 
-                nativeLibrary = builder.ActivateInterface<INativeLibrary>(location ?? DefaultLibraryName);
+                nativeLibrary = builder.ActivateClass<NativeLibrary, INativeLibrary>(location ?? DefaultLibraryName);
             }
         }
 

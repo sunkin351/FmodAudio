@@ -7,7 +7,7 @@ namespace FmodAudio
 {
     public sealed class Sound : HandleBase
     {
-        private readonly Interop.INativeLibrary library;
+        private readonly Interop.NativeLibrary library;
 
         public FmodSystem SystemObject { get; }
 

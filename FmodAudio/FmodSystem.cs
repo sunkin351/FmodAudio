@@ -14,7 +14,7 @@ namespace FmodAudio
     using Interop;
     using Dsp;
 
-    public sealed partial class FmodSystem : HandleBase
+    public unsafe sealed partial class FmodSystem : HandleBase
     {
         
 
@@ -25,7 +25,7 @@ namespace FmodAudio
         /// </summary>
         public static bool AllowStringTruncation { get; set; }
         
-        internal INativeLibrary library;
+        internal NativeLibrary library;
 
         private int? driverCount;
 
@@ -36,7 +36,7 @@ namespace FmodAudio
 
         #region System Creation / Destruction
 
-        internal FmodSystem(INativeLibrary lib, IntPtr handle) : base(handle)
+        internal FmodSystem(NativeLibrary lib, IntPtr handle) : base(handle)
         {
             library = lib;
             SetupEventCallbacks();

@@ -5,14 +5,13 @@ using System.Numerics;
 namespace FmodAudio.Interop
 {
     using Dsp;
-    public delegate Result ChannelCallbackInternal(IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2);
     [NativeSymbols(Prefix = "FMOD_")]
     public unsafe interface INativeLibrary
     {
         //Global Functions
         Result Memory_Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags);
         
-        Result Memory_GetStats(int* currentalloced, int* maxalloced, int blocking);
+        Result Memory_GetStats(int* currentalloced, int* maxalloced, bool blocking);
         
         Result Debug_Initialize(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename);
         
@@ -50,9 +49,9 @@ namespace FmodAudio.Interop
         
         Result System_GetDSPBufferSize(IntPtr system, uint* bufferlength, int* numbuffers);
         
-        Result System_SetFileSystem(IntPtr system, FileOpenCallbackImpl useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek, FileAsyncReadCallback userasyncread, FileAsyncCancelCallback userasynccancel, int blockalign);
+        Result System_SetFileSystem(IntPtr system, FileOpenCallback useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek, FileAsyncReadCallback userasyncread, FileAsyncCancelCallback userasynccancel, int blockalign);
         
-        Result System_AttachFileSystem(IntPtr system, FileOpenCallbackImpl useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek);
+        Result System_AttachFileSystem(IntPtr system, FileOpenCallback useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek);
         
         Result System_SetAdvancedSettings(IntPtr system, AdvancedSettings.Structure* settings);
         
@@ -74,7 +73,7 @@ namespace FmodAudio.Interop
         
         Result System_GetPluginHandle(IntPtr system, PluginType plugintype, int index, uint* handle);
         
-        Result System_GetPluginInfo(IntPtr system, uint handle, PluginType* plugintype, byte* name, int namelen, uint* version);
+        Result System_GetPluginInfo(IntPtr system, uint handle, PluginType* plugintype, byte* name, int namelen, FmodVersion* version);
         
         Result System_CreateDSPByPlugin(IntPtr system, uint handle, IntPtr* dsp);
         
@@ -96,9 +95,9 @@ namespace FmodAudio.Interop
         
         Result System_Update(IntPtr system);
         
-        Result System_SetSpeakerPosition(IntPtr system, Speaker speaker, float x, float y, int active);
+        Result System_SetSpeakerPosition(IntPtr system, Speaker speaker, float x, float y, bool active);
         
-        Result System_GetSpeakerPosition(IntPtr system, Speaker speaker, float* x, float* y, int* active);
+        Result System_GetSpeakerPosition(IntPtr system, Speaker speaker, float* x, float* y, out bool active);
         
         Result System_SetStreamBufferSize(IntPtr system, uint filebuffersize, TimeUnit filebuffersizetype);
         
@@ -150,9 +149,9 @@ namespace FmodAudio.Interop
         
         Result System_CreateReverb3D(IntPtr system, IntPtr* reverb);
         
-        Result System_PlaySound(IntPtr system, IntPtr sound, IntPtr channelGroup, int paused, IntPtr* channel);
+        Result System_PlaySound(IntPtr system, IntPtr sound, IntPtr channelGroup, bool paused, IntPtr* channel);
         
-        Result System_PlayDSP(IntPtr system, IntPtr dsp, IntPtr channelGroup, int paused, IntPtr* channel);
+        Result System_PlayDSP(IntPtr system, IntPtr dsp, IntPtr channelGroup, bool paused, IntPtr* channel);
 
         Result System_GetChannel(IntPtr system, int channelid, IntPtr* channel);
 
@@ -178,11 +177,11 @@ namespace FmodAudio.Interop
 
         Result System_GetRecordPosition(IntPtr system, int id, uint* position);
 
-        Result System_RecordStart(IntPtr system, int id, IntPtr sound, int loop);
+        Result System_RecordStart(IntPtr system, int id, IntPtr sound, bool loop);
 
         Result System_RecordStop(IntPtr system, int id);
 
-        Result System_IsRecording(IntPtr system, int id, int* recording);
+        Result System_IsRecording(IntPtr system, int id, out bool recording);
 
         Result System_CreateGeometry(IntPtr system, int maxpolygons, int maxvertices, IntPtr* geometry);
         
@@ -404,7 +403,7 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_GetMode(IntPtr channelgroup, Mode* mode);
         
-        Result ChannelGroup_SetCallback(IntPtr channelgroup, ChannelCallbackInternal callback);
+        Result ChannelGroup_SetCallback(IntPtr channelgroup, ChannelCallback callback);
         
         Result ChannelGroup_IsPlaying(IntPtr channelgroup, int* isplaying);
         

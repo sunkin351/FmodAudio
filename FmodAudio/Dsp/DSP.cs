@@ -6,7 +6,7 @@ namespace FmodAudio.Dsp
     using FmodAudio.Interop;
     public sealed class DSP : HandleBase
     {
-        private readonly INativeLibrary library;
+        private readonly NativeLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal DspDescription Description;

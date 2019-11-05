@@ -8,9 +8,9 @@ namespace FmodAudio
     using Interop;
     public class Geometry : HandleBase
     {
-        private readonly INativeLibrary library;
+        private readonly NativeLibrary library;
 
-        internal Geometry(IntPtr handle, INativeLibrary lib) : base(handle)
+        internal Geometry(IntPtr handle, NativeLibrary lib) : base(handle)
         {
             library = lib;
         }
