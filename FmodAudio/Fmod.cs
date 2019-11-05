@@ -1,4 +1,4 @@
-#pragma warning disable IDE0052
+﻿#pragma warning disable IDE0052
 using System;
 using System.Collections.Concurrent;
 using System.Text;
@@ -115,6 +115,24 @@ namespace FmodAudio
 
             nativeLibrary.Debug_Initialize(flags, mode, callback, filename).CheckResult();
             DebugCallbackReference = callback;
+        }
+
+        public static unsafe bool DiskBusy
+        {
+            get
+            {
+                EnsureInitialized();
+
+                nativeLibrary.File_GetDiskBusy(out bool res).CheckResult();
+
+                return res;
+            }
+
+            set
+            {
+                EnsureInitialized();
+                nativeLibrary.File_SetDiskBusy(value).CheckResult();
+            }    
         }
 
         internal static readonly ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>> SystemLookup = new ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>>();
