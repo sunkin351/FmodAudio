@@ -154,7 +154,7 @@ namespace FmodAudio
             if (size == 0)
                 return string.Empty;
             
-            if (size < buffer.Length)
+            if ((uint)size < (uint)buffer.Length)
             {
                 buffer = buffer.Slice(0, size);
             }
