@@ -1,4 +1,4 @@
-﻿using AdvancedDLSupport;
+using AdvancedDLSupport;
 using System;
 using System.Runtime.InteropServices;
 using System.Numerics;
@@ -115,7 +115,7 @@ namespace FmodAudio.Interop
         
         Result System_Get3DListenerAttributes(IntPtr system, int listener, Vector3* pos, Vector3* vel, Vector3* forward, Vector3* up);
         
-        Result System_Set3DRolloffCallback(IntPtr system, CB_3D_RolloffCallback callback);
+        Result System_Set3DRolloffCallback(IntPtr system, _3DRolloffCallback callback);
         
         Result System_MixerSuspend(IntPtr system);
         

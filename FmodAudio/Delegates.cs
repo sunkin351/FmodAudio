@@ -24,5 +24,5 @@ namespace FmodAudio
     public delegate IntPtr MemoryReallocCallback(IntPtr ptr, uint size, MemoryType type, IntPtr sourcestr);
     public delegate void MemoryFreeCallback(IntPtr ptr, MemoryType type, IntPtr sourcestr);
 
-    public delegate float CB_3D_RolloffCallback(IntPtr channelraw, float distance);
+    public delegate float _3DRolloffCallback(IntPtr channelraw, float distance);
 }

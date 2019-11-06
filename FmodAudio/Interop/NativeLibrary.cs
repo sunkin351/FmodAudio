@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using System.Text;
 using FmodAudio.Codec;
@@ -414,7 +414,7 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result System_Set3DRolloffCallback(IntPtr system, CB_3D_RolloffCallback callback);
+        public abstract Result System_Set3DRolloffCallback(IntPtr system, _3DRolloffCallback callback);
         
         public abstract Result System_MixerSuspend(IntPtr system);
         
