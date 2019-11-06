@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 using System.Text;
 using FmodAudio.Codec;
@@ -740,7 +740,7 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, int passThru);
+        public abstract Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, bool passThru);
         
         public abstract Result System_DetachChannelGroupFromPort(IntPtr system, IntPtr channelgroup);
         
@@ -895,57 +895,351 @@ namespace FmodAudio.Interop
         public abstract Result Sound_Release(IntPtr sound);
         
         public abstract Result Sound_Lock(IntPtr sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
-        
+
+        public Result Sound_Lock(IntPtr sound, uint offset, uint length, out IntPtr ptr1, out IntPtr ptr2, out uint len1, out uint len2)
+        {
+            fixed (IntPtr* p1 = &ptr1, p2 = &ptr2)
+            fixed (uint* l1 = &len1, l2 = &len2)
+            {
+                return Sound_Lock(sound, offset, length, p1, p2, l1, l2);
+            }
+        }
+
         public abstract Result Sound_Unlock(IntPtr sound, IntPtr ptr1, IntPtr ptr2, uint len1, uint len2);
         
         public abstract Result Sound_SetDefaults(IntPtr sound, float frequency, int priority);
         
         public abstract Result Sound_GetDefaults(IntPtr sound, float* frequency, int* priority);
-        
+
+        public Result Sound_GetDefaults(IntPtr sound, out float frequency, out int priority)
+        {
+            fixed (float* pFrequency = &frequency)
+            fixed (int* pPriority = &priority)
+            {
+                return Sound_GetDefaults(sound, pFrequency, pPriority);
+            }
+        }
+
         public abstract Result Sound_Set3DMinMaxDistance(IntPtr sound, float min, float max);
         
         public abstract Result Sound_Get3DMinMaxDistance(IntPtr sound, float* min, float* max);
-        
+
+        public Result Sound_Get3DMinMaxDistance(IntPtr sound, out float min, out float max)
+        {
+            fixed (float* pMin = &min, pMax = &max)
+            {
+                return Sound_Get3DMinMaxDistance(sound, pMin, pMax);
+            }
+        }
+
         public abstract Result Sound_Set3DConeSettings(IntPtr sound, float insideconeangle, float outsideconeangle, float outsidevolume);
         
         public abstract Result Sound_Get3DConeSettings(IntPtr sound, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
+
+        public Result Sound_Get3DConeSettings(IntPtr sound, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
+        {
+            fixed (float* pInsideConeAngle = &insideconeangle, pOutsideConeAngle = &outsideconeangle, pOutsideVolume = &outsidevolume)
+            {
+                return Sound_Get3DConeSettings(sound, pInsideConeAngle, pOutsideConeAngle, pOutsideVolume);
+            }
+        }
+
+        public abstract Result Sound_Set3DCustomRolloff(IntPtr sound, IntPtr points, int pointCount);
         
-        public abstract Result Sound_Set3DCustomRolloff(IntPtr sound, IntPtr points, int numpoints);
-        
-        public abstract Result Sound_Get3DCustomRolloff(IntPtr sound, IntPtr* points, int* numpoints);
-        
+        public abstract Result Sound_Get3DCustomRolloff(IntPtr sound, IntPtr* points, int* pointCount);
+
+        public Result Sound_Get3DCustomRolloff(IntPtr sound, out IntPtr points, out int pointCount)
+        {
+            fixed (IntPtr* pPoints = &points)
+            fixed (int* pPointCount = &pointCount)
+            {
+                return Sound_Get3DCustomRolloff(sound, pPoints, pPointCount);
+            }
+        }
+
         public abstract Result Sound_GetSubSound(IntPtr sound, int index, IntPtr* subsound);
-        
+
+        public Result Sound_GetSubSound(IntPtr sound, int index, out IntPtr subsound)
+        {
+            fixed (IntPtr* pSubsound = &subsound)
+            {
+                return Sound_GetSubSound(sound, index, pSubsound);
+            }
+        }
+
         public abstract Result Sound_GetSubSoundParent(IntPtr sound, IntPtr* parentsound);
+
+        public Result Sound_GetSubSoundParent(IntPtr sound, out IntPtr parentsound)
+        {
+            fixed (IntPtr* pParent = &parentsound)
+            {
+                return Sound_GetSubSoundParent(sound, pParent);
+            }
+        }
+
         public abstract Result Sound_GetName(IntPtr sound, byte* name, int namelen);
+        
         public abstract Result Sound_GetLength(IntPtr sound, uint* length, TimeUnit lengthtype);
+
+        public Result Sound_GetLength(IntPtr sound, out uint length, TimeUnit lengthtype)
+        {
+            fixed (uint* pLength = &length)
+            {
+                return Sound_GetLength(sound, pLength, lengthtype);
+            }
+        }
+
         public abstract Result Sound_GetFormat(IntPtr sound, SoundType* type, SoundFormat* format, int* channels, int* bits);
+
+        public Result Sound_GetFormat(IntPtr sound, out SoundType type, out SoundFormat format, out int channels, out int bits)
+        {
+            fixed (SoundType* pType = &type)
+            fixed (SoundFormat* pFormat = &format)
+            fixed (int* pChannels = &channels, pBits = &bits)
+            {
+                return Sound_GetFormat(sound, pType, pFormat, pChannels, pBits);
+            }
+        }
+
         public abstract Result Sound_GetNumSubSounds(IntPtr sound, int* numsubsounds);
-        public abstract Result Sound_GetNumTags(IntPtr sound, int* numtags, int* numtagsupdated);
+
+        public Result Sound_GetNumSubSounds(IntPtr sound, out int numsubsounds)
+        {
+            fixed (int* psubsoundCount = &numsubsounds)
+            {
+                return Sound_GetNumSubSounds(sound, psubsoundCount);
+            }
+        }
+
+        public abstract Result Sound_GetNumTags(IntPtr sound, int* tagCount, int* updatedTagCount);
+
+        public Result Sound_GetNumTags(IntPtr sound, out int tagCount, out int updatedTagCount)
+        {
+            fixed (int* pTagCount = &tagCount, pUpdatedTagCount = &updatedTagCount)
+            {
+                return Sound_GetNumTags(sound, pTagCount, pUpdatedTagCount);
+            }
+        }
+
         public abstract Result Sound_GetTag(IntPtr sound, string name, int index, Tag* tag);
+
+        public Result Sound_GetTag(IntPtr sound, string name, int index, out Tag tag)
+        {
+            fixed (Tag* pTag = &tag)
+            {
+                return Sound_GetTag(sound, name, index, pTag);
+            }
+        }
+
+
         public abstract Result Sound_GetOpenState(IntPtr sound, OpenState* openstate, uint* percentbuffered, int* starving, int* diskbusy);
+
+        public Result Sound_GetOpenState(IntPtr sound, out OpenState openstate, out uint percentBuffered, out bool starving, out bool diskbusy)
+        {
+            int _starving = 0, _diskbusy = 0;
+            Result res;
+
+            fixed (OpenState* pOpenState = &openstate)
+            fixed (uint* pPercentBuffered = &percentBuffered)
+            {
+                res = Sound_GetOpenState(sound, pOpenState, pPercentBuffered, &_starving, &_diskbusy);
+            }
+
+            starving = _starving != 0;
+            diskbusy = _diskbusy != 0;
+            return res;
+        }
+        
         public abstract Result Sound_ReadData(IntPtr sound, void* buffer, uint length, uint* read);
+
+        public Result Sound_ReadData(IntPtr sound, void* buffer, uint length, out uint read)
+        {
+            fixed (uint* pRead = &read)
+            {
+                return Sound_ReadData(sound, buffer, length, pRead);
+            }
+        }
+
+        public Result Sound_ReadData(IntPtr sound, Span<byte> buffer, uint* read)
+        {
+            fixed (byte* pBuffer = buffer)
+            {
+                return Sound_ReadData(sound, pBuffer, (uint)buffer.Length, read);
+            }
+        }
+
+        public Result Sound_ReadData(IntPtr sound, Span<byte> buffer, out uint read)
+        {
+            fixed (byte* pBuffer = buffer)
+            fixed (uint* pRead = &read)
+            {
+                return Sound_ReadData(sound, pBuffer, (uint)buffer.Length, pRead);
+            }
+        }
+
         public abstract Result Sound_SeekData(IntPtr sound, uint pcm);
+        
         public abstract Result Sound_SetSoundGroup(IntPtr sound, IntPtr soundgroup);
+        
         public abstract Result Sound_GetSoundGroup(IntPtr sound, IntPtr* soundgroup);
-        public abstract Result Sound_GetNumSyncPoints(IntPtr sound, int* numsyncpoints);
+
+        public Result Sound_GetSoundGroup(IntPtr sound, out IntPtr soundgroup)
+        {
+            fixed (IntPtr* pSoundGroup = &soundgroup)
+            {
+                return Sound_GetSoundGroup(sound, pSoundGroup);
+            }
+        }
+
+        public abstract Result Sound_GetNumSyncPoints(IntPtr sound, int* syncPointCount);
+
+        public Result Sound_GetNumSyncPoints(IntPtr sound, out int syncPointCount)
+        {
+            fixed (int* pSyncPointCount = &syncPointCount)
+            {
+                return Sound_GetNumSyncPoints(sound, pSyncPointCount);
+            }
+        }
+
         public abstract Result Sound_GetSyncPoint(IntPtr sound, int index, IntPtr* point);
-        public abstract Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, uint* offset, TimeUnit offsettype);
-        public abstract Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsettype, byte* name, IntPtr* point);
+
+        public Result Sound_GetSyncPoint(IntPtr sound, int index, out IntPtr point)
+        {
+            fixed (IntPtr* pPoint = &point)
+            {
+                return Sound_GetSyncPoint(sound, index, pPoint);
+            }
+        }
+
+        public abstract Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, uint* offset, TimeUnit offsetType);
+
+        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, out uint offset, TimeUnit offsetType)
+        {
+            fixed (uint* pOffset = &offset)
+            {
+                return Sound_GetSyncPointInfo(sound, point, name, namelen, pOffset, offsetType);
+            }
+        }
+
+        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, Span<byte> nameBuffer, uint* offset, TimeUnit offsetType)
+        {
+            fixed (byte* pName = nameBuffer)
+            {
+                return Sound_GetSyncPointInfo(sound, point, pName, nameBuffer.Length, offset, offsetType);
+            }
+        }
+
+        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, Span<byte> nameBuffer, out uint offset, TimeUnit offsetType)
+        {
+            fixed (byte* pName = nameBuffer)
+            {
+                return Sound_GetSyncPointInfo(sound, point, pName, nameBuffer.Length, out offset, offsetType);
+            }
+        }
+
+        public abstract Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, byte* name, IntPtr* point);
+
+        public Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, string name, IntPtr* point)
+        {
+            fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
+            {
+                return Sound_AddSyncPoint(sound, offset, offsetType, pName, point);
+            }
+        }
+
+        public Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, string name, out IntPtr point)
+        {
+            fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
+            fixed (IntPtr* pPoint = &point)
+            {
+                return Sound_AddSyncPoint(sound, offset, offsetType, pName, pPoint);
+            }
+        }
+
         public abstract Result Sound_DeleteSyncPoint(IntPtr sound, IntPtr point);
+        
         public abstract Result Sound_SetMode(IntPtr sound, Mode mode);
+        
         public abstract Result Sound_GetMode(IntPtr sound, Mode* mode);
+
+        public Result Sound_GetMode(IntPtr sound, out Mode mode)
+        {
+            fixed (Mode* pMode = &mode)
+            {
+                return Sound_GetMode(sound, pMode);
+            }
+        }
+        
         public abstract Result Sound_SetLoopCount(IntPtr sound, int loopcount);
+        
         public abstract Result Sound_GetLoopCount(IntPtr sound, int* loopcount);
+
+        public Result Sound_GetLoopCount(IntPtr sound, out int loopCount)
+        {
+            fixed (int* pLoopCount = &loopCount)
+            {
+                return Sound_GetLoopCount(sound, pLoopCount);
+            }
+        }
+        
         public abstract Result Sound_SetLoopPoints(IntPtr sound, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
+        
         public abstract Result Sound_GetLoopPoints(IntPtr sound, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
+
+        public Result Sound_GetLoopPoints(IntPtr sound, out uint loopStart, TimeUnit loopStartType, out uint loopEnd, TimeUnit loopEndType)
+        {
+            fixed (uint* pLoopStart = &loopStart, pLoopEnd = &loopEnd)
+            {
+                return Sound_GetLoopPoints(sound, pLoopStart, loopStartType, pLoopEnd, loopEndType);
+            }
+        }
+
         public abstract Result Sound_GetMusicNumChannels(IntPtr sound, int* numchannels);
+
+        public Result Sound_GetMusicNumChannels(IntPtr sound, out int channelCount)
+        {
+            fixed (int* pChannelCount = &channelCount)
+            {
+                return Sound_GetMusicNumChannels(sound, pChannelCount);
+            }
+        }
+
         public abstract Result Sound_SetMusicChannelVolume(IntPtr sound, int channel, float volume);
+        
         public abstract Result Sound_GetMusicChannelVolume(IntPtr sound, int channel, float* volume);
+
+        public Result Sound_GetMusicChannelVolume(IntPtr sound, int channel, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return Sound_GetMusicChannelVolume(sound, channel, pVolume);
+            }
+        }
+
         public abstract Result Sound_SetMusicSpeed(IntPtr sound, float speed);
+        
         public abstract Result Sound_GetMusicSpeed(IntPtr sound, float* speed);
-        public abstract Result Sound_SetUserData(IntPtr sound, IntPtr userdata);
-        public abstract Result Sound_GetUserData(IntPtr sound, IntPtr* userdata);
+
+        public Result Sound_GetMusicSpeed(IntPtr sound, out float speed)
+        {
+            fixed (float* pSpeed = &speed)
+            {
+                return Sound_GetMusicSpeed(sound, pSpeed);
+            }
+        }
+        
+        public abstract Result Sound_SetUserData(IntPtr sound, IntPtr userData);
+        
+        public abstract Result Sound_GetUserData(IntPtr sound, IntPtr* userData);
+
+        public Result Sound_GetUserData(IntPtr sound, out IntPtr userData)
+        {
+            fixed (IntPtr* pUserData = &userData)
+            {
+                return Sound_GetUserData(sound, pUserData);
+            }
+        }
+
         public abstract Result SoundGroup_Release(IntPtr soundgroup);
         public abstract Result SoundGroup_GetSystemObject(IntPtr soundgroup, IntPtr* system);
         public abstract Result SoundGroup_SetMaxAudible(IntPtr soundgroup, int maxaudible);

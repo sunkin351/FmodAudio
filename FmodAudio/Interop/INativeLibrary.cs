@@ -1,4 +1,4 @@
-using AdvancedDLSupport;
+﻿using AdvancedDLSupport;
 using System;
 using System.Runtime.InteropServices;
 using System.Numerics;
@@ -159,7 +159,7 @@ namespace FmodAudio.Interop
 
         Result System_GetMasterSoundGroup(IntPtr system, IntPtr* soundgroup);
 
-        Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, int passThru);
+        Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, bool passThru);
 
         Result System_DetachChannelGroupFromPort(IntPtr system, IntPtr channelgroup);
 
