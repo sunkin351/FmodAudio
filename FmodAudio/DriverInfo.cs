@@ -4,31 +4,35 @@ namespace FmodAudio
 {
     public class DriverInfo
     {
-        internal string dname;
-        internal Guid dguid;
-        internal int systemRate;
-        internal SpeakerMode speakerMode;
-        internal int speakerModeChannels;
-
-        internal DriverInfo()
+        internal DriverInfo(string name, Guid guid, int rate, SpeakerMode speakermode, int channels)
         {
+            DriverName = name;
+            DriverGuid = guid;
+            SystemRate = rate;
+            SpeakerMode = speakermode;
+            SpeakerModeChannels = channels;
         }
         
-        public string DriverName => dname;
-        public Guid DriverGuid => dguid;
-        public int SystemRate => systemRate;
-        public SpeakerMode SpeakerMode => speakerMode;
-        public int SpeakerModeChannels => speakerModeChannels;
+        public string DriverName { get; }
+        public Guid DriverGuid { get; }
+        public int SystemRate { get; }
+        public SpeakerMode SpeakerMode { get; }
+        public int SpeakerModeChannels { get; }
 
         public override string ToString()
         {
-            return dname;
+            return DriverName;
         }
     }
 
     public class RecordDriverInfo : DriverInfo
     {
-        internal DriverState state;
-        public DriverState State => state;
+        public DriverState State { get; }
+
+        internal RecordDriverInfo(string name, Guid guid, int rate, SpeakerMode speakermode, int channels, DriverState state)
+           : base (name, guid, rate, speakermode, channels)
+        {
+            State = state;
+        }
     }
 }

@@ -1241,22 +1241,111 @@ namespace FmodAudio.Interop
         }
 
         public abstract Result SoundGroup_Release(IntPtr soundgroup);
+       
         public abstract Result SoundGroup_GetSystemObject(IntPtr soundgroup, IntPtr* system);
+
+        public Result SoundGroup_GetSystemObject(IntPtr soundGroup, out IntPtr system)
+        {
+            fixed (IntPtr* pSystem = &system)
+            {
+                return SoundGroup_GetSystemObject(soundGroup, pSystem);
+            }
+        }
+        
         public abstract Result SoundGroup_SetMaxAudible(IntPtr soundgroup, int maxaudible);
+        
         public abstract Result SoundGroup_GetMaxAudible(IntPtr soundgroup, int* maxaudible);
+
+        public Result SoundGroup_GetMaxAudible(IntPtr soundGroup, out int maxAudible)
+        {
+            fixed (int* pMaxAudible = &maxAudible)
+            {
+                return SoundGroup_GetMaxAudible(soundGroup, pMaxAudible);
+            }
+        }
+        
         public abstract Result SoundGroup_SetMaxAudibleBehavior(IntPtr soundgroup, SoundGroupBehavior behavior);
+        
         public abstract Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundgroup, SoundGroupBehavior* behavior);
+
+        public Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundGroup, out SoundGroupBehavior behavior)
+        {
+            fixed (SoundGroupBehavior* pBehavior = &behavior)
+            {
+                return SoundGroup_GetMaxAudibleBehavior(soundGroup, pBehavior);
+            }
+        }
+        
         public abstract Result SoundGroup_SetMuteFadeSpeed(IntPtr soundgroup, float speed);
+        
         public abstract Result SoundGroup_GetMuteFadeSpeed(IntPtr soundgroup, float* speed);
+
+        public Result SoundGroup_GetMuteFadeSpeed(IntPtr soundgroup, out float speed)
+        {
+            fixed (float* pSpeed = &speed)
+            {
+                return SoundGroup_GetMuteFadeSpeed(soundgroup, pSpeed);
+            }
+        }
+        
         public abstract Result SoundGroup_SetVolume(IntPtr soundgroup, float volume);
+        
         public abstract Result SoundGroup_GetVolume(IntPtr soundgroup, float* volume);
+
+        public Result SoundGroup_GetVolume(IntPtr soundgroup, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return SoundGroup_GetVolume(soundgroup, pVolume);
+            }
+        }
+
         public abstract Result SoundGroup_Stop(IntPtr soundgroup);
+        
         public abstract Result SoundGroup_GetName(IntPtr soundgroup, byte* name, int namelen);
+        
         public abstract Result SoundGroup_GetNumSounds(IntPtr soundgroup, int* numsounds);
+
+        public Result SoundGroup_GetNumSounds(IntPtr soundgroup, out int soundCount)
+        {
+            fixed (int* pSoundCount = &soundCount)
+            {
+                return SoundGroup_GetNumSounds(soundgroup, pSoundCount);
+            }
+        }
+
         public abstract Result SoundGroup_GetSound(IntPtr soundgroup, int index, IntPtr* sound);
-        public abstract Result SoundGroup_GetNumPlaying(IntPtr soundgroup, int* numplaying);
+
+        public Result SoundGroup_GetSound(IntPtr soundgroup, int index, out IntPtr sound)
+        {
+            fixed (IntPtr* pSound = &sound)
+            {
+                return SoundGroup_GetSound(soundgroup, index, pSound);
+            }
+        }
+
+        public abstract Result SoundGroup_GetNumPlaying(IntPtr soundgroup, int* soundsPlaying);
+
+        public Result SoundGroup_GetNumPlaying(IntPtr soundgroup, out int soundsPlaying)
+        {
+            fixed (int* pSoundsPlaying = &soundsPlaying)
+            {
+                return SoundGroup_GetNumPlaying(soundgroup, pSoundsPlaying);
+            }
+        }
+
         public abstract Result SoundGroup_SetUserData(IntPtr soundgroup, IntPtr userdata);
+        
         public abstract Result SoundGroup_GetUserData(IntPtr soundgroup, IntPtr* userdata);
+
+        public Result SoundGroup_GetUserData(IntPtr soundgroup, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserData = &userdata)
+            {
+                return SoundGroup_GetUserData(soundgroup, pUserData);
+            }
+        }
+
         public abstract Result Channel_SetFrequency(IntPtr channel, float frequency);
         public abstract Result Channel_GetFrequency(IntPtr channel, float* frequency);
         public abstract Result Channel_SetPriority(IntPtr channel, int priority);

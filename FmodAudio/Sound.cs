@@ -314,11 +314,8 @@ namespace FmodAudio
                 throw new ArgumentNullException(nameof(name));
             }
 
-            fixed (byte* namePtr = FmodHelpers.ToUTF8NullTerminated(name))
-            {
-                library.Sound_AddSyncPoint(Handle, offset, unit, namePtr, out IntPtr handle).CheckResult();
-                return new SyncPoint(this, handle);
-            }
+            library.Sound_AddSyncPoint(Handle, offset, unit, name, out IntPtr handle).CheckResult();
+            return new SyncPoint(this, handle);
         }
 
         public void DeleteSyncPoint(SyncPoint point)
