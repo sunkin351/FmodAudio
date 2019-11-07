@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AdvancedDLSupport" Version="2.3.2" />
+    <PackageReference Include="AdvancedDLSupport" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

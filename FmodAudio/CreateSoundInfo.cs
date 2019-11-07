@@ -232,7 +232,6 @@ namespace FmodAudio
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
 
-        private FileOpenCallbackImpl fileOpenImpl;
         private FileOpenCallback fileOpen;
 
         /// <summary>
@@ -243,8 +242,7 @@ namespace FmodAudio
             get => fileOpen;
             set
             {
-                FmodHelpers.UpdateCallback(value?.Wrap(), out fileOpenImpl, out Struct.FileUserOpen);
-                fileOpen = value;
+                FmodHelpers.UpdateCallback(value, out fileOpen, out Struct.FileUserOpen);
             }
         }
 

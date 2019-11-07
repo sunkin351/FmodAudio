@@ -377,9 +377,9 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_GetVolume(IntPtr channelgroup, float* volume);
         
-        Result ChannelGroup_SetVolumeRamp(IntPtr channelgroup, int ramp);
+        Result ChannelGroup_SetVolumeRamp(IntPtr channelgroup, bool ramp);
         
-        Result ChannelGroup_GetVolumeRamp(IntPtr channelgroup, int* ramp);
+        Result ChannelGroup_GetVolumeRamp(IntPtr channelgroup, out bool ramp);
         
         Result ChannelGroup_GetAudibility(IntPtr channelgroup, float* audibility);
         

@@ -154,44 +154,17 @@ namespace FmodAudio
             }
         }
         
-        ChannelCallbackInternal InternalCallback;
         ChannelCallback Callback;
 
         public void SetCallback(ChannelCallback callback)
         {
-            if (ReferenceEquals(callback, Callback))
+            if (callback == Callback)
             {
                 return;
             }
 
-            ChannelCallbackInternal cb = delegate (IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2)
-            {
-                if (rawchannel != Handle)
-                {
-                    return Result.Err_Internal;
-                }
+            library.ChannelGroup_SetCallback(Handle, callback).CheckResult();
 
-                Result result = Result.Ok;
-
-                try
-                {
-                    callback(this, controltype, type, commanddata1, commanddata2);
-                }
-                catch (FmodException e)
-                {
-                    result = e.Result ?? Result.Err_Internal;
-                }
-                catch (Exception e)
-                {
-                    result = (e.InnerException as FmodException)?.Result ?? Result.Err_Internal;
-                }
-
-                return result;
-            };
-            
-            library.ChannelGroup_SetCallback(Handle, cb).CheckResult();
-
-            InternalCallback = cb;
             Callback = callback;
         }
 

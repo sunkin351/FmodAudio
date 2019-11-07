@@ -9,7 +9,7 @@ using System.Text;
 
 namespace FmodAudio
 {
-    internal static class FmodHelpers
+    public static class FmodHelpers
     {
         static readonly SortedDictionary<Result, string> ErrorMessageLookup = new SortedDictionary<Result, string>()
         {
@@ -86,7 +86,7 @@ namespace FmodAudio
 
         };
 
-        public static string GetErrorMessage(Result res)
+        internal static string GetErrorMessage(Result res)
         {
             if (!ErrorMessageLookup.TryGetValue(res, out string message))
             {
@@ -120,7 +120,7 @@ namespace FmodAudio
             }
         }
         
-        public static Memory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
+        internal static Memory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
         {
             if (rolloff.IsEmpty)
                 return null;
@@ -177,7 +177,7 @@ namespace FmodAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] ArrayClone<T>(this T[] arr)
+        internal static T[] ArrayClone<T>(this T[] arr)
         {
             if (arr is null)
                 return null;
@@ -194,7 +194,7 @@ namespace FmodAudio
         /// <param name="encoding">The encoding to use for conversion</param>
         /// <param name="pointer">Unmanaged Memory Block</param>
         /// <returns>if 'pointer' was reallocated</returns>
-        public static unsafe bool StringToPointer(string value, Encoding encoding, ref Memory.SaferPointer pointer)
+        internal static unsafe bool StringToPointer(string value, Encoding encoding, ref Memory.SaferPointer pointer)
         {
             bool Reallocated = false;
 
@@ -221,7 +221,7 @@ namespace FmodAudio
             return Reallocated;
         }
 
-        public static unsafe Memory.SaferPointer StringToPointer(string value, Encoding encoding)
+        internal static unsafe Memory.SaferPointer StringToPointer(string value, Encoding encoding)
         {
             int count = encoding.GetByteCount(value);
             var ptr = Memory.Allocate(count + 1);
@@ -245,14 +245,6 @@ namespace FmodAudio
             }
 
             return string.Empty;
-        }
-
-        public static FileOpenCallbackImpl Wrap(this FileOpenCallback callback)
-        {
-            return delegate (IntPtr Filename, ref uint filesize, ref IntPtr handle, IntPtr userdata)
-            {
-                return callback(PtrToStringUnknownSize(Filename), out filesize, out handle, userdata);
-            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

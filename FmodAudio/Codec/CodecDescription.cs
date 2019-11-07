@@ -8,7 +8,7 @@ namespace FmodAudio.Codec
 {
     public class CodecDescription
     {
-        internal Structure _struct;
+        internal Structure Struct;
 
         private string managedName;
         private Memory.SaferPointer NameBuffer;
@@ -32,70 +32,70 @@ namespace FmodAudio.Codec
                 {
                     managedName = null;
                     NameBuffer = null;
-                    _struct.Name = default;
+                    Struct.Name = default;
                 }
                 else
                 {
                     NameBuffer = FmodHelpers.StringToPointer(value, Encoding.UTF8);
                     managedName = value;
-                    _struct.Name = NameBuffer;
+                    Struct.Name = NameBuffer;
                 }
             }
         }
 
-        public FmodVersion Version { get => _struct.Version; set => _struct.Version = value; }
+        public FmodVersion Version { get => Struct.Version; set => Struct.Version = value; }
 
-        public bool DefaultAsStream { get => _struct.DefaultAsStream != 0; set => _struct.DefaultAsStream = value ? 1 : 0; }
+        public bool DefaultAsStream { get => Struct.DefaultAsStream != 0; set => Struct.DefaultAsStream = value ? 1 : 0; }
 
-        public TimeUnit TimeUnits { get => _struct.TimeUnits; set => _struct.TimeUnits = value; }
+        public TimeUnit TimeUnits { get => Struct.TimeUnits; set => Struct.TimeUnits = value; }
 
         public CodecOpenCallback OpenCallback
         {
             get => openCallback;
 
-            set => FmodHelpers.UpdateCallback(value, out openCallback, out _struct.Open);
+            set => FmodHelpers.UpdateCallback(value, out openCallback, out Struct.Open);
         }
 
         public CodecCloseCallback CloseCallback
         {
             get => closeCallback;
-            set => FmodHelpers.UpdateCallback(value, out closeCallback, out _struct.Close);
+            set => FmodHelpers.UpdateCallback(value, out closeCallback, out Struct.Close);
         }
 
         public CodecReadCallback ReadCallback
         {
             get => readCallback;
-            set => FmodHelpers.UpdateCallback(value, out readCallback, out _struct.Read);
+            set => FmodHelpers.UpdateCallback(value, out readCallback, out Struct.Read);
         }
 
         public CodecGetLengthCallback GetLengthCallback
         {
             get => getLengthCallback;
-            set => FmodHelpers.UpdateCallback(value, out getLengthCallback, out _struct.GetLength);
+            set => FmodHelpers.UpdateCallback(value, out getLengthCallback, out Struct.GetLength);
         }
 
         public CodecSetPositionCallback SetPositionCallback
         {
             get => setPositionCallback;
-            set => FmodHelpers.UpdateCallback(value, out setPositionCallback, out _struct.SetPosition);
+            set => FmodHelpers.UpdateCallback(value, out setPositionCallback, out Struct.SetPosition);
         }
 
         public CodecGetPositionCallback GetPositionCallback
         {
             get => getPositionCallback;
-            set => FmodHelpers.UpdateCallback(value, out getPositionCallback, out _struct.GetPosition);
+            set => FmodHelpers.UpdateCallback(value, out getPositionCallback, out Struct.GetPosition);
         }
 
         public CodecSoundCreateCallback CreateSoundFormat
         {
             get => soundCreateCallback;
-            set => FmodHelpers.UpdateCallback(value, out soundCreateCallback, out _struct.SoundCreate);
+            set => FmodHelpers.UpdateCallback(value, out soundCreateCallback, out Struct.SoundCreate);
         }
 
         public CodecGetWaveFormatCallback GetWaveFormatCallback
         {
             get => getWaveFormatCallback;
-            set => FmodHelpers.UpdateCallback(value, out getWaveFormatCallback, out _struct.GetWaveFormat);
+            set => FmodHelpers.UpdateCallback(value, out getWaveFormatCallback, out Struct.GetWaveFormat);
         }
 
         public struct Structure

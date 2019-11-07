@@ -1480,17 +1480,9 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result ChannelGroup_SetVolumeRamp(IntPtr channelGroup, int ramp);
+        public abstract Result ChannelGroup_SetVolumeRamp(IntPtr channelGroup, bool ramp);
         
-        public abstract Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, int* ramp);
-
-        public Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, out int ramp)
-        {
-            fixed (int* pRamp = &ramp)
-            {
-                return ChannelGroup_GetVolumeRamp(channelGroup, pRamp);
-            }
-        }
+        public abstract Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, out bool ramp);
 
         public abstract Result ChannelGroup_GetAudibility(IntPtr channelGroup, float* audibility);
 

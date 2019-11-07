@@ -167,7 +167,7 @@ namespace FmodAudio
             return system;
         }
 
-        public static FmodSystem CreateSystem()
+        public unsafe static FmodSystem CreateSystem()
         {
             EnsureInitialized();
 
@@ -175,7 +175,7 @@ namespace FmodAudio
 
             lock (CreationSyncObject)
             {
-                nativeLibrary.System_Create(out handle).CheckResult();
+                nativeLibrary.System_Create(&handle).CheckResult();
             }
 
             var sys = new FmodSystem(nativeLibrary, handle);

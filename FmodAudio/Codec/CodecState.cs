@@ -67,7 +67,7 @@ namespace FmodAudio.Codec
         {
             fixed (byte* dataPtr = data)
             {
-                MetaData(state, tagType, name, dataPtr, (uint)data.Length, dataType, unique);
+                metaData.Invoke(state, tagType, name, dataPtr, (uint)data.Length, dataType, unique);
             }
         }
 
