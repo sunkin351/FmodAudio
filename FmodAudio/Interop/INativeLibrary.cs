@@ -341,7 +341,7 @@ namespace FmodAudio.Interop
         
         Result Channel_GetChannelGroup(IntPtr channel, IntPtr* channelgroup);
         
-        Result Channel_IsVirtual(IntPtr channel, int* isvirtual);
+        Result Channel_IsVirtual(IntPtr channel, out bool isvirtual);
         
         Result Channel_GetCurrentSound(IntPtr channel, IntPtr* sound);
         
@@ -405,7 +405,7 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_SetCallback(IntPtr channelgroup, ChannelCallback callback);
         
-        Result ChannelGroup_IsPlaying(IntPtr channelgroup, int* isplaying);
+        Result ChannelGroup_IsPlaying(IntPtr channelgroup, out bool isplaying);
         
         Result ChannelGroup_SetPan(IntPtr channelgroup, float pan);
         
@@ -419,7 +419,7 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_GetDSPClock(IntPtr channelgroup, ulong* dspclock, ulong* parentclock);
         
-        Result ChannelGroup_SetDelay(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end, int stopchannels);
+        Result ChannelGroup_SetDelay(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end, bool stopchannels);
         
         Result ChannelGroup_GetDelay(IntPtr channelgroup, ulong* dspclock_start, ulong* dspclock_end, int* stopchannels);
         

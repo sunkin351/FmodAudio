@@ -626,7 +626,7 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result System_CreateChannelGroup(IntPtr system, byte* name, IntPtr* channelgroup);
+        public abstract Result System_CreateChannelGroup(IntPtr system, byte* name, IntPtr* channelGroup);
 
         public Result System_CreateChannelGroup(IntPtr system, byte* name, out IntPtr channelGroup)
         {
@@ -653,7 +653,7 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result System_CreateSoundGroup(IntPtr system, byte* name, IntPtr* soundgroup);
+        public abstract Result System_CreateSoundGroup(IntPtr system, byte* name, IntPtr* soundGroup);
 
         public Result System_CreateSoundGroup(IntPtr system, byte* name, out IntPtr channelGroup)
         {
@@ -720,29 +720,29 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result System_GetMasterChannelGroup(IntPtr system, IntPtr* channelgroup);
+        public abstract Result System_GetMasterChannelGroup(IntPtr system, IntPtr* channelGroup);
 
-        public Result System_GetMasterChannelGroup(IntPtr system, out IntPtr channelgroup)
+        public Result System_GetMasterChannelGroup(IntPtr system, out IntPtr channelGroup)
         {
-            fixed (IntPtr* pChannelGroup = &channelgroup)
+            fixed (IntPtr* pChannelGroup = &channelGroup)
             {
                 return System_GetMasterChannelGroup(system, pChannelGroup);
             }
         }
 
-        public abstract Result System_GetMasterSoundGroup(IntPtr system, IntPtr* soundgroup);
+        public abstract Result System_GetMasterSoundGroup(IntPtr system, IntPtr* soundGroup);
 
-        public Result System_GetMasterSoundGroup(IntPtr system, out IntPtr soundgroup)
+        public Result System_GetMasterSoundGroup(IntPtr system, out IntPtr soundGroup)
         {
-            fixed (IntPtr* pSoundGroup = &soundgroup)
+            fixed (IntPtr* pSoundGroup = &soundGroup)
             {
                 return System_GetMasterSoundGroup(system, pSoundGroup);
             }
         }
 
-        public abstract Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelgroup, bool passThru);
+        public abstract Result System_AttachChannelGroupToPort(IntPtr system, uint portType, ulong portIndex, IntPtr channelGroup, bool passThru);
         
-        public abstract Result System_DetachChannelGroupFromPort(IntPtr system, IntPtr channelgroup);
+        public abstract Result System_DetachChannelGroupFromPort(IntPtr system, IntPtr channelGroup);
         
         public abstract Result System_SetReverbProperties(IntPtr system, int instance, ReverbProperties* prop);
 
@@ -1079,13 +1079,13 @@ namespace FmodAudio.Interop
 
         public abstract Result Sound_SeekData(IntPtr sound, uint pcm);
         
-        public abstract Result Sound_SetSoundGroup(IntPtr sound, IntPtr soundgroup);
+        public abstract Result Sound_SetSoundGroup(IntPtr sound, IntPtr soundGroup);
         
-        public abstract Result Sound_GetSoundGroup(IntPtr sound, IntPtr* soundgroup);
+        public abstract Result Sound_GetSoundGroup(IntPtr sound, IntPtr* soundGroup);
 
-        public Result Sound_GetSoundGroup(IntPtr sound, out IntPtr soundgroup)
+        public Result Sound_GetSoundGroup(IntPtr sound, out IntPtr soundGroup)
         {
-            fixed (IntPtr* pSoundGroup = &soundgroup)
+            fixed (IntPtr* pSoundGroup = &soundGroup)
             {
                 return Sound_GetSoundGroup(sound, pSoundGroup);
             }
@@ -1240,9 +1240,9 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result SoundGroup_Release(IntPtr soundgroup);
+        public abstract Result SoundGroup_Release(IntPtr soundGroup);
        
-        public abstract Result SoundGroup_GetSystemObject(IntPtr soundgroup, IntPtr* system);
+        public abstract Result SoundGroup_GetSystemObject(IntPtr soundGroup, IntPtr* system);
 
         public Result SoundGroup_GetSystemObject(IntPtr soundGroup, out IntPtr system)
         {
@@ -1252,9 +1252,9 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result SoundGroup_SetMaxAudible(IntPtr soundgroup, int maxaudible);
+        public abstract Result SoundGroup_SetMaxAudible(IntPtr soundGroup, int maxaudible);
         
-        public abstract Result SoundGroup_GetMaxAudible(IntPtr soundgroup, int* maxaudible);
+        public abstract Result SoundGroup_GetMaxAudible(IntPtr soundGroup, int* maxaudible);
 
         public Result SoundGroup_GetMaxAudible(IntPtr soundGroup, out int maxAudible)
         {
@@ -1264,9 +1264,9 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result SoundGroup_SetMaxAudibleBehavior(IntPtr soundgroup, SoundGroupBehavior behavior);
+        public abstract Result SoundGroup_SetMaxAudibleBehavior(IntPtr soundGroup, SoundGroupBehavior behavior);
         
-        public abstract Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundgroup, SoundGroupBehavior* behavior);
+        public abstract Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundGroup, SoundGroupBehavior* behavior);
 
         public Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundGroup, out SoundGroupBehavior behavior)
         {
@@ -1276,162 +1276,353 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result SoundGroup_SetMuteFadeSpeed(IntPtr soundgroup, float speed);
+        public abstract Result SoundGroup_SetMuteFadeSpeed(IntPtr soundGroup, float speed);
         
-        public abstract Result SoundGroup_GetMuteFadeSpeed(IntPtr soundgroup, float* speed);
+        public abstract Result SoundGroup_GetMuteFadeSpeed(IntPtr soundGroup, float* speed);
 
-        public Result SoundGroup_GetMuteFadeSpeed(IntPtr soundgroup, out float speed)
+        public Result SoundGroup_GetMuteFadeSpeed(IntPtr soundGroup, out float speed)
         {
             fixed (float* pSpeed = &speed)
             {
-                return SoundGroup_GetMuteFadeSpeed(soundgroup, pSpeed);
+                return SoundGroup_GetMuteFadeSpeed(soundGroup, pSpeed);
             }
         }
         
-        public abstract Result SoundGroup_SetVolume(IntPtr soundgroup, float volume);
+        public abstract Result SoundGroup_SetVolume(IntPtr soundGroup, float volume);
         
-        public abstract Result SoundGroup_GetVolume(IntPtr soundgroup, float* volume);
+        public abstract Result SoundGroup_GetVolume(IntPtr soundGroup, float* volume);
 
-        public Result SoundGroup_GetVolume(IntPtr soundgroup, out float volume)
+        public Result SoundGroup_GetVolume(IntPtr soundGroup, out float volume)
         {
             fixed (float* pVolume = &volume)
             {
-                return SoundGroup_GetVolume(soundgroup, pVolume);
+                return SoundGroup_GetVolume(soundGroup, pVolume);
             }
         }
 
-        public abstract Result SoundGroup_Stop(IntPtr soundgroup);
+        public abstract Result SoundGroup_Stop(IntPtr soundGroup);
         
-        public abstract Result SoundGroup_GetName(IntPtr soundgroup, byte* name, int namelen);
+        public abstract Result SoundGroup_GetName(IntPtr soundGroup, byte* name, int namelen);
         
-        public abstract Result SoundGroup_GetNumSounds(IntPtr soundgroup, int* numsounds);
+        public abstract Result SoundGroup_GetNumSounds(IntPtr soundGroup, int* numsounds);
 
-        public Result SoundGroup_GetNumSounds(IntPtr soundgroup, out int soundCount)
+        public Result SoundGroup_GetNumSounds(IntPtr soundGroup, out int soundCount)
         {
             fixed (int* pSoundCount = &soundCount)
             {
-                return SoundGroup_GetNumSounds(soundgroup, pSoundCount);
+                return SoundGroup_GetNumSounds(soundGroup, pSoundCount);
             }
         }
 
-        public abstract Result SoundGroup_GetSound(IntPtr soundgroup, int index, IntPtr* sound);
+        public abstract Result SoundGroup_GetSound(IntPtr soundGroup, int index, IntPtr* sound);
 
-        public Result SoundGroup_GetSound(IntPtr soundgroup, int index, out IntPtr sound)
+        public Result SoundGroup_GetSound(IntPtr soundGroup, int index, out IntPtr sound)
         {
             fixed (IntPtr* pSound = &sound)
             {
-                return SoundGroup_GetSound(soundgroup, index, pSound);
+                return SoundGroup_GetSound(soundGroup, index, pSound);
             }
         }
 
-        public abstract Result SoundGroup_GetNumPlaying(IntPtr soundgroup, int* soundsPlaying);
+        public abstract Result SoundGroup_GetNumPlaying(IntPtr soundGroup, int* soundsPlaying);
 
-        public Result SoundGroup_GetNumPlaying(IntPtr soundgroup, out int soundsPlaying)
+        public Result SoundGroup_GetNumPlaying(IntPtr soundGroup, out int soundsPlaying)
         {
             fixed (int* pSoundsPlaying = &soundsPlaying)
             {
-                return SoundGroup_GetNumPlaying(soundgroup, pSoundsPlaying);
+                return SoundGroup_GetNumPlaying(soundGroup, pSoundsPlaying);
             }
         }
 
-        public abstract Result SoundGroup_SetUserData(IntPtr soundgroup, IntPtr userdata);
+        public abstract Result SoundGroup_SetUserData(IntPtr soundGroup, IntPtr userdata);
         
-        public abstract Result SoundGroup_GetUserData(IntPtr soundgroup, IntPtr* userdata);
+        public abstract Result SoundGroup_GetUserData(IntPtr soundGroup, IntPtr* userdata);
 
-        public Result SoundGroup_GetUserData(IntPtr soundgroup, out IntPtr userdata)
+        public Result SoundGroup_GetUserData(IntPtr soundGroup, out IntPtr userdata)
         {
             fixed (IntPtr* pUserData = &userdata)
             {
-                return SoundGroup_GetUserData(soundgroup, pUserData);
+                return SoundGroup_GetUserData(soundGroup, pUserData);
             }
         }
 
         public abstract Result Channel_SetFrequency(IntPtr channel, float frequency);
+        
         public abstract Result Channel_GetFrequency(IntPtr channel, float* frequency);
-        public abstract Result Channel_SetPriority(IntPtr channel, int priority);
-        public abstract Result Channel_GetPriority(IntPtr channel, int* priority);
-        public abstract Result Channel_SetChannelGroup(IntPtr channel, IntPtr channelgroup);
-        public abstract Result Channel_GetChannelGroup(IntPtr channel, IntPtr* channelgroup);
-        public abstract Result Channel_IsVirtual(IntPtr channel, int* isvirtual);
-        public abstract Result Channel_GetCurrentSound(IntPtr channel, IntPtr* sound);
-        public abstract Result Channel_GetIndex(IntPtr channel, int* index);
-        public abstract Result Channel_SetPosition(IntPtr channel, uint position, TimeUnit postype);
-        public abstract Result Channel_GetPosition(IntPtr channel, uint* position, TimeUnit postype);
-        public abstract Result Channel_SetMode(IntPtr channel, Mode mode);
-        public abstract Result Channel_GetMode(IntPtr channel, Mode* mode);
-        public abstract Result Channel_SetLoopCount(IntPtr channel, int loopcount);
-        public abstract Result Channel_GetLoopCount(IntPtr channel, int* loopcount);
-        public abstract Result Channel_SetLoopPoints(IntPtr channel, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
-        public abstract Result Channel_GetLoopPoints(IntPtr channel, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
-        public abstract Result Channel_SetUserData(IntPtr channel, IntPtr userdata);
-        public abstract Result Channel_GetUserData(IntPtr channel, IntPtr* userdata);
-        public abstract Result ChannelGroup_Stop(IntPtr channelgroup);
-        public abstract Result ChannelGroup_SetPaused(IntPtr channelgroup, int paused);
-        public abstract Result ChannelGroup_GetPaused(IntPtr channelgroup, int* paused);
-        public abstract Result ChannelGroup_GetVolume(IntPtr channelgroup, float* volume);
-        public abstract Result ChannelGroup_SetVolumeRamp(IntPtr channelgroup, int ramp);
-        public abstract Result ChannelGroup_GetVolumeRamp(IntPtr channelgroup, int* ramp);
-        public abstract Result ChannelGroup_GetAudibility(IntPtr channelgroup, float* audibility);
 
-        public Result ChannelGroup_GetAudibility(IntPtr channelgroup, out float audibility)
+        public Result Channel_GetFrequency(IntPtr channel, out float frequency)
         {
-            fixed (float* pAudibility = &audibility)
+            fixed (float* pFrequency = &frequency)
             {
-                return ChannelGroup_GetAudibility(channelgroup, pAudibility);
+                return Channel_GetFrequency(channel, pFrequency);
             }
         }
 
-        public abstract Result ChannelGroup_SetPitch(IntPtr channelgroup, float pitch);
-        public abstract Result ChannelGroup_GetPitch(IntPtr channelgroup, float* pitch);
-        public abstract Result ChannelGroup_SetMute(IntPtr channelgroup, int mute);
-        public abstract Result ChannelGroup_GetMute(IntPtr channelgroup, int* mute);
-        public abstract Result ChannelGroup_SetReverbProperties(IntPtr channelgroup, int instance, float wet);
-        public abstract Result ChannelGroup_GetReverbProperties(IntPtr channelgroup, int instance, float* wet);
-        public abstract Result ChannelGroup_SetLowPassGain(IntPtr channelgroup, float gain);
-        public abstract Result ChannelGroup_GetLowPassGain(IntPtr channelgroup, float* gain);
-        public abstract Result ChannelGroup_SetMode(IntPtr channelgroup, Mode mode);
-        public abstract Result ChannelGroup_GetMode(IntPtr channelgroup, Mode* mode);
-        public abstract Result ChannelGroup_SetCallback(IntPtr channelgroup, ChannelCallback callback);
-        public abstract Result ChannelGroup_IsPlaying(IntPtr channelgroup, int* isplaying);
-        public abstract Result ChannelGroup_SetPan(IntPtr channelgroup, float pan);
-        public abstract Result ChannelGroup_SetMixLevelsOutput(IntPtr channelgroup, float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
-        public abstract Result ChannelGroup_SetMixLevelsInput(IntPtr channelgroup, float* levels, int numlevels);
-        public abstract Result ChannelGroup_SetMixMatrix(IntPtr channelgroup, float* matrix, int outchannels, int inchannels, int inchannel_hop);
-        public abstract Result ChannelGroup_GetMixMatrix(IntPtr channelgroup, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
-        public abstract Result ChannelGroup_GetDSPClock(IntPtr channelgroup, ulong* dspclock, ulong* parentclock);
-        public abstract Result ChannelGroup_SetDelay(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end, int stopchannels);
-        public abstract Result ChannelGroup_GetDelay(IntPtr channelgroup, ulong* dspclock_start, ulong* dspclock_end, int* stopchannels);
+        public abstract Result Channel_SetPriority(IntPtr channel, int priority);
+        
+        public abstract Result Channel_GetPriority(IntPtr channel, int* priority);
 
-        public Result ChannelGroup_GetDelay(IntPtr channelgroup, ulong* dspclock_start, ulong* dspclock_end, out bool stopchannels)
+        public Result Channel_GetPriority(IntPtr channel, out int priority)
+        {
+            fixed (int* pPriority = &priority)
+            {
+                return Channel_GetPriority(channel, pPriority);
+            }
+        }
+        
+        public abstract Result Channel_SetChannelGroup(IntPtr channel, IntPtr channelGroup);
+        
+        public abstract Result Channel_GetChannelGroup(IntPtr channel, IntPtr* channelGroup);
+
+        public Result Channel_GetChannelGroup(IntPtr channel, out IntPtr channelGroup)
+        {
+            fixed (IntPtr* pChannelGroup = &channelGroup)
+            {
+                return Channel_GetChannelGroup(channel, pChannelGroup);
+            }
+        }
+        
+        public abstract Result Channel_IsVirtual(IntPtr channel, out bool isvirtual);
+
+        public abstract Result Channel_GetCurrentSound(IntPtr channel, IntPtr* sound);
+
+        public Result Channel_GetCurrentSound(IntPtr channel, out IntPtr sound)
+        {
+            fixed (IntPtr* pSound = &sound)
+            {
+                return Channel_GetCurrentSound(channel, pSound);
+            }
+        }
+
+        public abstract Result Channel_GetIndex(IntPtr channel, int* index);
+
+        public Result Channel_GetIndex(IntPtr channel, out int index)
+        {
+            fixed (int* pIndex = &index)
+            {
+                return Channel_GetIndex(channel, pIndex);
+            }
+        }
+
+        public abstract Result Channel_SetPosition(IntPtr channel, uint position, TimeUnit posType);
+        
+        public abstract Result Channel_GetPosition(IntPtr channel, uint* position, TimeUnit posType);
+
+        public Result Channel_GetPosition(IntPtr channel, out uint position, TimeUnit posType)
+        {
+            fixed (uint* pPos = &position)
+            {
+                return Channel_GetPosition(channel, pPos, posType);
+            }
+        }
+        
+        public abstract Result Channel_SetMode(IntPtr channel, Mode mode);
+        
+        public abstract Result Channel_GetMode(IntPtr channel, Mode* mode);
+
+        public Result Channel_GetMode(IntPtr channel, out Mode mode)
+        {
+            fixed (Mode* pMode = &mode)
+            {
+                return Channel_GetMode(channel, pMode);
+            }
+        }
+        
+        public abstract Result Channel_SetLoopCount(IntPtr channel, int loopcount);
+        
+        public abstract Result Channel_GetLoopCount(IntPtr channel, int* loopcount);
+
+        public Result Channel_GetLoopCount(IntPtr channel, out int loopcount)
+        {
+            fixed (int* pLoopCount = &loopcount)
+            {
+                return Channel_GetLoopCount(channel, pLoopCount);
+            }
+        }
+
+        public abstract Result Channel_SetLoopPoints(IntPtr channel, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
+        
+        public abstract Result Channel_GetLoopPoints(IntPtr channel, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
+
+        public Result Channel_GetLoopPoints(IntPtr channel, out uint loopstart, TimeUnit loopstarttype, out uint loopend, TimeUnit loopendtype)
+        {
+            fixed (uint* pLoopStart = &loopstart, pLoopEnd = &loopend)
+            {
+                return Channel_GetLoopPoints(channel, pLoopStart, loopstarttype, pLoopEnd, loopendtype);
+            }
+        }
+
+        public abstract Result Channel_SetUserData(IntPtr channel, IntPtr userdata);
+        
+        public abstract Result Channel_GetUserData(IntPtr channel, IntPtr* userdata);
+
+        public Result Channel_GetUserData(IntPtr channel, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserdata = &userdata)
+            {
+                return Channel_GetUserData(channel, pUserdata);
+            }
+        }
+
+        public abstract Result ChannelGroup_Stop(IntPtr channelGroup);
+
+        public abstract Result ChannelGroup_SetPaused(IntPtr channelGroup, bool paused);
+        
+        public abstract Result ChannelGroup_GetPaused(IntPtr channelGroup, out bool paused);
+
+        public abstract Result ChannelGroup_GetVolume(IntPtr channelGroup, float* volume);
+
+        public Result ChannelGroup_GetVolume(IntPtr channelGroup, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return ChannelGroup_GetVolume(channelGroup, pVolume);
+            }
+        }
+        
+        public abstract Result ChannelGroup_SetVolumeRamp(IntPtr channelGroup, int ramp);
+        
+        public abstract Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, int* ramp);
+
+        public Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, out int ramp)
+        {
+            fixed (int* pRamp = &ramp)
+            {
+                return ChannelGroup_GetVolumeRamp(channelGroup, pRamp);
+            }
+        }
+
+        public abstract Result ChannelGroup_GetAudibility(IntPtr channelGroup, float* audibility);
+
+        public Result ChannelGroup_GetAudibility(IntPtr channelGroup, out float audibility)
+        {
+            fixed (float* pAudibility = &audibility)
+            {
+                return ChannelGroup_GetAudibility(channelGroup, pAudibility);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetPitch(IntPtr channelGroup, float pitch);
+
+        public abstract Result ChannelGroup_GetPitch(IntPtr channelGroup, float* pitch);
+
+        public Result ChannelGroup_GetPitch(IntPtr channelGroup, out float pitch)
+        {
+            fixed (float* pPitch = &pitch)
+            {
+                return ChannelGroup_GetPitch(channelGroup, pPitch);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetMute(IntPtr channelGroup, bool mute);
+        
+        public abstract Result ChannelGroup_GetMute(IntPtr channelGroup, out bool mute);
+
+        public abstract Result ChannelGroup_SetReverbProperties(IntPtr channelGroup, int instance, float wet);
+        
+        public abstract Result ChannelGroup_GetReverbProperties(IntPtr channelGroup, int instance, float* wet);
+
+        public Result ChannelGroup_GetReverbProperties(IntPtr channelGroup, int instance, out float wet)
+        {
+            fixed (float* pWet = &wet)
+            {
+                return ChannelGroup_GetReverbProperties(channelGroup, instance, pWet);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetLowPassGain(IntPtr channelGroup, float gain);
+        
+        public abstract Result ChannelGroup_GetLowPassGain(IntPtr channelGroup, float* gain);
+
+        public Result ChannelGroup_GetLowPassGain(IntPtr channelGroup, out float gain)
+        {
+            fixed (float* pGain = &gain)
+            {
+                return ChannelGroup_GetLowPassGain(channelGroup, pGain);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetMode(IntPtr channelGroup, Mode mode);
+        
+        public abstract Result ChannelGroup_GetMode(IntPtr channelGroup, Mode* mode);
+
+        public Result ChannelGroup_GetMode(IntPtr channelGroup, out Mode mode)
+        {
+            fixed (Mode* pMode = &mode)
+            {
+                return ChannelGroup_GetMode(channelGroup, pMode);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetCallback(IntPtr channelGroup, ChannelCallback callback);
+        
+        public abstract Result ChannelGroup_IsPlaying(IntPtr channelGroup, out bool isplaying);
+        
+        public abstract Result ChannelGroup_SetPan(IntPtr channelGroup, float pan);
+        
+        public abstract Result ChannelGroup_SetMixLevelsOutput(IntPtr channelGroup, float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
+        
+        public abstract Result ChannelGroup_SetMixLevelsInput(IntPtr channelGroup, float* levels, int levelCount);
+
+        public Result ChannelGroup_SetMixLevelsInput(IntPtr channelGroup, Span<float> levels)
+        {
+            fixed (float* pLevels = levels)
+            {
+                return ChannelGroup_SetMixLevelsInput(channelGroup, pLevels, levels.Length);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetMixMatrix(IntPtr channelGroup, float* matrix, int outchannels, int inchannels, int inchannel_hop);
+        
+        public abstract Result ChannelGroup_GetMixMatrix(IntPtr channelGroup, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+        
+        public abstract Result ChannelGroup_GetDSPClock(IntPtr channelGroup, ulong* dspclock, ulong* parentclock);
+
+        public Result ChannelGroup_GetDSPClock(IntPtr channelGroup, out ulong dspclock, out ulong parentclock)
+        {
+            fixed (ulong* pDspClock = &dspclock, pParentClock = &parentclock)
+            {
+                return ChannelGroup_GetDSPClock(channelGroup, pDspClock, pParentClock);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetDelay(IntPtr channelGroup, ulong dspclock_start, ulong dspclock_end, bool stopchannels);
+        
+        public abstract Result ChannelGroup_GetDelay(IntPtr channelGroup, ulong* dspclock_start, ulong* dspclock_end, int* stopchannels);
+
+        public Result ChannelGroup_GetDelay(IntPtr channelGroup, ulong* dspclock_start, ulong* dspclock_end, out bool stopchannels)
         {
             int stopChannelsTemp = 0;
-            var res = ChannelGroup_GetDelay(channelgroup, dspclock_start, dspclock_end, &stopChannelsTemp);
+            var res = ChannelGroup_GetDelay(channelGroup, dspclock_start, dspclock_end, &stopChannelsTemp);
             stopchannels = stopChannelsTemp != 0;
             return res;
         }
 
-        public Result ChannelGroup_GetDelay(IntPtr channelgroup, out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels)
+        public Result ChannelGroup_GetDelay(IntPtr channelGroup, out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels)
         {
             Result res;
             int stopChannelsTemp = 0;
             fixed (ulong* pDspclock_start = &dspclock_start, pDspclock_end = &dspclock_end)
             {
-                res = ChannelGroup_GetDelay(channelgroup, pDspclock_start, pDspclock_end, &stopChannelsTemp);
+                res = ChannelGroup_GetDelay(channelGroup, pDspclock_start, pDspclock_end, &stopChannelsTemp);
             }
             stopchannels = stopChannelsTemp != 0;
             return res;
         }
 
-        public abstract Result ChannelGroup_AddFadePoint(IntPtr channelgroup, ulong dspclock, float volume);
-        public abstract Result ChannelGroup_SetFadePointRamp(IntPtr channelgroup, ulong dspclock, float volume);
-        public abstract Result ChannelGroup_RemoveFadePoints(IntPtr channelgroup, ulong dspclock_start, ulong dspclock_end);
-        public abstract Result ChannelGroup_GetFadePoints(IntPtr channelgroup, uint* numpoints, ulong* point_dspclock, float* point_volume);
+        public abstract Result ChannelGroup_AddFadePoint(IntPtr channelGroup, ulong dspclock, float volume);
+        
+        public abstract Result ChannelGroup_SetFadePointRamp(IntPtr channelGroup, ulong dspclock, float volume);
+        
+        public abstract Result ChannelGroup_RemoveFadePoints(IntPtr channelGroup, ulong dspclock_start, ulong dspclock_end);
+        
+        public abstract Result ChannelGroup_GetFadePoints(IntPtr channelGroup, uint* numpoints, ulong* point_dspclock, float* point_volume);
 
-        public Result ChannelGroup_GetFadePoints(IntPtr channelgroup, out ulong[] pointDspClocks, out float[] pointVolumes)
+        public Result ChannelGroup_GetFadePoints(IntPtr channelGroup, out ulong[] pointDspClocks, out float[] pointVolumes)
         {
             uint count = 0;
 
-            Result res = ChannelGroup_GetFadePoints(channelgroup, &count, null, null);
+            Result res = ChannelGroup_GetFadePoints(channelGroup, &count, null, null);
 
             if (res != Result.Ok || count == 0)
             {
@@ -1446,7 +1637,7 @@ namespace FmodAudio.Interop
             fixed (ulong* pClocks = clocks)
             fixed (float* pVolumes = volumes)
             {
-                res = ChannelGroup_GetFadePoints(channelgroup, &count, pClocks, pVolumes);
+                res = ChannelGroup_GetFadePoints(channelGroup, &count, pClocks, pVolumes);
             }
 
             pointDspClocks = clocks;
@@ -1455,42 +1646,61 @@ namespace FmodAudio.Interop
             return res;
         }
 
-        public abstract Result ChannelGroup_Set3DAttributes(IntPtr channelgroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+        public abstract Result ChannelGroup_Set3DAttributes(IntPtr channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
 
-        public abstract Result ChannelGroup_Get3DAttributes(IntPtr channelgroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+        public Result ChannelGroup_Set3DAttributes(IntPtr channelGroup, in Vector3 pos, in Vector3 vel, in Vector3 alt_pan_pos)
+        {
+            fixed (Vector3* pPos = &pos, pVel = &vel, pAltpanpos = &alt_pan_pos)
+            {
+                return ChannelGroup_Set3DAttributes(channelGroup, pPos, pVel, pAltpanpos);
+            }
+        }
 
-        public Result ChannelGroup_Get3DAttributes(IntPtr channelgroup, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos)
+        public abstract Result ChannelGroup_Get3DAttributes(IntPtr channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+
+        public Result ChannelGroup_Get3DAttributes(IntPtr channelGroup, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos)
         {
             fixed (Vector3* pPos = &pos, pVel = &vel, pAltPanPos = &alt_pan_pos)
             {
-                return ChannelGroup_Get3DAttributes(channelgroup, pPos, pVel, pAltPanPos);
+                return ChannelGroup_Get3DAttributes(channelGroup, pPos, pVel, pAltPanPos);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DMinMaxDistance(IntPtr channelgroup, float mindistance, float maxdistance);
-        public abstract Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelgroup, float* mindistance, float* maxdistance);
+        public abstract Result ChannelGroup_Set3DMinMaxDistance(IntPtr channelGroup, float mindistance, float maxdistance);
+        
+        public abstract Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelGroup, float* mindistance, float* maxdistance);
 
-        public Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelgroup, out float minDistance, out float maxDistance)
+        public Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelGroup, out float minDistance, out float maxDistance)
         {
             fixed (float* pMinDistance = &minDistance, pMaxdistance = &maxDistance)
             {
-                return ChannelGroup_Get3DMinMaxDistance(channelgroup, pMinDistance, pMaxdistance);
+                return ChannelGroup_Get3DMinMaxDistance(channelGroup, pMinDistance, pMaxdistance);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DConeSettings(IntPtr channelgroup, float insideconeangle, float outsideconeangle, float outsidevolume);
-        public abstract Result ChannelGroup_Get3DConeSettings(IntPtr channelgroup, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
+        public abstract Result ChannelGroup_Set3DConeSettings(IntPtr channelGroup, float insideconeangle, float outsideconeangle, float outsidevolume);
+        
+        public abstract Result ChannelGroup_Get3DConeSettings(IntPtr channelGroup, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
 
-        public Result ChannelGroup_Get3DConeSettings(IntPtr channelgroup, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
+        public Result ChannelGroup_Get3DConeSettings(IntPtr channelGroup, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
         {
             fixed (float* pInsideAngle = &insideconeangle, pOutsideAngle = &outsideconeangle, pOutsideVolume = &outsidevolume)
             {
-                return ChannelGroup_Get3DConeSettings(channelgroup, pInsideAngle, pOutsideAngle, pOutsideVolume);
+                return ChannelGroup_Get3DConeSettings(channelGroup, pInsideAngle, pOutsideAngle, pOutsideVolume);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DConeOrientation(IntPtr channelgroup, Vector3* orientation);
-        public abstract Result ChannelGroup_Get3DConeOrientation(IntPtr channelgroup, Vector3* orientation);
+        public abstract Result ChannelGroup_Set3DConeOrientation(IntPtr channelGroup, Vector3* orientation);
+
+        public Result ChannelGroup_Set3DConeOrientation(IntPtr channelGroup, in Vector3 orientation)
+        {
+            fixed (Vector3* pOrientation = &orientation)
+            {
+                return ChannelGroup_Set3DConeOrientation(channelGroup, pOrientation);
+            }
+        }
+
+        public abstract Result ChannelGroup_Get3DConeOrientation(IntPtr channelGroup, Vector3* orientation);
 
         public Result ChannelGroup_Get3DConeOrientation(IntPtr channelGroup, out Vector3 orientation)
         {
@@ -1501,87 +1711,118 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result ChannelGroup_Set3DCustomRolloff(IntPtr channelgroup, IntPtr points, int numpoints);
-        public abstract Result ChannelGroup_Get3DCustomRolloff(IntPtr channelgroup, IntPtr* points, int* numpoints);
+        public abstract Result ChannelGroup_Set3DCustomRolloff(IntPtr channelGroup, IntPtr points, int numpoints);
 
-        public Result ChannelGroup_Get3DCustomRolloff(IntPtr channelgroup, out IntPtr points, out int pointCount)
+        public abstract Result ChannelGroup_Get3DCustomRolloff(IntPtr channelGroup, IntPtr* points, int* numpoints);
+
+        public Result ChannelGroup_Get3DCustomRolloff(IntPtr channelGroup, out IntPtr points, out int pointCount)
         {
             fixed (IntPtr* pPoints = &points)
             fixed (int* pPointCount = &pointCount)
             {
-                return ChannelGroup_Get3DCustomRolloff(channelgroup, pPoints, pPointCount);
+                return ChannelGroup_Get3DCustomRolloff(channelGroup, pPoints, pPointCount);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DOcclusion(IntPtr channelgroup, float directocclusion, float reverbocclusion);
-        public abstract Result ChannelGroup_Get3DOcclusion(IntPtr channelgroup, float* directocclusion, float* reverbocclusion);
+        public abstract Result ChannelGroup_Set3DOcclusion(IntPtr channelGroup, float directocclusion, float reverbocclusion);
+        public abstract Result ChannelGroup_Get3DOcclusion(IntPtr channelGroup, float* directocclusion, float* reverbocclusion);
 
-        public Result ChannelGroup_Get3DOcclusion(IntPtr channelgroup, out float directOcclusion, out float reverbOcclusion)
+        public Result ChannelGroup_Get3DOcclusion(IntPtr channelGroup, out float directOcclusion, out float reverbOcclusion)
         {
             fixed (float* pDirectOcclusion = &directOcclusion, pReverbOcclusion = &reverbOcclusion)
             {
-                return ChannelGroup_Get3DOcclusion(channelgroup, pDirectOcclusion, pReverbOcclusion);
+                return ChannelGroup_Get3DOcclusion(channelGroup, pDirectOcclusion, pReverbOcclusion);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DSpread(IntPtr channelgroup, float angle);
+        public abstract Result ChannelGroup_Set3DSpread(IntPtr channelGroup, float angle);
 
-        public abstract Result ChannelGroup_Get3DSpread(IntPtr channelgroup, float* angle);
+        public abstract Result ChannelGroup_Get3DSpread(IntPtr channelGroup, float* angle);
 
-        public Result ChannelGroup_Get3DSpread(IntPtr channelgroup, out float angle)
+        public Result ChannelGroup_Get3DSpread(IntPtr channelGroup, out float angle)
         {
             fixed (float* pAngle = &angle)
             {
-                return ChannelGroup_Get3DSpread(channelgroup, pAngle);
+                return ChannelGroup_Get3DSpread(channelGroup, pAngle);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DLevel(IntPtr channelgroup, float level);
+        public abstract Result ChannelGroup_Set3DLevel(IntPtr channelGroup, float level);
 
-        public abstract Result ChannelGroup_Get3DLevel(IntPtr channelgroup, float* level);
+        public abstract Result ChannelGroup_Get3DLevel(IntPtr channelGroup, float* level);
 
-        public Result ChannelGroup_Get3DLevel(IntPtr channelgroup, out float level)
+        public Result ChannelGroup_Get3DLevel(IntPtr channelGroup, out float level)
         {
             fixed (float* pLevel = &level)
             {
-                return ChannelGroup_Get3DLevel(channelgroup, pLevel);
+                return ChannelGroup_Get3DLevel(channelGroup, pLevel);
             }
         }
 
-        public abstract Result ChannelGroup_Set3DDopplerLevel(IntPtr channelgroup, float level);
+        public abstract Result ChannelGroup_Set3DDopplerLevel(IntPtr channelGroup, float level);
 
-        public abstract Result ChannelGroup_Get3DDopplerLevel(IntPtr channelgroup, float* level);
+        public abstract Result ChannelGroup_Get3DDopplerLevel(IntPtr channelGroup, float* level);
 
-        public abstract Result ChannelGroup_Set3DDistanceFilter(IntPtr channelgroup, int custom, float customLevel, float centerFreq);
+        public Result ChannelGroup_Get3DDopplerLevel(IntPtr channelGroup, out float level)
+        {
+            fixed (float* pLevel = &level)
+            {
+                return ChannelGroup_Get3DDopplerLevel(channelGroup, pLevel);
+            }
+        }
 
-        public abstract Result ChannelGroup_Get3DDistanceFilter(IntPtr channelgroup, int* custom, float* customLevel, float* centerFreq);
+        public abstract Result ChannelGroup_Set3DDistanceFilter(IntPtr channelGroup, int custom, float customLevel, float centerFreq);
 
-        public Result ChannelGroup_Get3DDistanceFilter(IntPtr channelgroup, out int custom, out float customLevel, out float centerFreq)
+        public abstract Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, int* custom, float* customLevel, float* centerFreq);
+
+        public Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, out int custom, out float customLevel, out float centerFreq)
         {
             fixed (int* pCustom = &custom)
             fixed (float* pCustomlevel = &customLevel, pCenterFreq = &centerFreq)
             {
-                return ChannelGroup_Get3DDistanceFilter(channelgroup, pCustom, pCustomlevel, pCenterFreq);
+                return ChannelGroup_Get3DDistanceFilter(channelGroup, pCustom, pCustomlevel, pCenterFreq);
             }
         }
 
-        public abstract Result ChannelGroup_GetSystemObject(IntPtr channelgroup, IntPtr* system);
-        public abstract Result ChannelGroup_SetVolume(IntPtr channelgroup, float volume);
-        public abstract Result ChannelGroup_GetDSP(IntPtr channelgroup, int index, IntPtr* dsp);
+        public abstract Result ChannelGroup_GetSystemObject(IntPtr channelGroup, IntPtr* system);
 
-        public Result ChannelGroup_GetDSPClock(IntPtr channelgroup, out ulong dspclock, out ulong parentclock)
+        public Result ChannelGroup_GetSystemObject(IntPtr channelGroup, out IntPtr system)
         {
-            fixed (ulong* pDspclock = &dspclock, pParentclock = &parentclock)
+            fixed (IntPtr* pSystem = &system)
             {
-                return ChannelGroup_GetDSPClock(channelgroup, pDspclock, pParentclock);
+                return ChannelGroup_GetSystemObject(channelGroup, pSystem);
             }
         }
 
-        public abstract Result ChannelGroup_AddDSP(IntPtr channelgroup, int index, IntPtr dsp);
-        public abstract Result ChannelGroup_RemoveDSP(IntPtr channelgroup, IntPtr dsp);
-        public abstract Result ChannelGroup_GetNumDSPs(IntPtr channelgroup, int* numdsps);
-        public abstract Result ChannelGroup_SetDSPIndex(IntPtr channelgroup, IntPtr dsp, int index);
-        public abstract Result ChannelGroup_GetDSPIndex(IntPtr channelgroup, IntPtr dsp, int* index);
+        public abstract Result ChannelGroup_SetVolume(IntPtr channelGroup, float volume);
+        
+        public abstract Result ChannelGroup_GetDSP(IntPtr channelGroup, int index, IntPtr* dsp);
+
+        public Result ChannelGroup_GetDSP(IntPtr channelGroup, int index, out IntPtr dsp)
+        {
+            fixed (IntPtr* pDsp = &dsp)
+            {
+                return ChannelGroup_GetDSP(channelGroup, index, pDsp);
+            }
+        }
+
+        public abstract Result ChannelGroup_AddDSP(IntPtr channelGroup, int index, IntPtr dsp);
+
+        public abstract Result ChannelGroup_RemoveDSP(IntPtr channelGroup, IntPtr dsp);
+        
+        public abstract Result ChannelGroup_GetNumDSPs(IntPtr channelGroup, int* dspCount);
+
+        public Result ChannelGroup_GetNumDSPs(IntPtr channelGroup, out int dspCount)
+        {
+            fixed (int* pDspCount = &dspCount)
+            {
+                return ChannelGroup_GetNumDSPs(channelGroup, pDspCount);
+            }
+        }
+
+        public abstract Result ChannelGroup_SetDSPIndex(IntPtr channelGroup, IntPtr dsp, int index);
+        
+        public abstract Result ChannelGroup_GetDSPIndex(IntPtr channelGroup, IntPtr dsp, int* index);
 
         public Result ChannelGroup_GetDSPIndex(IntPtr channelGroup, IntPtr dsp, out int index)
         {
@@ -1591,44 +1832,82 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result ChannelGroup_SetUserData(IntPtr channelgroup, IntPtr userdata);
-        public abstract Result ChannelGroup_GetUserData(IntPtr channelgroup, IntPtr* userdata);
-        public abstract Result ChannelGroup_Release(IntPtr Handle);
+        public abstract Result ChannelGroup_SetUserData(IntPtr channelGroup, IntPtr userdata);
+        
+        public abstract Result ChannelGroup_GetUserData(IntPtr channelGroup, IntPtr* userdata);
 
-        public abstract Result ChannelGroup_AddGroup(IntPtr channelgroup, IntPtr group, int propagatedspclock, IntPtr* connection);
-
-        public Result ChannelGroup_AddGroup(IntPtr channelgroup, IntPtr group, bool propagatedspclock, IntPtr* connection)
+        public Result ChannelGroup_GetUserData(IntPtr channelGroup, out IntPtr userdata)
         {
-            return ChannelGroup_AddGroup(channelgroup, group, propagatedspclock ? 1 : 0, connection);
-        }
-
-        public Result ChannelGroup_AddGroup(IntPtr channelgroup, IntPtr group, bool propagatedspclock, out IntPtr connection)
-        {
-            fixed (IntPtr* connectionRes = &connection)
-                return ChannelGroup_AddGroup(channelgroup, group, propagatedspclock ? 1 : 0, connectionRes);
-        }
-
-        public abstract Result ChannelGroup_GetNumGroups(IntPtr channelgroup, int* numgroups);
-        public abstract Result ChannelGroup_GetGroup(IntPtr channelgroup, int index, IntPtr* group);
-
-        public Result ChannelGroup_GetGroup(IntPtr channelgroup, int index, out IntPtr group)
-        {
-            fixed (IntPtr* pGroup = &group)
+            fixed (IntPtr* pUserdata = &userdata)
             {
-                return ChannelGroup_GetGroup(channelgroup, index, pGroup);
+                return ChannelGroup_GetUserData(channelGroup, pUserdata);
             }
         }
 
-        public abstract Result ChannelGroup_GetParentGroup(IntPtr channelgroup, IntPtr* group);
-        public abstract Result ChannelGroup_GetName(IntPtr channelgroup, byte* name, int namelen);
-        public abstract Result ChannelGroup_GetNumChannels(IntPtr channelgroup, int* numchannels);
-        public abstract Result ChannelGroup_GetChannel(IntPtr channelgroup, int index, IntPtr* channel);
+        public abstract Result ChannelGroup_Release(IntPtr Handle);
 
-        public Result ChannelGroup_GetChannel(IntPtr channelgroup, int index, out IntPtr channel)
+        public abstract Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, int propagatedspclock, IntPtr* connection);
+
+        public Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, bool propagatedspclock, IntPtr* connection)
+        {
+            return ChannelGroup_AddGroup(channelGroup, group, propagatedspclock ? 1 : 0, connection);
+        }
+
+        public Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, bool propagatedspclock, out IntPtr connection)
+        {
+            fixed (IntPtr* connectionRes = &connection)
+                return ChannelGroup_AddGroup(channelGroup, group, propagatedspclock ? 1 : 0, connectionRes);
+        }
+
+        public abstract Result ChannelGroup_GetNumGroups(IntPtr channelGroup, int* groupCount);
+
+        public Result ChannelGroup_GetNumGroups(IntPtr channelGroup, out int groupCount)
+        {
+            fixed (int* pGroupCount = &groupCount)
+            {
+                return ChannelGroup_GetNumGroups(channelGroup, pGroupCount);
+            }
+        }
+
+        public abstract Result ChannelGroup_GetGroup(IntPtr channelGroup, int index, IntPtr* group);
+
+        public Result ChannelGroup_GetGroup(IntPtr channelGroup, int index, out IntPtr group)
+        {
+            fixed (IntPtr* pGroup = &group)
+            {
+                return ChannelGroup_GetGroup(channelGroup, index, pGroup);
+            }
+        }
+
+        public abstract Result ChannelGroup_GetParentGroup(IntPtr channelGroup, IntPtr* group);
+
+        public Result ChannelGroup_GetParentGroup(IntPtr channelGroup, out IntPtr group)
+        {
+            fixed (IntPtr* pGroup = &group)
+            {
+                return ChannelGroup_GetParentGroup(channelGroup, pGroup);
+            }
+        }
+
+        public abstract Result ChannelGroup_GetName(IntPtr channelGroup, byte* name, int namelen);
+
+        public abstract Result ChannelGroup_GetNumChannels(IntPtr channelGroup, int* channelCount);
+        
+        public Result ChannelGroup_GetNumChannels(IntPtr channelGroup, out int channelCount)
+        {
+            fixed (int* pChannelCount = &channelCount)
+            {
+                return ChannelGroup_GetNumChannels(channelGroup, pChannelCount);
+            }
+        }
+
+        public abstract Result ChannelGroup_GetChannel(IntPtr channelGroup, int index, IntPtr* channel);
+
+        public Result ChannelGroup_GetChannel(IntPtr channelGroup, int index, out IntPtr channel)
         {
             fixed (IntPtr* pChannel = &channel)
             {
-                return ChannelGroup_GetChannel(channelgroup, index, pChannel);
+                return ChannelGroup_GetChannel(channelGroup, index, pChannel);
             }
         }
 
