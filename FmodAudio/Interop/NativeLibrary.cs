@@ -1912,48 +1912,312 @@ namespace FmodAudio.Interop
         }
 
         public abstract Result DSP_Release(IntPtr dsp);
+        
         public abstract Result DSP_GetSystemObject(IntPtr dsp, IntPtr* system);
+
+        public Result DSP_GetSystemObject(IntPtr dsp, out IntPtr system)
+        {
+            fixed (IntPtr* pSystem = &system)
+            {
+                return DSP_GetSystemObject(dsp, pSystem);
+            }
+        }
+
         public abstract Result DSP_AddInput(IntPtr dsp, IntPtr target, IntPtr* connection, DSPConnectionType type);
+
+        public Result DSP_AddInput(IntPtr dsp, IntPtr target, out IntPtr connection, DSPConnectionType type)
+        {
+            fixed (IntPtr* pConnection = &connection)
+            {
+                return DSP_AddInput(dsp, target, pConnection, type);
+            }
+        }
+
         public abstract Result DSP_DisconnectFrom(IntPtr dsp, IntPtr target, IntPtr connection);
-        public abstract Result DSP_DisconnectAll(IntPtr dsp, int inputs, int outputs);
-        public abstract Result DSP_GetNumInputs(IntPtr dsp, int* numinputs);
-        public abstract Result DSP_GetNumOutputs(IntPtr dsp, int* numoutputs);
+        
+        public abstract Result DSP_DisconnectAll(IntPtr dsp, bool inputs, bool outputs);
+        
+        public abstract Result DSP_GetNumInputs(IntPtr dsp, int* inputCount);
+
+        public Result DSP_GetNumInputs(IntPtr dsp, out int inputCount)
+        {
+            fixed (int* pInputCount = &inputCount)
+            {
+                return DSP_GetNumInputs(dsp, pInputCount);
+            }
+        }
+
+        public abstract Result DSP_GetNumOutputs(IntPtr dsp, int* outputCount);
+
+        public Result DSP_GetNumOutputs(IntPtr dsp, out int outputCount)
+        {
+            fixed (int* pOutputCount = &outputCount)
+            {
+                return DSP_GetNumOutputs(dsp, pOutputCount);
+            }
+        }
+
         public abstract Result DSP_GetInput(IntPtr dsp, int index, IntPtr* input, IntPtr* inputconnection);
+
+        public Result DSP_GetInput(IntPtr dsp, int index, out IntPtr input)
+        {
+            fixed (IntPtr* pInput = &input)
+            {
+                return DSP_GetInput(dsp, index, pInput, null);
+            }
+        }
+
+        public Result DSP_GetInput(IntPtr dsp, int index, out IntPtr input, out IntPtr inputconnection)
+        {
+            fixed (IntPtr* pInput = &input, pInputConnection = &inputconnection)
+            {
+                return DSP_GetInput(dsp, index, pInput, pInputConnection);
+            }
+        }
+
         public abstract Result DSP_GetOutput(IntPtr dsp, int index, IntPtr* output, IntPtr* outputconnection);
-        public abstract Result DSP_SetActive(IntPtr dsp, int active);
-        public abstract Result DSP_GetActive(IntPtr dsp, int* active);
-        public abstract Result DSP_SetBypass(IntPtr dsp, int bypass);
-        public abstract Result DSP_GetBypass(IntPtr dsp, int* bypass);
+
+        public Result DSP_GetOutput(IntPtr dsp, int index, out IntPtr output)
+        {
+            fixed (IntPtr* pOutput = &output)
+            {
+                return DSP_GetOutput(dsp, index, pOutput, null);
+            }
+        }
+
+        public Result DSP_GetOutput(IntPtr dsp, int index, out IntPtr output, out IntPtr outputconnection)
+        {
+            fixed (IntPtr* pOutput = &output, pOutputConnection = &outputconnection)
+            {
+                return DSP_GetOutput(dsp, index, pOutput, pOutputConnection);
+            }
+        }
+
+
+        public abstract Result DSP_SetActive(IntPtr dsp, bool active);
+
+        public abstract Result DSP_GetActive(IntPtr dsp, out bool active);
+
+        public abstract Result DSP_SetBypass(IntPtr dsp, bool bypass);
+
+        public abstract Result DSP_GetBypass(IntPtr dsp, out bool bypass);
+
         public abstract Result DSP_SetWetDryMix(IntPtr dsp, float prewet, float postwet, float dry);
+
         public abstract Result DSP_GetWetDryMix(IntPtr dsp, float* prewet, float* postwet, float* dry);
-        public abstract Result DSP_SetChannelFormat(IntPtr dsp, ChannelMask channelmask, int numchannels, SpeakerMode source_speakermode);
-        public abstract Result DSP_GetChannelFormat(IntPtr dsp, out ChannelMask channelmask, int* numchannels, out SpeakerMode source_speakermode);
+
+        public Result DSP_GetWetDryMix(IntPtr dsp, out float prewet, out float postwet, out float dry)
+        {
+            fixed (float* pPrewet = &prewet, pPostwet = &postwet, pDry = &dry)
+            {
+                return DSP_GetWetDryMix(dsp, pPrewet, pPostwet, pDry);
+            }
+        }
+
+        public abstract Result DSP_SetChannelFormat(IntPtr dsp, ChannelMask channelmask, int channelCount, SpeakerMode source_speakermode);
+
+        public abstract Result DSP_GetChannelFormat(IntPtr dsp, ChannelMask* channelmask, int* channelCount, SpeakerMode* source_speakermode);
+
+        public Result DSP_GetChannelFormat(IntPtr dsp, out ChannelMask channelmask, out int channelCount, out SpeakerMode source_speakermode)
+        {
+            fixed (ChannelMask* pChannelMask = &channelmask)
+            fixed (int* pChannelCount = &channelCount)
+            fixed (SpeakerMode* pSource = &source_speakermode)
+            {
+                return DSP_GetChannelFormat(dsp, pChannelMask, pChannelCount, pSource);
+            }
+        }
+
         public abstract Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, int* outchannels, out SpeakerMode outspeakermode);
+        
         public abstract Result DSP_Reset(IntPtr dsp);
+        
         public abstract Result DSP_SetParameterFloat(IntPtr dsp, int index, float value);
+        
         public abstract Result DSP_SetParameterBool(IntPtr dsp, int index, int value);
+
+        public Result DSP_SetParameterBool(IntPtr dsp, int index, bool value)
+        {
+            return DSP_SetParameterBool(dsp, index, value ? 1 : 0);
+        }
+
         public abstract Result DSP_SetParameterInt(IntPtr dsp, int index, int value);
+        
         public abstract Result DSP_SetParameterData(IntPtr dsp, int index, IntPtr data, uint length);
+        
         public abstract Result DSP_GetParameterFloat(IntPtr dsp, int index, float* value, byte* valuestr, int valuestrlen);
+
+        public Result DSP_GetParameterFloat(IntPtr dsp, int index, out float value, byte* valuestr, int valuestrlen)
+        {
+            fixed (float* pValue = &value)
+            {
+                return DSP_GetParameterFloat(dsp, index, pValue, valuestr, valuestrlen);
+            }
+        }
+
+        public Result DSP_GetParameterFloat(IntPtr dsp, int index, float* value)
+        {
+            return DSP_GetParameterFloat(dsp, index, value, null, 0);
+        }
+
+        public Result DSP_GetParameterFloat(IntPtr dsp, int index, out float value)
+        {
+            fixed (float* pValue = &value)
+            {
+                return DSP_GetParameterFloat(dsp, index, pValue, null, 0);
+            }
+        }
+
         public abstract Result DSP_GetParameterBool(IntPtr dsp, int index, int* value, byte* valuestr, int valuestrlen);
+
+        public Result DSP_GetParameterBool(IntPtr dsp, int index, out bool value, byte* valuestr, int valuestrlen)
+        {
+            int _val;
+            var res = DSP_GetParameterBool(dsp, index, &_val, valuestr, valuestrlen);
+            value = _val != 0;
+            return res;
+        }
+
+        public Result DSP_GetParameterBool(IntPtr dsp, int index, out bool value)
+        {
+            return DSP_GetParameterBool(dsp, index, out value, null, 0);
+        }
+
         public abstract Result DSP_GetParameterint(IntPtr dsp, int index, int* value, byte* valuestr, int valuestrlen);
-        public abstract Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length, IntPtr valuestr, int valuestrlen);
-        public abstract Result DSP_GetNumParameters(IntPtr dsp, int* numparams);
-        public abstract Result DSP_GetParameterInfo(IntPtr dsp, int index, IntPtr* desc);
+
+        public Result DSP_GetParameterint(IntPtr dsp, int index, out int value, byte* valuestr, int valuestrlen)
+        {
+            fixed (int* pValue = &value)
+            {
+                return DSP_GetParameterint(dsp, index, pValue, valuestr, valuestrlen);
+            }
+        }
+
+        public Result DSP_GetParameterint(IntPtr dsp, int index, int* value)
+        {
+            return DSP_GetParameterint(dsp, index, value, null, 0);
+        }
+
+        public Result DSP_GetParameterint(IntPtr dsp, int index, out int value)
+        {
+            return DSP_GetParameterint(dsp, index, out value, null, 0);
+        }
+
+        public abstract Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length, byte* valuestr, int valuestrlen);
+
+        public Result DSP_GetParameterData(IntPtr dsp, int index, out IntPtr data, out uint length, byte* valuestr, int valuestrlen)
+        {
+            fixed (IntPtr* pData = &data)
+            fixed (uint* pLength = &length)
+            {
+                return DSP_GetParameterData(dsp, index, pData, pLength, valuestr, valuestrlen);
+            }
+        }
+
+        public Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length)
+        {
+            return DSP_GetParameterData(dsp, index, data, length, null, 0);
+        }
+
+        public Result DSP_GetParameterData(IntPtr dsp, int index, out IntPtr data, out uint length)
+        {
+            return DSP_GetParameterData(dsp, index, out data, out length, null, 0);
+        }
+
+        public abstract Result DSP_GetNumParameters(IntPtr dsp, int* paramCount);
+
+        public Result DSP_GetNumParameters(IntPtr dsp, out int paramCount)
+        {
+            fixed (int* pParamCount = &paramCount)
+            {
+                return DSP_GetNumParameters(dsp, pParamCount);
+            }
+        }
+
+        public abstract Result DSP_GetParameterInfo(IntPtr dsp, int index, Dsp.Interop.ParameterDescriptionStruct** desc);
+        
         public abstract Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, int* index);
-        public abstract Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, int show);
+
+        public Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, out int index)
+        {
+            fixed (int* pIndex = &index)
+            {
+                return DSP_GetDataParameterIndex(dsp, datatype, pIndex);
+            }
+        }
+
+        public Result DSP_GetDataParameterIndex(IntPtr dsp, ParameterDataType datatype, int* index)
+        {
+            return DSP_GetDataParameterIndex(dsp, (int)datatype, index);
+        }
+
+        public Result DSP_GetDataParameterIndex(IntPtr dsp, ParameterDataType datatype, out int index)
+        {
+            return DSP_GetDataParameterIndex(dsp, (int)datatype, out index);
+        }
+
+        public abstract Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, bool show);
+        
         public abstract Result DSP_GetInfo(IntPtr dsp, byte* name, FmodVersion* version, int* channels, int* configwidth, int* configheight);
+
+        public Result DSP_GetInfo(IntPtr dsp, out string name, FmodVersion* version, int* channels, int* configwidth, int* configheight)
+        {
+            byte* buffer = stackalloc byte[32];
+
+            var res = DSP_GetInfo(dsp, buffer, version, channels, configwidth, configheight);
+
+            name = FmodHelpers.PtrToString(buffer, 32);
+
+            return res;
+        }
+
+        public Result DSP_GetInfo(IntPtr dsp, out string name, out FmodVersion version, out int channels, out int configwidth, out int configheight)
+        {
+            fixed (FmodVersion* pVersion = &version)
+            fixed (int* pChannels = &channels, pConfigWidth = &configwidth, pConfigHeight = &configheight)
+            {
+                return DSP_GetInfo(dsp, out name, pVersion, pChannels, pConfigWidth, pConfigHeight);
+            }
+        }
+
         public abstract Result DSP_GetType(IntPtr dsp, DSPType* type);
-        public abstract Result DSP_GetIdle(IntPtr dsp, int* idle);
+
+        public Result DSP_GetType(IntPtr dsp, out DSPType type)
+        {
+            fixed (DSPType* pType = &type)
+            {
+                return DSP_GetType(dsp, pType);
+            }
+        }
+
+        public abstract Result DSP_GetIdle(IntPtr dsp, out bool idle);
+        
         public abstract Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
+        
         public abstract Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
-        public abstract Result DSP_SetMeteringEnabled(IntPtr dsp, int inputEnabled, int outputEnabled);
-        public abstract Result DSP_GetMeteringEnabled(IntPtr dsp, int* inputEnabled, int* outputEnabled);
+        
+        public abstract Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
+        
+        public abstract Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);
+
         public abstract Result DSP_GetMeteringInfo(IntPtr dsp, DSPMeteringInfo* inputInfo, DSPMeteringInfo* outputInfo);
+
+        public Result DSP_GetMeteringInfo(IntPtr dsp, out DSPMeteringInfo inputInfo, out DSPMeteringInfo outputInfo)
+        {
+            fixed (DSPMeteringInfo* pInputInfo = &inputInfo, pOutputInfo = &outputInfo)
+            {
+                return DSP_GetMeteringInfo(dsp, pInputInfo, pOutputInfo);
+            }
+        }
+
         public abstract Result DSPConnection_GetInput(IntPtr dspconnection, IntPtr* input);
+
         public abstract Result DSPConnection_GetOutput(IntPtr dspconnection, IntPtr* output);
+        
         public abstract Result DSPConnection_SetMix(IntPtr dspconnection, float volume);
+        
         public abstract Result DSPConnection_GetMix(IntPtr dspconnection, float* volume);
+        
         public abstract Result DSPConnection_SetMixMatrix(IntPtr dspconnection, float* matrix, int outchannels, int inchannels, int inchannel_hop);
         public abstract Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
         public abstract Result DSPConnection_GetType(IntPtr dspconnection, DSPConnectionType* type);

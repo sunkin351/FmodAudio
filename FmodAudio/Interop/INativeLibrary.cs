@@ -371,9 +371,9 @@ namespace FmodAudio.Interop
 
         Result ChannelGroup_Stop(IntPtr channelgroup);
         
-        Result ChannelGroup_SetPaused(IntPtr channelgroup, int paused);
+        Result ChannelGroup_SetPaused(IntPtr channelgroup, bool paused);
         
-        Result ChannelGroup_GetPaused(IntPtr channelgroup, int* paused);
+        Result ChannelGroup_GetPaused(IntPtr channelgroup, out bool paused);
         
         Result ChannelGroup_GetVolume(IntPtr channelgroup, float* volume);
         
@@ -387,9 +387,9 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_GetPitch(IntPtr channelgroup, float* pitch);
         
-        Result ChannelGroup_SetMute(IntPtr channelgroup, int mute);
+        Result ChannelGroup_SetMute(IntPtr channelgroup, bool mute);
         
-        Result ChannelGroup_GetMute(IntPtr channelgroup, int* mute);
+        Result ChannelGroup_GetMute(IntPtr channelgroup, out bool mute);
         
         Result ChannelGroup_SetReverbProperties(IntPtr channelgroup, int instance, float wet);
         
@@ -520,7 +520,7 @@ namespace FmodAudio.Interop
         
         Result DSP_DisconnectFrom(IntPtr dsp, IntPtr target, IntPtr connection);
         
-        Result DSP_DisconnectAll(IntPtr dsp, int inputs, int outputs);
+        Result DSP_DisconnectAll(IntPtr dsp, bool inputs, bool outputs);
         
         Result DSP_GetNumInputs(IntPtr dsp, int* numinputs);
         
@@ -530,13 +530,13 @@ namespace FmodAudio.Interop
         
         Result DSP_GetOutput(IntPtr dsp, int index, IntPtr* output, IntPtr* outputconnection);
         
-        Result DSP_SetActive(IntPtr dsp, int active);
+        Result DSP_SetActive(IntPtr dsp, bool active);
         
-        Result DSP_GetActive(IntPtr dsp, int* active);
+        Result DSP_GetActive(IntPtr dsp, out bool active);
         
-        Result DSP_SetBypass(IntPtr dsp, int bypass);
+        Result DSP_SetBypass(IntPtr dsp, bool bypass);
         
-        Result DSP_GetBypass(IntPtr dsp, int* bypass);
+        Result DSP_GetBypass(IntPtr dsp, out bool bypass);
         
         Result DSP_SetWetDryMix(IntPtr dsp, float prewet, float postwet, float dry);
         
@@ -544,7 +544,7 @@ namespace FmodAudio.Interop
         
         Result DSP_SetChannelFormat(IntPtr dsp, ChannelMask channelmask, int numchannels, SpeakerMode source_speakermode);
         
-        Result DSP_GetChannelFormat(IntPtr dsp, out ChannelMask channelmask, int* numchannels, out SpeakerMode source_speakermode);
+        Result DSP_GetChannelFormat(IntPtr dsp, ChannelMask* channelmask, int* numchannels, SpeakerMode* source_speakermode);
         
         Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, int* outchannels, out SpeakerMode outspeakermode);
         
@@ -564,15 +564,15 @@ namespace FmodAudio.Interop
         
         Result DSP_GetParameterint(IntPtr dsp, int index, int* value, byte* valuestr, int valuestrlen);
         
-        Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length, IntPtr valuestr, int valuestrlen);
+        Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length, byte* valuestr, int valuestrlen);
         
         Result DSP_GetNumParameters(IntPtr dsp, int* numparams);
         
-        Result DSP_GetParameterInfo(IntPtr dsp, int index, IntPtr* desc);
+        Result DSP_GetParameterInfo(IntPtr dsp, int index, Dsp.Interop.ParameterDescriptionStruct** desc);
         
         Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, int* index);
         
-        Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, int show);
+        Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, bool show);
         
         Result DSP_GetInfo(IntPtr dsp, byte* name, FmodVersion* version, int* channels, int* configwidth, int* configheight);
         
