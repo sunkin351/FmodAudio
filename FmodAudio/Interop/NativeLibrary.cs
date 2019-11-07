@@ -2278,31 +2278,170 @@ namespace FmodAudio.Interop
 
         public abstract Result Geometry_Release(IntPtr geometry);
         
-        public abstract Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, int doublesided, int numvertices, Vector3* vertices, int* polygonindex);
-        
-        public abstract Result Geometry_GetNumPolygons(IntPtr geometry, int* numpolygons);
-        
+        public abstract Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, int* polygonindex);
+
+        public Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, int* polygonindex)
+        {
+            fixed (Vector3* pVertices = vertices)
+            {
+                return Geometry_AddPolygon(geometry, directocclusion, reverbocclusion, doublesided, vertices.Length, pVertices, polygonindex);
+            }
+        }
+
+        public Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, out int polygonindex)
+        {
+            fixed (int* pPolygonIndex = &polygonindex)
+            {
+                return Geometry_AddPolygon(geometry, directocclusion, reverbocclusion, doublesided, vertices, pPolygonIndex);
+            }
+        }
+
+        public abstract Result Geometry_GetNumPolygons(IntPtr geometry, int* polygonCount);
+
+        public Result Geometry_GetNumPolygons(IntPtr geometry, out int polygonCount)
+        {
+            fixed (int* pPolygonCount = &polygonCount)
+            {
+                return Geometry_GetNumPolygons(geometry, pPolygonCount);
+            }
+        }
+
         public abstract Result Geometry_GetMaxPolygons(IntPtr geometry, int* maxpolygons, int* maxvertices);
-        
-        public abstract Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, int* numvertices);
-        
+
+        public Result Geometry_GetMaxPolygons(IntPtr geometry, out int maxpolygons, out int maxvertices)
+        {
+            fixed (int* pMaxPolygons = &maxpolygons, pMaxVertices = &maxvertices)
+            {
+                return Geometry_GetMaxPolygons(geometry, pMaxPolygons, pMaxVertices);
+            }
+        }
+
+        public abstract Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, int* vertexCount);
+
+        public Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, out int vertexCount)
+        {
+            fixed (int* pVertexCount = &vertexCount)
+            {
+                return Geometry_GetPolygonNumVertices(geometry, index, pVertexCount);
+            }
+        }
+
         public abstract Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
-        
+
+        public Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, in Vector3 vertex)
+        {
+            fixed (Vector3* pVertex = &vertex)
+            {
+                return Geometry_SetPolygonVertex(geometry, index, vertexindex, pVertex);
+            }
+        }
+
         public abstract Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
-        
-        public abstract Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, int doublesided);
+
+        public Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, out Vector3 vertex)
+        {
+            fixed (Vector3* pVertex = &vertex)
+            {
+                return Geometry_GetPolygonVertex(geometry, index, vertexindex, pVertex);
+            }
+        }
+
+        public abstract Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
         
         public abstract Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, int* doublesided);
-        public abstract Result Geometry_SetActive(IntPtr geometry, int active);
-        public abstract Result Geometry_GetActive(IntPtr geometry, int* active);
+
+        public Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, out bool doublesided)
+        {
+            int _dsVal = 0;
+            var res = Geometry_GetPolygonAttributes(geometry, index, directocclusion, reverbocclusion, &_dsVal);
+            doublesided = _dsVal != 0;
+            return res;
+        }
+
+        public Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, out float directocclusion, out float reverbocclusion, out bool doublesided)
+        {
+            fixed (float* pDirectOcclusion = &directocclusion, pReverbOcclusion = &reverbocclusion)
+            {
+                return Geometry_GetPolygonAttributes(geometry, index, pDirectOcclusion, pReverbOcclusion, out doublesided);
+            }
+        }
+
+        public abstract Result Geometry_SetActive(IntPtr geometry, bool active);
+
+        public abstract Result Geometry_GetActive(IntPtr geometry, out bool active);
+        
         public abstract Result Geometry_SetRotation(IntPtr geometry, Vector3* forward, Vector3* up);
+
+        public Result Geometry_SetRotation(IntPtr geometry, in Vector3 forward, in Vector3 up)
+        {
+            fixed (Vector3* pForward = &forward, pUp = &up)
+            {
+                return Geometry_SetRotation(geometry, pForward, pUp);
+            }
+        }
+
         public abstract Result Geometry_GetRotation(IntPtr geometry, Vector3* forward, Vector3* up);
+
+        public Result Geometry_GetRotation(IntPtr geometry, out Vector3 forward, out Vector3 up)
+        {
+            fixed (Vector3* pForward = &forward, pUp = &up)
+            {
+                return Geometry_GetRotation(geometry, pForward, pUp);
+            }
+        }
+
         public abstract Result Geometry_SetPosition(IntPtr geometry, Vector3* position);
+
+        public Result Geometry_SetPosition(IntPtr geometry, in Vector3 position)
+        {
+            fixed (Vector3* pPosition = &position)
+            {
+                return Geometry_SetPosition(geometry, pPosition);
+            }
+        }
+
         public abstract Result Geometry_GetPosition(IntPtr geometry, Vector3* position);
+
+        public Result Geometry_GetPosition(IntPtr geometry, out Vector3 position)
+        {
+            fixed (Vector3* pPosition = &position)
+            {
+                return Geometry_GetPosition(geometry, pPosition);
+            }
+        }
+
         public abstract Result Geometry_SetScale(IntPtr geometry, Vector3* scale);
+
+        public Result Geometry_SetScale(IntPtr geometry, in Vector3 scale)
+        {
+            fixed (Vector3* pScale = &scale)
+            {
+                return Geometry_SetScale(geometry, pScale);
+            }
+        }
+
         public abstract Result Geometry_GetScale(IntPtr geometry, Vector3* scale);
+
+        public Result Geometry_GetScale(IntPtr geometry, out Vector3 scale)
+        {
+            fixed (Vector3* pScale = &scale)
+            {
+                return Geometry_GetScale(geometry, pScale);
+            }
+        }
+
         public abstract Result Geometry_Save(IntPtr geometry, void* data, int* datasize);
+        
         public abstract Result Geometry_SetUserData(IntPtr geometry, IntPtr userdata);
+        
         public abstract Result Geometry_GetUserData(IntPtr geometry, IntPtr* userdata);
+
+        public Result Geometry_GetUserData(IntPtr geometry, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserdata = &userdata)
+            {
+                return Geometry_GetUserData(geometry, pUserdata);
+            }
+        }
     }
 }

@@ -578,15 +578,15 @@ namespace FmodAudio.Interop
         
         Result DSP_GetType(IntPtr dsp, DSPType* type);
         
-        Result DSP_GetIdle(IntPtr dsp, int* idle);
+        Result DSP_GetIdle(IntPtr dsp, out bool idle);
         
         Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
         
         Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
         
-        Result DSP_SetMeteringEnabled(IntPtr dsp, int inputEnabled, int outputEnabled);
+        Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
         
-        Result DSP_GetMeteringEnabled(IntPtr dsp, int* inputEnabled, int* outputEnabled);
+        Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);
         
         Result DSP_GetMeteringInfo(IntPtr dsp, DSPMeteringInfo* inputInfo, DSPMeteringInfo* outputInfo);
         
@@ -614,7 +614,7 @@ namespace FmodAudio.Interop
         
         Result Geometry_Release(IntPtr geometry);
         
-        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, int doublesided, int numvertices, Vector3* vertices, int* polygonindex);
+        Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, int* polygonindex);
         
         Result Geometry_GetNumPolygons(IntPtr geometry, int* numpolygons);
         
@@ -626,13 +626,13 @@ namespace FmodAudio.Interop
         
         Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
         
-        Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, int doublesided);
+        Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
         
         Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, int* doublesided);
         
-        Result Geometry_SetActive(IntPtr geometry, int active);
+        Result Geometry_SetActive(IntPtr geometry, bool active);
         
-        Result Geometry_GetActive(IntPtr geometry, int* active);
+        Result Geometry_GetActive(IntPtr geometry, out bool active);
         
         Result Geometry_SetRotation(IntPtr geometry, Vector3* forward, Vector3* up);
         
