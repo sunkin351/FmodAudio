@@ -2212,25 +2212,86 @@ namespace FmodAudio.Interop
 
         public abstract Result DSPConnection_GetInput(IntPtr dspconnection, IntPtr* input);
 
+        public Result DSPConnection_GetInput(IntPtr dspconnection, out IntPtr input)
+        {
+            fixed (IntPtr* pInput = &input)
+            {
+                return DSPConnection_GetInput(dspconnection, pInput);
+            }
+        }
+
         public abstract Result DSPConnection_GetOutput(IntPtr dspconnection, IntPtr* output);
-        
+
+        public Result DSPConnection_GetOutput(IntPtr dspconnection, out IntPtr output)
+        {
+            fixed (IntPtr* pOutput = &output)
+            {
+                return DSPConnection_GetOutput(dspconnection, pOutput);
+            }
+        }
+
         public abstract Result DSPConnection_SetMix(IntPtr dspconnection, float volume);
         
         public abstract Result DSPConnection_GetMix(IntPtr dspconnection, float* volume);
-        
+
+        public Result DSPConnection_GetMix(IntPtr dspconnection, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return DSPConnection_GetMix(dspconnection, pVolume);
+            }
+        }
+
         public abstract Result DSPConnection_SetMixMatrix(IntPtr dspconnection, float* matrix, int outchannels, int inchannels, int inchannel_hop);
+
         public abstract Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+
+        public Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, out int outchannels, out int inchannels, int inchannel_hop)
+        {
+            fixed (int* pOutChannels = &outchannels, pInChannels = &inchannels)
+            {
+                return DSPConnection_GetMixMatrix(dspconnection, matrix, pOutChannels, pInChannels, inchannel_hop);
+            }
+        }
+
         public abstract Result DSPConnection_GetType(IntPtr dspconnection, DSPConnectionType* type);
+
+        public Result DSPConnection_GetType(IntPtr dspconnection, out DSPConnectionType type)
+        {
+            fixed (DSPConnectionType* pType = &type)
+            {
+                return DSPConnection_GetType(dspconnection, pType);
+            }
+        }
+
         public abstract Result DSPConnection_SetUserData(IntPtr dspconnection, IntPtr userdata);
+        
         public abstract Result DSPConnection_GetUserData(IntPtr dspconnection, IntPtr* userdata);
+
+        public Result DSPConnection_GetUserData(IntPtr dspconnection, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserdata = &userdata)
+            {
+                return DSPConnection_GetUserData(dspconnection, pUserdata);
+            }
+        }
+
         public abstract Result Geometry_Release(IntPtr geometry);
+        
         public abstract Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, int doublesided, int numvertices, Vector3* vertices, int* polygonindex);
+        
         public abstract Result Geometry_GetNumPolygons(IntPtr geometry, int* numpolygons);
+        
         public abstract Result Geometry_GetMaxPolygons(IntPtr geometry, int* maxpolygons, int* maxvertices);
+        
         public abstract Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, int* numvertices);
+        
         public abstract Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
+        
         public abstract Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
+        
         public abstract Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, int doublesided);
+        
         public abstract Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, int* doublesided);
         public abstract Result Geometry_SetActive(IntPtr geometry, int active);
         public abstract Result Geometry_GetActive(IntPtr geometry, int* active);
