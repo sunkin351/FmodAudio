@@ -1819,6 +1819,11 @@ namespace FmodAudio.Interop
 
         public abstract Result ChannelGroup_AddDSP(IntPtr channelGroup, int index, IntPtr dsp);
 
+        public Result ChannelGroup_AddDSP(IntPtr channelGroup, ChannelControlDSPIndex index, IntPtr dsp)
+        {
+            return ChannelGroup_AddDSP(channelGroup, (int)index, dsp);
+        }
+
         public abstract Result ChannelGroup_RemoveDSP(IntPtr channelGroup, IntPtr dsp);
         
         public abstract Result ChannelGroup_GetNumDSPs(IntPtr channelGroup, int* dspCount);

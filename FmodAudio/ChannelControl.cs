@@ -319,7 +319,15 @@ namespace FmodAudio
             if (dsp is null)
                 throw new ArgumentNullException(nameof(dsp));
 
-            library.ChannelGroup_AddDSP(Handle, index, dsp.Handle);
+            library.ChannelGroup_AddDSP(Handle, index, dsp.Handle).CheckResult();
+        }
+
+        public void AddDSP(ChannelControlDSPIndex index, DSP dsp)
+        {
+            if (dsp is null)
+                throw new ArgumentNullException(nameof(dsp));
+
+            library.ChannelGroup_AddDSP(Handle, index, dsp.Handle).CheckResult();
         }
 
         public void RemoveDSP(DSP dsp)
