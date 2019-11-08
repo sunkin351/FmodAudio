@@ -65,21 +65,44 @@ namespace FmodAudio
                         throw new PlatformNotSupportedException();
                     }
 
-                    defaultLibName = string.Concat("fmod", Environment.Is64BitProcess ? "64" : string.Empty, ext);
+                    defaultLibName = string.Concat("fmod", ext);
                 }
 
                 return defaultLibName;
             }
         }
 
+        /// <summary>
+        ///     This method allows you to specify the location to the FMOD native library file.
+        ///     
+        ///     Do take care to call this before calling any other FMOD api method, or else this will do nothing.
+        /// </summary>
+        /// <param name="path">
+        ///     Can Specify either a path directly to the library file (allows you to specify a different file name),
+        ///     or a path to the directory containing the library file (File name MUST be "fmod.dll", "fmod.so", or "fmod.dylib" depending on the platform).
+        /// </param>
         public static void SetLibraryLocation(string path)
         {
-            if (!Path.GetFileName(path.AsSpan()).StartsWith("fmod", StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(path))
             {
-                path = Path.Combine(path, DefaultLibraryName);
+                location = path;
+                return;
             }
 
-            location = path;
+            if (Directory.Exists(path))
+            {
+                var loc = Path.Combine(path, DefaultLibraryName);
+
+                if (!File.Exists(loc))
+                {
+                    throw new ArgumentException($"Unable to find {DefaultLibraryName} in path '{path}'", nameof(path));
+                }
+
+                location = loc;
+                return;
+            }
+
+            throw new ArgumentException("Invalid Path to Library", nameof(path));
         }
 
         #endregion
