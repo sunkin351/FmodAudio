@@ -45,7 +45,7 @@ namespace Examples.Base
         {
             var version = system.Version;
             
-            if (version < FmodSystem.BindingVersion)
+            if (version < Fmod.BindingVersion)
             {
                 throw new NotSupportedException($"FMOD Library version {version} is less than Binding version {FmodSystem.BindingVersion}");
             }

@@ -9,13 +9,11 @@ namespace FmodAudio
     /// </summary>
     public class AdvancedSettings
     {
-        internal _interopStruct Struct;
+        internal Structure Struct;
 
         public AdvancedSettings()
         {
-            Struct.cbSize = Unsafe.SizeOf<_interopStruct>();
-            Struct.HRTFMaxAngle = 360.0f;
-            Struct.HRTFMinAngle = 180.0f;
+            Struct.cbSize = Unsafe.SizeOf<Structure>();
         }
 
         public int MaxMPEGCodecs { get => Struct.maxMPEGCodecs; set => Struct.maxMPEGCodecs = value; }
@@ -53,12 +51,6 @@ namespace FmodAudio
             get => Struct.ASIOSpeakerList; set => Struct.ASIOSpeakerList = value;
         }
 
-        public float HRTFMinAngle { get => Struct.HRTFMinAngle; set => Struct.HRTFMinAngle = value; }
-
-        public float HRTFMaxAngle { get => Struct.HRTFMaxAngle; set => Struct.HRTFMaxAngle = value; }
-
-        public float HRTFFreq { get => Struct.HRTFFreq; set => Struct.HRTFFreq = value; }
-
         public float Vol0VirtualVol { get => Struct.vol0virtualvol; set => Struct.vol0virtualvol = value; }
 
         public uint DefaultDecodeBufferSize { get => Struct.defaultDecodeBufferSize; set => Struct.defaultDecodeBufferSize = value; }
@@ -86,7 +78,7 @@ namespace FmodAudio
         public uint RandomSeed { get => Struct.randomSeed; set => Struct.randomSeed = value; }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct _interopStruct
+        public struct Structure
         {
             public int cbSize;                     /* [w]   Size of this structure.  Use sizeof(FMOD_ADVANCEDSETTINGS) */
             public int maxMPEGCodecs;              /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_CREATECOMPRESSEDSAMPLE only.  MPEG   codecs consume 30,528 bytes per instance and this number will determine how many MPEG   channels can be played simultaneously. Default = 32. */
@@ -99,9 +91,6 @@ namespace FmodAudio
             public int ASIONumChannels;            /* [r/w] Optional. Specify 0 to ignore. Number of channels available on the ASIO device. */
             public IntPtr ASIOChannelList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to an array of strings (number of entries defined by ASIONumChannels) with ASIO channel names. */
             public IntPtr ASIOSpeakerList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to a list of speakers that the ASIO channels map to.  This can be called after System::init to remap ASIO output. */
-            public float HRTFMinAngle;               /* [r/w] Optional.                      For use with FMOD_INIT_HRTF_LOWPASS.  The angle range (0-360) of a 3D sound in relation to the listener, at which the HRTF function begins to have an effect. 0 = in front of the listener. 180 = from 90 degrees to the left of the listener to 90 degrees to the right. 360 = behind the listener. Default = 180.0. */
-            public float HRTFMaxAngle;               /* [r/w] Optional.                      For use with FMOD_INIT_HRTF_LOWPASS.  The angle range (0-360) of a 3D sound in relation to the listener, at which the HRTF function has maximum effect. 0 = front of the listener. 180 = from 90 degrees to the left of the listener to 90 degrees to the right. 360 = behind the listener. Default = 360.0. */
-            public float HRTFFreq;                   /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_INIT_HRTF_LOWPASS.  The cutoff frequency of the HRTF's lowpass filter function when at maximum effect. (i.e. at HRTFMaxAngle).  Default = 4000.0. */
             public float vol0virtualvol;             /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_INIT_VOL0_BECOMES_VIRTUAL.  If this flag is used, and the volume is below this, then the sound will become virtual.  Use this value to raise the threshold to a different point where a sound goes virtual. */
             public uint defaultDecodeBufferSize;    /* [r/w] Optional. Specify 0 to ignore. For streams. This determines the default size of the double buffer (in milliseconds) that a stream uses.  Default = 400ms */
             public ushort profilePort;                /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_INIT_PROFILE_ENABLE.  Specify the port to listen on for connections by the profiler application. */

@@ -23,21 +23,15 @@ namespace FmodAudio
         public ErrorCallbackInfo(ref ErrorCallbackInfoNative native)
         {
             Result = native.Result;
-            InstanceType = native.InstanceType;
 
-            switch(native.InstanceType)
+            if (native.InstanceType == ErrorCallbackInstanceType.System)
             {
-                case ErrorCallbackInstanceType.System:
-                    Instance = Fmod.GetSystem(native.Instance);
-                    break;
-
-                default:
-                    Instance = null;
-                    break;
+                Instance = Fmod.GetSystem(native.Instance);
+                InstanceType = native.InstanceType;
             }
 
-            FunctionName = Helpers.PtrToStringUnknownSize(native.FunctionName);
-            FunctionParams = Helpers.PtrToStringUnknownSize(native.FunctionParams);
+            FunctionName = FmodHelpers.PtrToStringUnknownSize(native.FunctionName);
+            FunctionParams = FmodHelpers.PtrToStringUnknownSize(native.FunctionParams);
         }
     }
 }

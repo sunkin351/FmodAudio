@@ -23,7 +23,7 @@ namespace FmodAudio.Interop
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T GenerateCalli<T>() where T: Delegate
+        public static T GenerateCalli<T>(CallingConvention convention = CallingConvention.StdCall) where T: Delegate
         {
             Signature sig = GetDelegateSignature(typeof(T));
 
@@ -91,7 +91,7 @@ namespace FmodAudio.Interop
             gen.Emit(OpCodes.Ldarg_0);
 
             //Make the call
-            gen.EmitCalli(OpCodes.Calli, CallingConvention.StdCall, sig.ReturnType, paramList.Skip(1).ToArray());
+            gen.EmitCalli(OpCodes.Calli, convention, sig.ReturnType, paramList.Skip(1).ToArray());
 
             //Return Immediately
             gen.Emit(OpCodes.Ret);

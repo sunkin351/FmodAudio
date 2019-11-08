@@ -8,7 +8,7 @@ namespace FmodAudio
 
     public abstract class ChannelControl : HandleBase
     {
-        protected readonly INativeLibrary library;
+        protected readonly NativeLibrary library;
         public FmodSystem SystemObject { get; }
 
         protected ChannelControl(FmodSystem sys, IntPtr handle) : base(handle)
@@ -154,44 +154,17 @@ namespace FmodAudio
             }
         }
         
-        ChannelCallbackInternal InternalCallback;
         ChannelCallback Callback;
 
         public void SetCallback(ChannelCallback callback)
         {
-            if (ReferenceEquals(callback, Callback))
+            if (callback == Callback)
             {
                 return;
             }
 
-            ChannelCallbackInternal cb = delegate (IntPtr rawchannel, ChannelControlType controltype, ChannelControlCallbackType type, IntPtr commanddata1, IntPtr commanddata2)
-            {
-                if (rawchannel != Handle)
-                {
-                    return Result.Err_Internal;
-                }
+            library.ChannelGroup_SetCallback(Handle, callback).CheckResult();
 
-                Result result = Result.Ok;
-
-                try
-                {
-                    callback(this, controltype, type, commanddata1, commanddata2);
-                }
-                catch (FmodException e)
-                {
-                    result = e.Result ?? Result.Err_Internal;
-                }
-                catch (Exception e)
-                {
-                    result = (e.InnerException as FmodException)?.Result ?? Result.Err_Internal;
-                }
-
-                return result;
-            };
-            
-            library.ChannelGroup_SetCallback(Handle, cb).CheckResult();
-
-            InternalCallback = cb;
             Callback = callback;
         }
 
@@ -256,23 +229,20 @@ namespace FmodAudio
 
         public unsafe void GetMixMatrix(out float[] matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
         {
-            matrix = null;
-            outChannels = 0;
-            inChannels = 0;
+            int Out, In;
 
-            library.ChannelGroup_GetMixMatrix(Handle, null, out outChannels, out inChannels, inChannelHop).CheckResult();
+            library.ChannelGroup_GetMixMatrix(Handle, null, &Out, &In, inChannelHop).CheckResult();
 
-            var tmp = new float[outChannels * inChannels];
-
-            Result res;
+            var tmp = new float[Out * In];
 
             fixed(float* mat = tmp)
             {
-                res = library.ChannelGroup_GetMixMatrix(Handle, mat, out outChannels, out inChannels, inChannelHop);
+                library.ChannelGroup_GetMixMatrix(Handle, mat, &Out, &In, inChannelHop).CheckResult();
             }
 
-            res.CheckResult();
             matrix = tmp;
+            outChannels = Out;
+            inChannels = In;
         }
 
         #endregion
@@ -315,22 +285,19 @@ namespace FmodAudio
             volumes = null;
 
             uint pointCount = 0;
-            library.ChannelGroup_GetFadePoints(Handle, ref pointCount, null, null).CheckResult();
+            library.ChannelGroup_GetFadePoints(Handle, &pointCount, null, null).CheckResult();
 
             if (pointCount == 0)
                 return;
 
             var clocks = new ulong[pointCount];
             var vols = new float[pointCount];
-            Result res;
 
             fixed(ulong* t0 = clocks)
             fixed(float* t1 = vols)
             {
-                res = library.ChannelGroup_GetFadePoints(Handle, ref pointCount, t0, t1);
+                library.ChannelGroup_GetFadePoints(Handle, &pointCount, t0, t1).CheckResult();
             }
-
-            res.CheckResult();
 
             dspClocks = clocks;
             volumes = vols;
@@ -393,15 +360,9 @@ namespace FmodAudio
 
         #region 3D Effects
 
-        public void Set3DAttributes(ref Vector3 pos, ref Vector3 vel, ref Vector3 altPanPos)
+        public void Set3DAttributes(in Vector3 pos, in Vector3 vel, in Vector3 altPanPos)
         {
-            library.ChannelGroup_Set3DAttributes(Handle, ref pos, ref vel, ref altPanPos).CheckResult();
-        }
-
-        public void Set3DAttributes(ref Vector3 pos, ref Vector3 vel)
-        {
-            Vector3 altPanPos = default;
-            Set3DAttributes(ref pos, ref vel, ref altPanPos);
+            library.ChannelGroup_Set3DAttributes(Handle, in pos, in vel, in altPanPos).CheckResult();
         }
 
         public void Get3DAttributes(out Vector3 pos, out Vector3 vel, out Vector3 altPanPos)
@@ -429,9 +390,9 @@ namespace FmodAudio
             library.ChannelGroup_Get3DConeSettings(Handle, out insideConeAngle, out outsideConeAngle, out outsideVolume).CheckResult();
         }
 
-        public void Set3DConeOrientation(ref Vector3 orientation)
+        public void Set3DConeOrientation(in Vector3 orientation)
         {
-            library.ChannelGroup_Set3DConeOrientation(Handle, ref orientation).CheckResult();
+            library.ChannelGroup_Set3DConeOrientation(Handle, in orientation).CheckResult();
         }
 
         public void Get3DConeOrientation(out Vector3 orientation)
@@ -446,7 +407,7 @@ namespace FmodAudio
             if (this is Channel)
                 throw new NotSupportedException();
 
-            var ptr = Helpers.AllocateCustomRolloff(rolloff);
+            var ptr = FmodHelpers.AllocateCustomRolloff(rolloff);
             int count = 0;
 
             if (ptr != null)

@@ -14,12 +14,26 @@ namespace FmodAudio
 
     public static class Fmod
     {
+        public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
+
+        public const int MaxAllowedSystemObjects = 8;
+
         #region Pre-Native Setup
 
         private static string defaultLibName;
         private static string location;
 
-        private static INativeLibrary nativeLibrary;
+        private static NativeLibrary nativeLibrary;
+
+        public static NativeLibrary Library
+        {
+            get
+            {
+                EnsureInitialized();
+
+                return nativeLibrary;
+            }
+        }
 
         // <summary>
         // Subscribe to this to log when fatal errors occur.String passed is the error message.
@@ -88,7 +102,7 @@ namespace FmodAudio
 
                 NativeLibraryBuilder builder = new NativeLibraryBuilder(options);
                 
-                nativeLibrary = builder.ActivateInterface<INativeLibrary>(location ?? DefaultLibraryName);
+                nativeLibrary = builder.ActivateClass<NativeLibrary, INativeLibrary>(location ?? DefaultLibraryName);
             }
         }
 
@@ -103,6 +117,24 @@ namespace FmodAudio
 
             nativeLibrary.Debug_Initialize(flags, mode, callback, filename).CheckResult();
             DebugCallbackReference = callback;
+        }
+
+        public static unsafe bool DiskBusy
+        {
+            get
+            {
+                EnsureInitialized();
+
+                nativeLibrary.File_GetDiskBusy(out bool res).CheckResult();
+
+                return res;
+            }
+
+            set
+            {
+                EnsureInitialized();
+                nativeLibrary.File_SetDiskBusy(value).CheckResult();
+            }    
         }
 
         internal static readonly ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>> SystemLookup = new ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>>();
@@ -137,7 +169,7 @@ namespace FmodAudio
             return system;
         }
 
-        public static FmodSystem CreateSystem()
+        public unsafe static FmodSystem CreateSystem()
         {
             EnsureInitialized();
 
@@ -145,7 +177,7 @@ namespace FmodAudio
 
             lock (CreationSyncObject)
             {
-                nativeLibrary.System_Create(out handle).CheckResult();
+                nativeLibrary.System_Create(&handle).CheckResult();
             }
 
             var sys = new FmodSystem(nativeLibrary, handle);

@@ -1,18 +1,22 @@
-﻿using System;
+#pragma warning disable CA1063
+
+using System;
 
 namespace FmodAudio
 {
     public abstract class HandleBase : IDisposable
     {
-        internal IntPtr Handle;
+        private IntPtr handle;
 
-        public HandleBase()
+        public IntPtr Handle => handle;
+
+        protected HandleBase()
         {
         }
 
-        public HandleBase(IntPtr newPtr)
+        protected HandleBase(IntPtr newPtr)
         {
-            Handle = newPtr;
+            handle = newPtr;
         }
 
         ~HandleBase()
@@ -25,17 +29,17 @@ namespace FmodAudio
 
         internal bool IsValid
         {
-            get => Handle != IntPtr.Zero;
+            get => handle != default;
         }
         
-        public void Release()
+        public void Release() 
         {
             if (!IsValid)
                 return;
 
             ReleaseImpl();
 
-            Handle = IntPtr.Zero;
+            handle = IntPtr.Zero;
 
             GC.SuppressFinalize(this);
         }
@@ -63,7 +67,7 @@ namespace FmodAudio
 
         public override int GetHashCode()
         {
-            return Handle.GetHashCode();
+            return HashCode.Combine(Handle);
         }
 
         public static bool operator ==(HandleBase a, HandleBase b)

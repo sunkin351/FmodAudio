@@ -1,5 +1,4 @@
-#pragma warning disable IDE1006
-#pragma warning disable IDE0052 // Remove unread private members
+#pragma warning disable IDE1006, IDE0052, CA1815
 
 using System;
 using System.Runtime.CompilerServices;
@@ -10,9 +9,7 @@ namespace FmodAudio
 {
     public class CreateSoundInfo
     {
-        static readonly int StructSize = Unsafe.SizeOf<_interopStruct>();
-
-        internal _interopStruct Struct = default;
+        internal Structure Struct = default;
 
         private Memory.SaferPointer InclusionListMemory = null;
 
@@ -57,7 +54,7 @@ namespace FmodAudio
         
         public CreateSoundInfo()
         {
-            Struct.cbsize = StructSize;
+            Struct.cbsize = Unsafe.SizeOf<Structure>();
         }
 
         /// <summary>
@@ -137,7 +134,7 @@ namespace FmodAudio
             get => pcmReadCallback;
             set
             {
-                Helpers.UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
+                FmodHelpers.UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
             }
         }
 
@@ -151,7 +148,7 @@ namespace FmodAudio
             get => pcmSetPosCallback;
             set
             {
-                Helpers.UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
+                FmodHelpers.UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
             }
         }
 
@@ -165,7 +162,7 @@ namespace FmodAudio
             get => nonBlockCallback;
             set
             {
-                Helpers.UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
+                FmodHelpers.UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
             }
         }
         /// <summary>
@@ -198,7 +195,7 @@ namespace FmodAudio
 
                 DLSNameManaged = value;
                 
-                if (Helpers.StringToPointer(value, Encoding.UTF8, ref DLSNameMemory))
+                if (FmodHelpers.StringToPointer(value, Encoding.UTF8, ref DLSNameMemory))
                 {
                     Struct.DLSName = DLSNameMemory;
                 }
@@ -235,7 +232,6 @@ namespace FmodAudio
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
 
-        private FileOpenCallbackImpl fileOpenImpl;
         private FileOpenCallback fileOpen;
 
         /// <summary>
@@ -246,8 +242,7 @@ namespace FmodAudio
             get => fileOpen;
             set
             {
-                Helpers.UpdateCallback(value?.Wrap(), out fileOpenImpl, out Struct.FileUserOpen);
-                fileOpen = value;
+                FmodHelpers.UpdateCallback(value, out fileOpen, out Struct.FileUserOpen);
             }
         }
 
@@ -261,7 +256,7 @@ namespace FmodAudio
             get => fileUserClose;
             set
             {
-                Helpers.UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
+                FmodHelpers.UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
             }
         }
 
@@ -275,7 +270,7 @@ namespace FmodAudio
             get => fileUserRead;
             set
             {
-                Helpers.UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
+                FmodHelpers.UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
             }
         }
 
@@ -289,7 +284,7 @@ namespace FmodAudio
             get => fileUserSeek;
             set
             {
-                Helpers.UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
+                FmodHelpers.UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
             }
         }
 
@@ -303,7 +298,7 @@ namespace FmodAudio
             get => fileUserAsyncRead;
             set
             {
-                Helpers.UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
+                FmodHelpers.UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
             }
         }
 
@@ -317,25 +312,25 @@ namespace FmodAudio
             get => fileUserAsyncCancel;
             set
             {
-                Helpers.UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
+                FmodHelpers.UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
             }
         }
+        
         /// <summary>
         /// [w] Optional. User data to be passed into the file callbacks.
         /// </summary>
         public IntPtr FileUserData { get => Struct.FileUserData; set => Struct.FileUserData = value; }
+        
         /// <summary>
         /// [w] Optional. Buffer size for reading the file, -1 to disable buffering, or 0 for system default.
         /// </summary>
         public int FileBufferSize { get => Struct.FileBufferSize; set => Struct.FileBufferSize = value; }
+        
         /// <summary>
         /// [w] Optional. Use this to differ the way fmod maps multichannel sounds to speakers.  See FMOD_CHANNELORDER for more.
         /// </summary>
         public ChannelOrder ChannelOrder { get => Struct.ChannelOrder; set => Struct.ChannelOrder = value; }
-        /// <summary>
-        /// [w] Optional. Use this to differ the way fmod maps multichannel sounds to speakers.  See FMOD_CHANNELMASK for more.
-        /// </summary>
-        public ChannelMask ChannelMask { get => Struct.ChannelMask; set => Struct.ChannelMask = value; }
+
         /// <summary>
         /// [w] Optional. Specify a sound group if required, to put sound in as it is created.
         /// </summary>
@@ -430,7 +425,7 @@ namespace FmodAudio
                 return;
             }
 
-            bool tmp = Helpers.StringToPointer(encryptionKey, encoding, ref encryptionKeyMemory);
+            bool tmp = FmodHelpers.StringToPointer(encryptionKey, encoding, ref encryptionKeyMemory);
 
             if (tmp)
             {
@@ -439,7 +434,7 @@ namespace FmodAudio
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct _interopStruct
+        public struct Structure
         {
             /// <summary>
             /// Size of this structure.  This is used so the structure can be expanded in the future and still work on older versions of FMOD Ex.
@@ -499,8 +494,6 @@ namespace FmodAudio
             public int FileBufferSize;
 
             public ChannelOrder ChannelOrder;
-
-            public ChannelMask ChannelMask;
 
             public IntPtr InitialSoundGroup;
 

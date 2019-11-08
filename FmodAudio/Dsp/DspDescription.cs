@@ -52,37 +52,37 @@ namespace FmodAudio.Dsp
         public DspStateCallback CreateCallback
         {
             get => Create;
-            set => Helpers.UpdateCallback(value, out Create, out Struct.Create);
+            set => FmodHelpers.UpdateCallback(value, out Create, out Struct.Create);
         }
 
         public DspStateCallback ReleaseCallback
         {
             get => Release;
-            set => Helpers.UpdateCallback(value, out Release, out Struct.Create);
+            set => FmodHelpers.UpdateCallback(value, out Release, out Struct.Create);
         }
 
         public DspStateCallback ResetCallback
         {
             get => Reset;
-            set => Helpers.UpdateCallback(value, out Reset, out Struct.Reset);
+            set => FmodHelpers.UpdateCallback(value, out Reset, out Struct.Reset);
         }
 
         public DspReadCallback ReadCallback
         {
             get => Read;
-            set => Helpers.UpdateCallback(value, out Read, out Struct.Read);
+            set => FmodHelpers.UpdateCallback(value, out Read, out Struct.Read);
         }
 
         public DspProcessCallback ProcessCallback
         {
             get => Process;
-            set => Helpers.UpdateCallback(value, out Process, out Struct.Process);
+            set => FmodHelpers.UpdateCallback(value, out Process, out Struct.Process);
         }
 
         public DspSetPositionCallback SetPositionCallback
         {
             get => SetPosition;
-            set => Helpers.UpdateCallback(value, out SetPosition, out Struct.SetPosition);
+            set => FmodHelpers.UpdateCallback(value, out SetPosition, out Struct.SetPosition);
         }
 
         private ParameterDescription[] descriptions;
@@ -119,73 +119,73 @@ namespace FmodAudio.Dsp
         public DspSetParamFloatCallback SetParamFloatCallback
         {
             get => SetParamFloat;
-            set => Helpers.UpdateCallback(value, out SetParamFloat, out Struct.SetParamFloat);
+            set => FmodHelpers.UpdateCallback(value, out SetParamFloat, out Struct.SetParamFloat);
         }
 
         public DspSetParamIntCallback SetParamIntCallback
         {
             get => SetParamInt;
-            set => Helpers.UpdateCallback(value, out SetParamInt, out Struct.SetParamInt);
+            set => FmodHelpers.UpdateCallback(value, out SetParamInt, out Struct.SetParamInt);
         }
 
         public DspSetParamBoolCallback SetParamBoolCallback
         {
             get => SetParamBool;
-            set => Helpers.UpdateCallback(value, out SetParamBool, out Struct.SetParamBool);
+            set => FmodHelpers.UpdateCallback(value, out SetParamBool, out Struct.SetParamBool);
         }
 
         public DspSetParamDataCallback SetParamDataCallback
         {
             get => SetParamData;
-            set => Helpers.UpdateCallback(value, out SetParamData, out Struct.SetParamData);
+            set => FmodHelpers.UpdateCallback(value, out SetParamData, out Struct.SetParamData);
         }
 
         public DspGetParamFloatCallback GetParamFloatCallback
         {
             get => GetParamFloat;
-            set => Helpers.UpdateCallback(value, out GetParamFloat, out Struct.GetParamFloat);
+            set => FmodHelpers.UpdateCallback(value, out GetParamFloat, out Struct.GetParamFloat);
         }
 
         public DspGetParamIntCallback GetParamIntCallback
         {
             get => GetParamInt;
-            set => Helpers.UpdateCallback(value, out GetParamInt, out Struct.GetParamInt);
+            set => FmodHelpers.UpdateCallback(value, out GetParamInt, out Struct.GetParamInt);
         }
 
         public DspGetParamBoolCallback GetParamBoolCallback
         {
             get => GetParamBool;
-            set => Helpers.UpdateCallback(value, out GetParamBool, out Struct.GetParamBool);
+            set => FmodHelpers.UpdateCallback(value, out GetParamBool, out Struct.GetParamBool);
         }
 
         public DspGetParamDataCallback GetParamDataCallback
         {
             get => GetParamData;
-            set => Helpers.UpdateCallback(value, out GetParamData, out Struct.GetParamData);
+            set => FmodHelpers.UpdateCallback(value, out GetParamData, out Struct.GetParamData);
         }
 
         public DspShouldIProcessCallback ShouldIProcessCallback
         {
             get => ShouldIProcess;
-            set => Helpers.UpdateCallback(value, out ShouldIProcess, out Struct.ShouldIProcess);
+            set => FmodHelpers.UpdateCallback(value, out ShouldIProcess, out Struct.ShouldIProcess);
         }
 
         public DspStateCallback SystemRegisterCallback
         {
             get => SystemRegister;
-            set => Helpers.UpdateCallback(value, out SystemRegister, out Struct.SystemRegister);
+            set => FmodHelpers.UpdateCallback(value, out SystemRegister, out Struct.SystemRegister);
         }
 
         public DspStateCallback SystemDeregisterCallback
         {
             get => SystemDeregister;
-            set => Helpers.UpdateCallback(value, out SystemDeregister, out Struct.SystemDeregister);
+            set => FmodHelpers.UpdateCallback(value, out SystemDeregister, out Struct.SystemDeregister);
         }
 
         public DspSystemMixCallback SystemMixCallback
         {
             get => SystemMix;
-            set => Helpers.UpdateCallback(value, out SystemMix, out Struct.SystemMix);
+            set => FmodHelpers.UpdateCallback(value, out SystemMix, out Struct.SystemMix);
         }
         
         [StructLayout(LayoutKind.Sequential)]
@@ -247,7 +247,7 @@ namespace FmodAudio.Dsp
             {
                 get
                 {
-                    return Helpers.MemoryToString(MemoryMarshal.CreateSpan(ref NameBuffer[0], 31));
+                    return FmodHelpers.MemoryToString(MemoryMarshal.CreateSpan(ref NameBuffer[0], 31));
                 }
 
                 set
