@@ -467,7 +467,7 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_Get3DDopplerLevel(IntPtr channelgroup, float* level);
         
-        Result ChannelGroup_Set3DDistanceFilter(IntPtr channelgroup, int custom, float customLevel, float centerFreq);
+        Result ChannelGroup_Set3DDistanceFilter(IntPtr channelgroup, bool custom, float customLevel, float centerFreq);
         
         Result ChannelGroup_Get3DDistanceFilter(IntPtr channelgroup, int* custom, float* customLevel, float* centerFreq);
         
@@ -546,7 +546,7 @@ namespace FmodAudio.Interop
         
         Result DSP_GetChannelFormat(IntPtr dsp, ChannelMask* channelmask, int* numchannels, SpeakerMode* source_speakermode);
         
-        Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, int* outchannels, out SpeakerMode outspeakermode);
+        Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, ChannelMask* outmask, int* outchannels, SpeakerMode* outspeakermode);
         
         Result DSP_Reset(IntPtr dsp);
         

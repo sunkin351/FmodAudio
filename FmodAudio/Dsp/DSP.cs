@@ -237,7 +237,9 @@ namespace FmodAudio.Dsp
         public unsafe int GetParameterInt(int index)
         {
             CheckParamIndex(index);
-            library.DSP_GetParameterInt(Handle, index, out int value, null, 0).CheckResult();
+
+            int value;
+            library.DSP_GetParameterint(Handle, index, &value).CheckResult();
             return value;
         }
 
@@ -250,10 +252,8 @@ namespace FmodAudio.Dsp
 
         public IntPtr GetParameterData(int index, out uint length)
         {
-            length = 0;
-
             CheckParamIndex(index);
-            library.DSP_GetParameterData(Handle, index, out IntPtr data, out length, IntPtr.Zero, 0).CheckResult();
+            library.DSP_GetParameterData(Handle, index, out IntPtr data, out length).CheckResult();
             return data;
         }
 
@@ -266,7 +266,9 @@ namespace FmodAudio.Dsp
                 return Description.ParameterDescriptions[index];
             }
 
-            library.DSP_GetParameterInfo(Handle, index, out IntPtr ptr).CheckResult();
+            Interop.ParameterDescriptionStruct* ptr;
+
+            library.DSP_GetParameterInfo(Handle, index, &ptr).CheckResult();
 
             return ParameterDescription.CreateFromPointer(ptr);
         }
@@ -287,29 +289,9 @@ namespace FmodAudio.Dsp
             library.DSP_ShowConfigDialog(Handle, hwnd, show).CheckResult();
         }
 
-        public unsafe void GetInfo(Span<char> nameBuffer, out FmodVersion version, out int channels, out int configWidth, out int configHeight)
+        public unsafe void GetInfo(out string name, out FmodVersion version, out int channels, out int configWidth, out int configHeight)
         {
-            if (nameBuffer.IsEmpty)
-            {
-                library.DSP_GetInfo(Handle, null, out version, out channels, out configWidth, out configHeight).CheckResult();
-                return;
-            }
-
-            byte* namePtr = stackalloc byte[32];
-            library.DSP_GetInfo(Handle, namePtr, out version, out channels, out configWidth, out configHeight).CheckResult();
-
-            var buf = new Span<byte>(namePtr, 32);
-
-            int idx = buf.IndexOf(byte.MinValue);
-
-            if (idx == 0)
-                return;
-            if (idx > 0)
-            {
-                buf = buf.Slice(0, idx);
-            }
-
-            Encoding.UTF8.GetChars(buf, nameBuffer);
+            library.DSP_GetInfo(Handle, out name, out version, out channels, out configWidth, out configHeight);
         }
 
         public void SetMeteringEnabled(bool inputEnabled, bool outputEnabled)

@@ -1763,16 +1763,18 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result ChannelGroup_Set3DDistanceFilter(IntPtr channelGroup, int custom, float customLevel, float centerFreq);
+        public abstract Result ChannelGroup_Set3DDistanceFilter(IntPtr channelGroup, bool custom, float customLevel, float centerFreq);
 
         public abstract Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, int* custom, float* customLevel, float* centerFreq);
 
-        public Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, out int custom, out float customLevel, out float centerFreq)
+        public Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, out bool custom, out float customLevel, out float centerFreq)
         {
-            fixed (int* pCustom = &custom)
             fixed (float* pCustomlevel = &customLevel, pCenterFreq = &centerFreq)
             {
-                return ChannelGroup_Get3DDistanceFilter(channelGroup, pCustom, pCustomlevel, pCenterFreq);
+                int _val = 0;
+                var res = ChannelGroup_Get3DDistanceFilter(channelGroup, &_val, pCustomlevel, pCenterFreq);
+                custom = _val != 0;
+                return res;
             }
         }
 
@@ -2020,7 +2022,17 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, int* outchannels, out SpeakerMode outspeakermode);
+        public abstract Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, ChannelMask* outmask, int* outchannels, SpeakerMode* outspeakermode);
+        
+        public Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, out int outchannels, out SpeakerMode outspeakermode)
+        {
+            fixed (ChannelMask* pOutMask = &outmask)
+            fixed (int* pOutChannels = &outchannels)
+            fixed (SpeakerMode* pOutSpeakerMode = &outspeakermode)
+            {
+                return DSP_GetOutputChannelFormat(dsp, inmask, inchannels, inspeakermode, pOutMask, pOutChannels, pOutSpeakerMode);
+            }
+        }
         
         public abstract Result DSP_Reset(IntPtr dsp);
         
@@ -2187,7 +2199,15 @@ namespace FmodAudio.Interop
         public abstract Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
         
         public abstract Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
-        
+
+        public Result DSP_GetUserData(IntPtr dsp, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserdata = &userdata)
+            {
+                return DSP_GetUserData(dsp, pUserdata);
+            }
+        }
+
         public abstract Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
         
         public abstract Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);

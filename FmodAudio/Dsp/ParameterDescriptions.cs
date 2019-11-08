@@ -9,7 +9,7 @@ namespace FmodAudio.Dsp
     {
         internal ParameterDescriptionStruct internalDescription;
 
-        internal static unsafe ParameterDescription CreateFromPointer(IntPtr ptr)
+        internal static unsafe ParameterDescription CreateFromPointer(ParameterDescriptionStruct* ptr)
         {
             ParameterDescriptionStruct* structPtr = (ParameterDescriptionStruct*)ptr;
 
