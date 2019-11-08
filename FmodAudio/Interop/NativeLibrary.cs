@@ -5,6 +5,7 @@ using FmodAudio.Codec;
 using FmodAudio.Dsp;
 
 using AdvancedDLSupport;
+using FmodAudio.Output;
 
 namespace FmodAudio.Interop
 {
@@ -337,7 +338,23 @@ namespace FmodAudio.Interop
             return System_RegisterDSP(system, ref description.Struct, out handle);
         }
 
-        //public abstract Result System_RegisterOutput(IntPtr system, Output.OutputDescription.Structure* description, uint* handle);
+        public abstract Result System_RegisterOutput(IntPtr system, OutputDescriptionStruct* description, uint* handle);
+
+        public Result System_RegisterOutput(IntPtr system, ref OutputDescriptionStruct description, uint* handle)
+        {
+            fixed (OutputDescriptionStruct* pDescription = &description)
+            {
+                return System_RegisterOutput(system, pDescription, handle);
+            }
+        }
+
+        public Result System_RegisterOutput(IntPtr system, ref OutputDescriptionStruct description, out uint handle)
+        {
+            fixed (uint* pHandle = &handle)
+            {
+                return System_RegisterOutput(system, ref description, pHandle);
+            }
+        }
 
         public abstract Result System_Init(IntPtr system, int maxchannels, InitFlags flags, IntPtr extradriverdata);
 

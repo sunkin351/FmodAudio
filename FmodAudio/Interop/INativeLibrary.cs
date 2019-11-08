@@ -4,7 +4,10 @@ using System.Runtime.InteropServices;
 using System.Numerics;
 namespace FmodAudio.Interop
 {
+    using Codec;
     using Dsp;
+    using Output;
+
     [NativeSymbols(Prefix = "FMOD_")]
     public unsafe interface INativeLibrary
     {
@@ -83,11 +86,11 @@ namespace FmodAudio.Interop
         
         Result System_GetDSPInfoByPlugin(IntPtr system, uint handle, IntPtr* description);
         
-        Result System_RegisterCodec(IntPtr system, Codec.CodecDescription.Structure* description, uint* handle, uint priority);
+        Result System_RegisterCodec(IntPtr system, CodecDescription.Structure* description, uint* handle, uint priority);
         
         Result System_RegisterDSP(IntPtr system, DspDescription.Structure* description, uint* handle);
         
-        //Result System_RegisterOutput(IntPtr system, Output.OutputDescription.Structure* description, uint* handle);
+        Result System_RegisterOutput(IntPtr system, OutputDescriptionStruct* description, uint* handle);
         
         Result System_Init(IntPtr system, int maxchannels, InitFlags flags, IntPtr extradriverdata);
         
