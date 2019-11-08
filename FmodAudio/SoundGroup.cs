@@ -3,12 +3,13 @@
 namespace FmodAudio
 {
     using Interop;
-    public class SoundGroup : HandleBase
+    public unsafe class SoundGroup : HandleBase
     {
         private readonly NativeLibrary library;
 
         public FmodSystem SystemObject { get; }
         internal bool IsMaster = false;
+        internal string _name = null;
 
         internal SoundGroup(FmodSystem sys, IntPtr inst) : base(inst)
         {
@@ -25,8 +26,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetMaxAudible(Handle, out int value).CheckResult();
-
+                int value;
+                library.SoundGroup_GetMaxAudible(Handle, &value).CheckResult();
                 return value;
             }
             set
@@ -39,8 +40,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetMaxAudibleBehavior(Handle, out SoundGroupBehavior value).CheckResult();
-
+                SoundGroupBehavior value;
+                library.SoundGroup_GetMaxAudibleBehavior(Handle, &value).CheckResult();
                 return value;
             }
             set
@@ -53,8 +54,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetMuteFadeSpeed(Handle, out float value).CheckResult();
-
+                float value;
+                library.SoundGroup_GetMuteFadeSpeed(Handle, &value).CheckResult();
                 return value;
             }
             set
@@ -67,8 +68,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetVolume(Handle, out float value).CheckResult();
-
+                float value;
+                library.SoundGroup_GetVolume(Handle, &value).CheckResult();
                 return value;
             }
             set
@@ -81,12 +82,17 @@ namespace FmodAudio
         {
             get
             {
-                const int len = FmodSystem.MaxInteropNameStringLength;
-                var ptr = stackalloc byte[len];
+                if (_name is null)
+                {
+                    const int len = FmodSystem.MaxInteropNameStringLength;
+                    var ptr = stackalloc byte[len];
 
-                library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
+                    library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
 
-                return FmodHelpers.PtrToString(ptr, len);
+                    _name = FmodHelpers.PtrToString(ptr, len);
+                }
+                
+                return _name;
             }
         }
 
@@ -94,8 +100,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetNumSounds(Handle, out int value).CheckResult();
-
+                int value;
+                library.SoundGroup_GetNumSounds(Handle, &value).CheckResult();
                 return value;
             }
         }
@@ -104,8 +110,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetNumPlaying(Handle, out int value).CheckResult();
-
+                int value;
+                library.SoundGroup_GetNumPlaying(Handle, &value).CheckResult();
                 return value;
             }
         }
@@ -114,8 +120,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetUserData(Handle, out IntPtr value).CheckResult();
-
+                IntPtr value;
+                library.SoundGroup_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
             set
