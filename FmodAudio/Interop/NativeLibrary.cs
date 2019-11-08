@@ -2455,5 +2455,64 @@ namespace FmodAudio.Interop
                 return Geometry_GetUserData(geometry, pUserdata);
             }
         }
+
+        public abstract Result Reverb3D_Release(IntPtr reverb3D);
+        
+        public abstract Result Reverb3D_Set3DAttributes(IntPtr reverb3D, Vector3* position, float minDistance, float maxDistance);
+
+        public Result Reverb3D_Set3DAttributes(IntPtr reverb3D, in Vector3 position, float minDistance, float maxDistance)
+        {
+            fixed (Vector3* pPosition = &position)
+            {
+                return Reverb3D_Set3DAttributes(reverb3D, pPosition, minDistance, maxDistance);
+            }
+        }
+
+        public abstract Result Reverb3D_Get3DAttributes(IntPtr reverb3D, Vector3* position, float* minDistance, float* maxDistance);
+
+        public Result Reverb3D_Set3DAttributes(IntPtr reverb3D, out Vector3 position, out float minDistance, out float maxDistance)
+        {
+            fixed (Vector3* pPosition = &position)
+            fixed (float* pMin = &minDistance, pMax = &maxDistance)
+            {
+                return Reverb3D_Get3DAttributes(reverb3D, pPosition, pMin, pMax);
+            }
+        }
+
+        public abstract Result Reverb3D_SetProperties(IntPtr reverb3D, ReverbProperties* properties);
+
+        public Result Reverb3D_SetProperties(IntPtr reverb3D, in ReverbProperties properties)
+        {
+            fixed (ReverbProperties* pProps = &properties)
+            {
+                return Reverb3D_SetProperties(reverb3D, pProps);
+            }
+        }
+
+        public abstract Result Reverb3D_GetProperties(IntPtr reverb3D, ReverbProperties* properties);
+
+        public Result Reverb3D_GetProperties(IntPtr reverb3D, out ReverbProperties properties)
+        {
+            fixed (ReverbProperties* pProps = &properties)
+            {
+                return Reverb3D_GetProperties(reverb3D, pProps);
+            }
+        }
+
+        public abstract Result Reverb3D_SetActive(IntPtr reverb3D, bool active);
+        
+        public abstract Result Reverb3D_GetActive(IntPtr reverb3D, out bool active);
+        
+        public abstract Result Reverb3D_SetUserData(IntPtr reverb3D, IntPtr userdata);
+        
+        public abstract Result Reverb3D_GetUserData(IntPtr reverb3D, IntPtr* userdata);
+
+        public Result Reverb3D_GetUserData(IntPtr reverb3D, out IntPtr userdata)
+        {
+            fixed (IntPtr* pUserdata = &userdata)
+            {
+                return Reverb3D_GetUserData(reverb3D, pUserdata);
+            }
+        }
     }
 }

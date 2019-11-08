@@ -651,5 +651,23 @@ namespace FmodAudio.Interop
         Result Geometry_SetUserData(IntPtr geometry, IntPtr userdata);
         
         Result Geometry_GetUserData(IntPtr geometry, IntPtr* userdata);
+
+        Result Reverb3D_Release(IntPtr reverb3D);
+
+        Result Reverb3D_Set3DAttributes(IntPtr reverb3D, Vector3* position, float minDistance, float maxDistance);
+
+        Result Reverb3D_Get3DAttributes(IntPtr reverb3D, Vector3* position, float* minDistance, float* maxDistance);
+
+        Result Reverb3D_SetProperties(IntPtr reverb3D, ReverbProperties* properties);
+
+        Result Reverb3D_GetProperties(IntPtr reverb3D, ReverbProperties* properties);
+
+        Result Reverb3D_SetActive(IntPtr reverb3D, bool active);
+
+        Result Reverb3D_GetActive(IntPtr reverb3D, out bool active);
+
+        Result Reverb3D_SetUserData(IntPtr reverb3D, IntPtr userdata);
+
+        Result Reverb3D_GetUserData(IntPtr reverb3D, IntPtr* userdata);
     }
 }
