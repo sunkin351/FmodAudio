@@ -2470,7 +2470,7 @@ namespace FmodAudio.Interop
 
         public abstract Result Reverb3D_Get3DAttributes(IntPtr reverb3D, Vector3* position, float* minDistance, float* maxDistance);
 
-        public Result Reverb3D_Set3DAttributes(IntPtr reverb3D, out Vector3 position, out float minDistance, out float maxDistance)
+        public Result Reverb3D_Get3DAttributes(IntPtr reverb3D, out Vector3 position, out float minDistance, out float maxDistance)
         {
             fixed (Vector3* pPosition = &position)
             fixed (float* pMin = &minDistance, pMax = &maxDistance)

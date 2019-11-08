@@ -884,6 +884,13 @@ namespace FmodAudio
             return GetGeometry(handle);
         }
 
+        public Reverb3D CreateReverb3D()
+        {
+            IntPtr handle;
+            library.System_CreateReverb3D(Handle, &handle).CheckResult();
+            return new Reverb3D(handle, library);
+        }
+
         public float GeomatryWorldSize
         {
             get

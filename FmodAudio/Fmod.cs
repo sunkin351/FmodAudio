@@ -16,6 +16,8 @@ namespace FmodAudio
     {
         public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
 
+        public const int MaxAllowedSystemObjects = 8;
+
         #region Pre-Native Setup
 
         private static string defaultLibName;
