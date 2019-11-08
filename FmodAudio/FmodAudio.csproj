@@ -1,20 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.8.7.0</Version>
+    <Version>0.9.0.0</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunkin351/FmodAudio</RepositoryUrl>
     <RepositoryType></RepositoryType>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Description>Wrapper Library for the Fmod low level API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
+    <Description>Wrapper Library for the Fmod Core API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Bug fix for NullReferenceException being thrown from FmodSystem.CreateSound() when the CreateSoundInfo parameter is null. (Its allowed to be null)</PackageReleaseNotes>
-    <AssemblyVersion>0.8.7.0</AssemblyVersion>
-    <FileVersion>0.8.7.0</FileVersion>
+    <PackageReleaseNotes>Bare bones binding exposed for low level enthusiasts. Access through the `Library` property of the `Fmod` static class.</PackageReleaseNotes>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <FileVersion>0.9.0.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
