@@ -20,19 +20,16 @@ namespace FmodAudio
             library.Geometry_Release(Handle).CheckResult();
         }
 
-        public unsafe int AddPolygon(float directOcclusion, float reverbOcclusion, bool doubleSided, Span<Vector3> vertices)
+        public unsafe int AddPolygon(float directOcclusion, float reverbOcclusion, bool doubleSided, ReadOnlySpan<Vector3> vertices)
         {
-            int len = vertices.Length, polyIndex;
+            int polyIndex;
 
-            if (len == 0)
+            if (vertices.IsEmpty)
             {
-                throw new ArgumentException("Vertices count is 0", nameof(vertices));
+                throw new ArgumentException("Vertex count is 0", nameof(vertices));
             }
 
-            fixed (Vector3* vert = vertices)
-            {
-                library.Geometry_AddPolygon(Handle, directOcclusion, reverbOcclusion, doubleSided, len, vert, out polyIndex).CheckResult();
-            }
+            library.Geometry_AddPolygon(Handle, directOcclusion, reverbOcclusion, doubleSided, vertices, &polyIndex).CheckResult();
             return polyIndex;
         }
 
@@ -50,20 +47,20 @@ namespace FmodAudio
             library.Geometry_GetMaxPolygons(Handle, out maxPolygons, out maxVertices).CheckResult();
         }
 
-        public int GetPolygonVertexCount(int index)
+        public unsafe int GetPolygonVertexCount(int index)
         {
-            library.Geometry_GetPolygonNumVertices(Handle, index, out int count).CheckResult();
+            int count;
+            library.Geometry_GetPolygonNumVertices(Handle, index, &count).CheckResult();
             return count;
         }
 
-        public void SetPolygonVertex(int index, int vertexIndex, ref Vector3 vertex)
+        public void SetPolygonVertex(int index, int vertexIndex, in Vector3 vertex)
         {
-            library.Geometry_SetPolygonVertex(Handle, index, vertexIndex, ref vertex).CheckResult();
+            library.Geometry_SetPolygonVertex(Handle, index, vertexIndex, in vertex).CheckResult();
         }
 
         public void GetPolygonVertex(int index, int vertexIndex, out Vector3 vertex)
         {
-            vertex = default;
             library.Geometry_GetPolygonVertex(Handle, index, vertexIndex, out vertex).CheckResult();
         }
 
@@ -91,37 +88,33 @@ namespace FmodAudio
             }
         }
 
-        public void SetRotation(ref Vector3 forward, ref Vector3 up)
+        public void SetRotation(in Vector3 forward, in Vector3 up)
         {
-            library.Geometry_SetRotation(Handle, ref forward, ref up).CheckResult();
+            library.Geometry_SetRotation(Handle, in forward, in up).CheckResult();
         }
 
         public void GetRotation(out Vector3 forward, out Vector3 up)
         {
-            forward = default;
-            up = default;
             library.Geometry_GetRotation(Handle, out forward, out up).CheckResult();
         }
 
-        public void SetPosition(ref Vector3 position)
+        public void SetPosition(in Vector3 position)
         {
-            library.Geometry_SetPosition(Handle, ref position).CheckResult();
+            library.Geometry_SetPosition(Handle, in position).CheckResult();
         }
 
         public void GetPosition(out Vector3 position)
         {
-            position = default;
             library.Geometry_GetPosition(Handle, out position).CheckResult();
         }
 
-        public void SetScale(ref Vector3 scale)
+        public void SetScale(in Vector3 scale)
         {
-            library.Geometry_SetScale(Handle, ref scale).CheckResult();
+            library.Geometry_SetScale(Handle, in scale).CheckResult();
         }
 
         public void GetScale(out Vector3 scale)
         {
-            scale = default;
             library.Geometry_GetScale(Handle, out scale).CheckResult();
         }
 
@@ -132,18 +125,19 @@ namespace FmodAudio
         /// <returns></returns>
         public unsafe bool TrySave(Span<byte> buffer, out int RequiredSize)
         {
-            RequiredSize = 0;
-            library.Geometry_Save(Handle, null, out RequiredSize).CheckResult();
-
-            if (buffer.Length < RequiredSize)
-                return false;
-
-            fixed(byte* ptr = buffer)
+            fixed (int* pRequired = &RequiredSize)
             {
-                library.Geometry_Save(Handle, ptr, out RequiredSize).CheckResult();
-            }
+                library.Geometry_Save(Handle, null, pRequired).CheckResult();
 
-            return true;
+                if (buffer.Length < *pRequired)
+                    return false;
+
+                fixed (byte* ptr = buffer)
+                {
+                    library.Geometry_Save(Handle, ptr, pRequired).CheckResult();
+                    return true;
+                }
+            }
         }
 
         public bool TrySave(Span<byte> buffer)
