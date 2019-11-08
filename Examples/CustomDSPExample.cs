@@ -157,14 +157,14 @@ namespace Examples
             return Result.Ok;
         }
 
-        static unsafe Plugin CreateDSPPlugin(FmodSystem system)
+        static unsafe (Plugin, DspDescription) CreateDSPPlugin(FmodSystem system)
         {
             ParameterDescription WaveDataDesc = new DataParameterDescription("wave data", null, ParameterDataType.User);
             ParameterDescription VolumeDesc = new FloatParameterDescription("volume", "%", 0, 1, 1);
 
             var dspDesc = new DspDescription()
             {
-                PluginSDKVersion = FmodSystem.BindingVersion,
+                PluginSDKVersion = Fmod.BindingVersion,
 
                 InputBufferCount = 1,
                 OutputBufferCount = 1,
@@ -179,10 +179,11 @@ namespace Examples
 
             dspDesc.SetParameterDescriptions(WaveDataDesc, VolumeDesc);
 
-            return system.RegisterDSP(dspDesc);
+            return (system.RegisterDSP(dspDesc), dspDesc);
         }
 
-        readonly FmodSystem system;
+        private readonly FmodSystem system;
+        private DspDescription desc;
 
         public CustomDSPExample()
         {
@@ -197,6 +198,7 @@ namespace Examples
             Channel channel;
             DSP dsp;
             ChannelGroup masterGroup;
+            Plugin plugin;
             
             system.Init(32);
 
@@ -204,7 +206,7 @@ namespace Examples
 
             channel = system.PlaySound(sound, paused: true);
 
-            var plugin = CreateDSPPlugin(system);
+            (plugin, desc) = CreateDSPPlugin(system);
 
             dsp = system.CreateDSPByPlugin(plugin);
 

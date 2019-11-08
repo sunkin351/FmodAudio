@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Examples
 {
@@ -143,15 +144,17 @@ namespace Examples
                 Handles.Remove((long)handle);
         }
 
-        static Result MyOpen(string Filename, out uint filesize, out IntPtr handle, IntPtr userdata)
+        static unsafe Result MyOpen(IntPtr Filename, uint* filesize, IntPtr* handle, IntPtr userdata)
         {
-            filesize = 0;
-            handle = IntPtr.Zero;
+            *filesize = 0;
+            *handle = IntPtr.Zero;
+
+            string name = Marshal.PtrToStringUTF8(Filename);
 
             FileStream stream;
             try
             {
-                stream = new FileStream(Filename, FileMode.Open, FileAccess.Read);
+                stream = new FileStream(name, FileMode.Open, FileAccess.Read);
             }
             catch(FileNotFoundException)
             {
@@ -162,9 +165,9 @@ namespace Examples
                 return Result.Err_File_Bad;
             }
             
-            filesize = (uint)stream.Length;
+            *filesize = (uint)stream.Length;
 
-            handle = AllocateHandle(stream);
+            *handle = AllocateHandle(stream);
 
             return Result.Ok;
         }
@@ -183,18 +186,18 @@ namespace Examples
             return Result.Ok;
         }
 
-        static Result MyRead(IntPtr handle, IntPtr buffer, uint sizeBytes, out uint bytesRead, IntPtr userdata)
+        static Result MyRead(IntPtr handle, IntPtr buffer, uint sizeBytes, uint* bytesRead, IntPtr userdata)
         {
-            bytesRead = 0;
+            *bytesRead = 0;
 
             if (!GetStream(handle, out var stream))
             {
                 return Result.Err_Invalid_Handle;
             }
             
-            bytesRead = (uint)stream.Read(new Span<byte>(buffer.ToPointer(), (int)sizeBytes));
+            *bytesRead = (uint)stream.Read(new Span<byte>(buffer.ToPointer(), (int)sizeBytes));
 
-            if (bytesRead < sizeBytes)
+            if (*bytesRead < sizeBytes)
             {
                 return Result.Err_File_EOF;
             }
@@ -223,31 +226,31 @@ namespace Examples
             return Result.Ok;
         }
 
-        static Result MyAsyncRead(IntPtr info, IntPtr userdata)
+        static Result MyAsyncRead(AsyncReadInfo* info, IntPtr userdata)
         {
-            Debug.Assert(info != IntPtr.Zero);
+            Debug.Assert(info != null);
             lock(SyncPoint) //Alternatively, you can use the AsyncReads object as the syncpoint
             {
-                Debug.Assert(!AsyncReads.Contains(info));
-                AsyncReads.AddLast(info);
+                Debug.Assert(!AsyncReads.Contains((IntPtr)info));
+                AsyncReads.AddLast((IntPtr)info);
             }
 
             return Result.Ok;
         }
 
-        static unsafe Result MyAsyncCancel(IntPtr info, IntPtr userdata)
+        static unsafe Result MyAsyncCancel(AsyncReadInfo* info, IntPtr userdata)
         {
-            Debug.Assert(info != IntPtr.Zero);
+            Debug.Assert(info != null);
             lock (SyncPoint)
             {
                 //Find the pending IO Request and remove it
-                var tmp = AsyncReads.Find(info);
+                var tmp = AsyncReads.Find((IntPtr)info);
                 if (tmp != null)
                 {
                     AsyncReads.Remove(tmp);
 
                     //Signal FMOD to wake up, this operation has been cancelled
-                    ((AsyncReadInfo*)info)->InvokeDoneCallback(Result.Err_File_DiskEjected);
+                    info->Done(Result.Err_File_DiskEjected).CheckResult();
                     return Result.Err_File_DiskEjected;
                 }
             }
@@ -277,7 +280,7 @@ namespace Examples
 
                     if (!GetStream(ptr->Handle, out var stream))
                     {
-                        ptr->InvokeDoneCallback(Result.Err_Invalid_Handle);
+                        ptr->Done(Result.Err_Invalid_Handle).CheckResult();
                         continue;
                     }
 
@@ -291,12 +294,12 @@ namespace Examples
                     }
                     catch
                     {
-                        ptr->InvokeDoneCallback(Result.Err_Internal);
+                        ptr->Done(Result.Err_Internal).CheckResult();
                         //TODO Implement Error Logging
                         continue;
                     }
 
-                    ptr->InvokeDoneCallback(Result.Ok);
+                    ptr->Done(Result.Ok).CheckResult();
                 }
                 else
                 {

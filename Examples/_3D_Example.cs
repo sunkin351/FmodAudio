@@ -54,13 +54,13 @@ namespace Examples
                 pos.X = -10.0f * DistanceFactor;
 
                 c1 = system.PlaySound(s1, paused: true);
-                c1.Set3DAttributes(ref pos, ref vel);
+                c1.Set3DAttributes(in pos, in vel, default);
                 c1.Paused = false;
 
                 pos.X = 15.0f * DistanceFactor;
 
                 c2 = system.PlaySound(s2, null, true);
-                c2.Set3DAttributes(ref pos, ref vel);
+                c2.Set3DAttributes(in pos, in vel, default);
                 c2.Paused = false;
             }
 
@@ -113,7 +113,7 @@ namespace Examples
 
                 this.LastPos = listenerPos;
 
-                system.Set3DListenerAttributes(0, ref listenerPos, ref vel, ref forward, ref up);
+                system.Set3DListenerAttributes(0, in listenerPos, in vel, in forward, in up);
 
                 this.T += 30 * (1.0f / InterfaceUpdateTime);
 

@@ -1817,6 +1817,16 @@ namespace FmodAudio.Interop
             }
         }
 
+        public Result ChannelGroup_GetDSP(IntPtr channelGroup, ChannelControlDSPIndex index, IntPtr* dsp)
+        {
+            return ChannelGroup_GetDSP(channelGroup, (int)index, dsp);
+        }
+
+        public Result ChannelGroup_GetDSP(IntPtr channelGroup, ChannelControlDSPIndex index, out IntPtr dsp)
+        {
+            return ChannelGroup_GetDSP(channelGroup, (int)index, out dsp);
+        }
+
         public abstract Result ChannelGroup_AddDSP(IntPtr channelGroup, int index, IntPtr dsp);
 
         public Result ChannelGroup_AddDSP(IntPtr channelGroup, ChannelControlDSPIndex index, IntPtr dsp)

@@ -75,7 +75,7 @@ namespace Examples
                             case Button.Action1:
                                 dspEnabled = !dspEnabled;
                                 ReverbProperties prop = dspEnabled ? Preset.ConcertHall : Preset.Off;
-                                system.SetReverbProperties(0, ref prop);
+                                system.SetReverbProperties(0, in prop);
                                 break;
                         }
 
