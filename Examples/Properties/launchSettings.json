@@ -2,7 +2,7 @@
   "profiles": {
     "Examples": {
       "commandName": "Project",
-      "commandLineArgs": "7"
+      "commandLineArgs": "2"
     }
   }
 }

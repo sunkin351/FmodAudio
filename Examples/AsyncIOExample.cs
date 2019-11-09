@@ -250,7 +250,7 @@ namespace Examples
                     AsyncReads.Remove(tmp);
 
                     //Signal FMOD to wake up, this operation has been cancelled
-                    info->Done(Result.Err_File_DiskEjected).CheckResult();
+                    info->Done(Result.Err_File_DiskEjected);
                     return Result.Err_File_DiskEjected;
                 }
             }
@@ -280,7 +280,7 @@ namespace Examples
 
                     if (!GetStream(ptr->Handle, out var stream))
                     {
-                        ptr->Done(Result.Err_Invalid_Handle).CheckResult();
+                        ptr->Done(Result.Err_Invalid_Handle);
                         continue;
                     }
 
@@ -294,12 +294,12 @@ namespace Examples
                     }
                     catch
                     {
-                        ptr->Done(Result.Err_Internal).CheckResult();
+                        ptr->Done(Result.Err_Internal);
                         //TODO Implement Error Logging
                         continue;
                     }
 
-                    ptr->Done(Result.Ok).CheckResult();
+                    ptr->Done(Result.Ok);
                 }
                 else
                 {
