@@ -41,6 +41,9 @@ namespace Examples
                 case 8:
                     example = new EffectsExample();
                     break;
+                case 9:
+                    example = new GaplessPlaybackExample();
+                    break;
                 case 18:
                     example = new RecordExample();
                     break;
