@@ -13,29 +13,33 @@ namespace Examples
     public unsafe class AsyncIOExample : Example
     {
         //Static variables
-        static readonly object SyncPoint = new object();
-        static readonly LinkedList<IntPtr> AsyncReads = new LinkedList<IntPtr>();
-        static readonly Dictionary<long, FileStream> Handles = new Dictionary<long, FileStream>();
-        static long FileHandleInc = 1;
-        static bool ThreadContinue = true;
-        static readonly Thread AsyncThread = new Thread(ProcessThread);
-        
-        public override void Run()
-        {
-            FmodSystem system = Fmod.CreateSystem();
+        private static readonly object SyncPoint = new object();
+        private static readonly LinkedList<IntPtr> AsyncReads = new LinkedList<IntPtr>();
+        private static readonly Dictionary<long, FileStream> Handles = new Dictionary<long, FileStream>();
+        private static long FileHandleInc = 1;
+        private static bool ThreadContinue = true;
+        private static readonly Thread AsyncThread = new Thread(ProcessThread);
 
-            TestVersion(system);
+        private Sound sound;
+
+        public override void Initialize()
+        {
+            base.Initialize();
 
             AsyncThread.Start();
 
-            system.Init(32, InitFlags.Normal);
+            System.Init(32, InitFlags.Normal);
 
-            system.SetStreamBufferSize(32768, TimeUnit.RAWBytes);
+            System.SetStreamBufferSize(32768, TimeUnit.RAWBytes);
 
-            system.SetFileSystem(MyOpen, MyClose, MyRead, MySeek, MyAsyncRead, MyAsyncCancel, 2048); //Experimental
+            System.SetFileSystem(MyOpen, MyClose, MyRead, MySeek, MyAsyncRead, MyAsyncCancel, 2048); //Experimental
 
-            var sound = system.CreateStream(MediaPath("wave.mp3"), Mode.Loop_Normal | Mode._2D | Mode.IgnoreTags);
-            var channel = system.PlaySound(sound);
+            sound = System.CreateStream(MediaPath("wave.mp3"), Mode.Loop_Normal | Mode._2D | Mode.IgnoreTags);
+        }
+
+        public override void Run()
+        {
+            var channel = System.PlaySound(sound);
 
             do
             {
@@ -69,7 +73,7 @@ namespace Examples
                     }
                 }
 
-                system.Update();
+                System.Update();
 
                 DrawText("==================================================");
                 DrawText("Async IO Example.");
@@ -86,17 +90,21 @@ namespace Examples
             while (true);
 
             Exit:
+            return;
+        }
+
+        public override void Dispose()
+        {
             sound?.Dispose(); //Dispose if not null
+            base.Dispose();
 
             ThreadContinue = false;
 
             AsyncThread.Join();
-
-            system.Dispose();
         }
 
         const int BufferLength = 5;
-        static LinkedList<string> LogBuffer = new LinkedList<string>();
+        private static readonly LinkedList<string> LogBuffer = new LinkedList<string>();
 
         static void Log(string line)
         {

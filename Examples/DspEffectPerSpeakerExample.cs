@@ -11,31 +11,32 @@ namespace Examples
 
     public class DspEffectPerSpeakerExample : Example
     {
-        public override void Run()
-        {
-            FmodSystem system = Fmod.CreateSystem();
+        Sound sound;
+        Channel channel;
+        DSP lowPass, highPass;
 
-            TestVersion(system);
+        public override void Initialize()
+        {
+            base.Initialize();
 
             //In this special case, we want to use stereo output and not worry about
             //varying matrix sizes depending on user speaker mode.
-            system.SetSoftwareFormat(48_000, SpeakerMode.Stereo, 0);
+            System.SetSoftwareFormat(48_000, SpeakerMode.Stereo, 0);
 
             //Initialize FMOD
-            system.Init(32);
+            System.Init(32);
 
-            Sound sound = system.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
+            sound = System.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
 
-            Channel channel = system.PlaySound(sound);
+            channel = System.PlaySound(sound);
 
             //Create DSP Effects
-            DSP lowPass, highPass;
 
-            lowPass = system.CreateDSPByType(DSPType.LowPass);
+            lowPass = System.CreateDSPByType(DSPType.LowPass);
             lowPass.SetParameterFloat(0, 1000f); //Lowpass Cutoff
             lowPass.SetParameterFloat(1, 4f); //Lowpass Resonance
 
-            highPass = system.CreateDSPByType(DSPType.HighPass);
+            highPass = System.CreateDSPByType(DSPType.HighPass);
             highPass.SetParameterFloat(0, 4000f); //Highpass Cutoff
             highPass.SetParameterFloat(1, 4f); //Highpass Resonance
 
@@ -47,7 +48,7 @@ namespace Examples
             //[DSPHEAD]<------------[DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
             DSP head, channelMixer;
 
-            ChannelGroup masterGroup = system.MasterChannelGroup;
+            ChannelGroup masterGroup = System.MasterChannelGroup;
             head = masterGroup.GetDSP(ChannelControlDSPIndex.DspHead);
             channelMixer = head.GetInput(0).Item1;
 
@@ -109,7 +110,10 @@ namespace Examples
             lowPass.Active = true;
             highPass.Bypass = true;
             highPass.Active = true;
+        }
 
+        public override void Run()
+        {
             float pan = 0f;
 
             //Main Loop
@@ -117,7 +121,7 @@ namespace Examples
             {
                 OnUpdate();
 
-                system.Update();
+                System.Update();
 
                 bool lowpassBypass = lowPass.Bypass, highpassBypass = highPass.Bypass;
 
@@ -173,12 +177,17 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Dispose();
+            return;
+        }
 
-            lowPass.Dispose();
-            highPass.Dispose();
+        public override void Dispose()
+        {
+            sound?.Dispose();
 
-            system.Dispose();
+            lowPass?.Dispose();
+            highPass?.Dispose();
+
+            base.Dispose();
         }
     }
 }

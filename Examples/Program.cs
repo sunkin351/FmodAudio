@@ -44,6 +44,7 @@ namespace Examples
                 case 9:
                     example = new GaplessPlaybackExample();
                     break;
+                case 10:
                 case 18:
                     example = new RecordExample();
                     break;
@@ -55,6 +56,7 @@ namespace Examples
 
                 try
                 {
+                    example.Initialize();
                     example.Run();
                 }
                 catch (Exception e)
@@ -64,6 +66,7 @@ namespace Examples
                 }
                 finally
                 {
+                    example.Dispose();
                     ConsoleHelpers.OnExit();
                 }
             }

@@ -10,36 +10,37 @@ namespace Examples
     using Base;
     public class EffectsExample : Example
     {
-        readonly FmodSystem System;
-
         public override string Title => "Fmod Effects Example";
 
-        public EffectsExample()
-        {
-            System = Fmod.CreateSystem();
+        Sound sound;
+        Channel channel;
 
-            TestVersion(System);
-        }
+        DSP dspLowpass, dspHighpass, dspEcho, dspFlange;
 
-        public override void Run()
+        public override void Initialize()
         {
+            base.Initialize();
+
             System.Init(32);
 
-            Sound sound = System.CreateSound(MediaPath("drumloop.wav"));
+            sound = System.CreateSound(MediaPath("drumloop.wav"));
 
-            Channel channel = System.PlaySound(sound);
+            channel = System.PlaySound(sound);
 
-            var master = System.MasterChannelGroup;
-
-            var dspLowpass = System.CreateDSPByType(DSPType.LowPass);
-            var dspHighpass = System.CreateDSPByType(DSPType.HighPass);
-            var dspEcho = System.CreateDSPByType(DSPType.Echo);
-            var dspFlange = System.CreateDSPByType(DSPType.Flange);
+            dspLowpass = System.CreateDSPByType(DSPType.LowPass);
+            dspHighpass = System.CreateDSPByType(DSPType.HighPass);
+            dspEcho = System.CreateDSPByType(DSPType.Echo);
+            dspFlange = System.CreateDSPByType(DSPType.Flange);
 
             dspLowpass.Bypass = true;
             dspHighpass.Bypass = true;
             dspEcho.Bypass = true;
             dspFlange.Bypass = true;
+        }
+
+        public override void Run()
+        {
+            var master = System.MasterChannelGroup;
 
             master.AddDSP(0, dspLowpass);
             master.AddDSP(0, dspHighpass);
@@ -85,15 +86,15 @@ namespace Examples
 
                 if (channel != null)
                 {
-                    try
+                    var res = Fmod.Library.ChannelGroup_GetPaused(channel.Handle, out Paused);
+
+                    if (res != Result.Ok)
                     {
-                        Paused = channel.Paused;
-                    }
-                    catch(FmodException exception)
-                    {
-                        if (exception.Result != Result.Err_Invalid_Handle && exception.Result != Result.Err_Channel_Stolen)
+                        Paused = true;
+
+                        if (res != Result.Err_Invalid_Handle && res != Result.Err_Channel_Stolen)
                         {
-                            throw;
+                            res.CheckResult();
                         }
                     }
                 }
@@ -128,15 +129,18 @@ namespace Examples
             master.RemoveDSP(dspHighpass);
             master.RemoveDSP(dspEcho);
             master.RemoveDSP(dspFlange);
+        }
 
-            dspLowpass.Dispose();
-            dspHighpass.Dispose();
-            dspEcho.Dispose();
-            dspFlange.Dispose();
+        public override void Dispose()
+        {
+            dspLowpass?.Dispose();
+            dspHighpass?.Dispose();
+            dspEcho?.Dispose();
+            dspFlange?.Dispose();
 
-            sound.Dispose();
+            sound?.Dispose();
 
-            System.Dispose();
+            base.Dispose();
         }
     }
 }

@@ -9,9 +9,6 @@ namespace Examples
     using Base;
     public class GaplessPlaybackExample : Example
     {
-        private readonly FmodSystem System;
-        private ulong clockStart = 0;
-
         private static readonly byte[] Notes = new byte[] // Note C = 0, Note D = 1, Note E = 2
         {
             2,   /* Ma-    */
@@ -49,26 +46,15 @@ namespace Examples
             0,   /* .....  */
         };
 
-        public GaplessPlaybackExample()
-        {
-            System = Fmod.CreateSystem();
+        private ulong clockStart = 0;
+        private readonly Sound[] sounds = new Sound[3];
+        private ChannelGroup channelGroup;
 
-            TestVersion(System);
-        }
-
-        public unsafe override void Run()
+        public override void Initialize()
         {
-            var library = Fmod.Library;
-            Sound[] sounds = new Sound[3];
+            base.Initialize(); //Creates FmodSystem object
 
             System.Init(100);
-
-            /*
-                Get information needed later for scheduling.  The mixer block size, and the output rate of the mixer.
-            */
-
-            System.GetDSPBufferSize(out uint dspBlockLen, out _);
-            System.GetSoftwareFormat(out int outputRate, out _, out _);
 
             /*
                 Load 3 sounds - these are just sine wave tones at different frequencies.  C, D and E on the musical scale.
@@ -82,7 +68,17 @@ namespace Examples
                 It also means we can pause and pitch bend the channelgroup, without affecting the offsets of the delays, because the channelgroup clock
                 which the channels feed off, will be pausing and speeding up/slowing down and still keeping the children in sync.
             */
-            ChannelGroup channelGroup = System.CreateChannelGroup("Parent");
+            channelGroup = System.CreateChannelGroup("Parent");
+        }
+
+        public unsafe override void Run()
+        {
+            /*
+                Get information needed later for scheduling.  The mixer block size, and the output rate of the mixer.
+            */
+
+            System.GetDSPBufferSize(out uint dspBlockLen, out _);
+            System.GetSoftwareFormat(out int outputRate, out _, out _);
 
             /*
                 Play all the sounds at once! Space them apart with set delay though so that they sound like they play in order.
@@ -96,9 +92,13 @@ namespace Examples
                 if (clockStart == 0)
                 {
                     channel.GetDSPClock(out _, out clockStart);
-                    clockStart += dspBlockLen * 2;          /* Start the sound into the future, by 2 mixer blocks worth. */
-                                                            /* Should be enough to avoid the mixer catching up and hitting the clock value before we've finished setting up everything. */
-                                                            /* Alternatively the channelgroup we're basing the clock on could be paused to stop it ticking. */
+
+                    /*
+                     Start the sound into the future, by 2 mixer blocks worth. 
+                     Should be enough to avoid the mixer catching up and hitting the clock value before we've finished setting up everything. 
+                     Alternatively the channelgroup we're basing the clock on could be paused to stop it ticking.
+                    */
+                    clockStart += dspBlockLen * 2;          
                 }
                 else
                 {
@@ -189,12 +189,19 @@ namespace Examples
             }
 
             Exit:
+            return;
+        }
+
+        public override void Dispose()
+        {
             foreach (var sound in sounds)
             {
-                sound.Dispose();
+                sound?.Dispose();
             }
 
-            System.Dispose();
+            channelGroup?.Dispose();
+
+            base.Dispose();
         }
     }
 }

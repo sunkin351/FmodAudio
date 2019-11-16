@@ -7,22 +7,15 @@ namespace Examples
 
     public class ChannelGroupsExample : Example
     {
-        readonly FmodSystem System;
+        private readonly Sound[] sounds = new Sound[6];
+        private readonly Channel[] channels = new Channel[6];
+        
+        ChannelGroup A, B, Master;
 
-        public ChannelGroupsExample()
+        public override void Initialize()
         {
-            System = Fmod.CreateSystem();
+            base.Initialize();
 
-            TestVersion(System);
-        }
-
-        public override void Run()
-        {
-            Sound[] sounds = new Sound[6];
-            Channel[] channels = new Channel[6];
-
-            ChannelGroup A, B, Master;
-            
             System.Init(32);
 
             sounds[0] = System.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
@@ -40,7 +33,7 @@ namespace Examples
             Master.AddGroup(A, false);
             Master.AddGroup(B, false);
 
-            for(int i = 0; i < 6; ++i)
+            for (int i = 0; i < 6; ++i)
             {
                 channels[i] = System.PlaySound(sounds[i], i < 3 ? A : B);
             }
@@ -48,6 +41,11 @@ namespace Examples
             //Change the volume of each group, just because we can! (reduce overall noise).
             A.Volume = 0.5f;
             B.Volume = 0.5f;
+        }
+
+        public override void Run()
+        {
+            
 
             do
             {
@@ -109,17 +107,19 @@ namespace Examples
                 vol -= 1.0f / 200;
                 pitch -= 0.5f / 200;
             }
+        }
 
-            //Shutdown
+        public override void Dispose()
+        {
             foreach (var sound in sounds)
             {
-                sound.Dispose();
+                sound?.Dispose();
             }
 
-            A.Dispose();
-            B.Dispose();
+            A?.Dispose();
+            B?.Dispose();
 
-            System.Dispose();
+            base.Dispose();
         }
     }
 }

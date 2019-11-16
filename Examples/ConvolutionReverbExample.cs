@@ -9,26 +9,26 @@ namespace Examples
 
     public class ConvolutionReverbExample : Example
     {
-        public override void Run()
+        private ChannelGroup reverbGroup, mainGroup;
+        private DSP reverbUnit;
+        private Sound sound;
+
+        public override void Initialize()
         {
-            FmodSystem system = Fmod.CreateSystem();
+            base.Initialize();
 
-            TestVersion(system);
+            System.Init(32);
 
-            system.Init(32);
+            reverbGroup = System.CreateChannelGroup("reverb");
+            mainGroup = System.CreateChannelGroup("main");
 
-            ChannelGroup reverbGroup, mainGroup;
-
-            reverbGroup = system.CreateChannelGroup("reverb");
-            mainGroup = system.CreateChannelGroup("main");
-
-            DSP reverbUnit = system.CreateDSPByType(DSPType.ConvolutionReverb);
+            reverbUnit = System.CreateDSPByType(DSPType.ConvolutionReverb);
 
             reverbGroup.AddDSP(ChannelControlDSPIndex.DSPTail, reverbUnit);
 
-            Sound sound = system.CreateSound(MediaPath("standrews.wav"), Mode.Default | Mode.OpenOnly);
+            var tmpsound = System.CreateSound(MediaPath("standrews.wav"), Mode.Default | Mode.OpenOnly);
 
-            sound.GetFormat(out _, out SoundFormat sFormat, out int irSoundChannels, out _);
+            tmpsound.GetFormat(out _, out SoundFormat sFormat, out int irSoundChannels, out _);
 
             if (sFormat != SoundFormat.PCM16)
             {
@@ -36,34 +36,35 @@ namespace Examples
                 Environment.Exit(-1);
             }
 
+            int irSoundLength = (int)sound.GetLength(TimeUnit.PCM);
+
+            int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
+
+            var irData = Marshal.AllocHGlobal(irDataLength);
+
+            try
             {
-                int irSoundLength = (int)sound.GetLength(TimeUnit.PCM);
+                sound.ReadData(irData, irDataLength);
 
-                int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
+                const int ReverbParamIR = 0;
+                const int ReverbParamDry = 2;
 
-                var irData = Marshal.AllocHGlobal(irDataLength);
-
-                try
-                {
-                    sound.ReadData(irData, irDataLength);
-
-                    const int ReverbParamIR = 0;
-                    const int ReverbParamDry = 2;
-
-                    reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
-                    reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
-                }
-                finally
-                {
-                    Marshal.FreeHGlobal(irData);
-                }
+                reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+                reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(irData);
             }
 
-            sound.Release();
+            tmpsound.Release();
 
-            sound = system.CreateSound(MediaPath("singing.wav"), Mode._3D | Mode.Loop_Normal);
+            sound = System.CreateSound(MediaPath("singing.wav"), Mode._3D | Mode.Loop_Normal);
+        }
 
-            Channel channel = system.PlaySound(sound, mainGroup, true);
+        public override void Run()
+        {
+            Channel channel = System.PlaySound(sound, mainGroup, true);
 
             DSP channelHead = channel.GetDSP(ChannelControlDSPIndex.DspHead);
 
@@ -102,7 +103,7 @@ namespace Examples
                     }
                 }
 
-                system.Update();
+                System.Update();
 
                 reverbConnection.Mix = wetVolume;
                 mainGroup.Volume = dryVolume;
@@ -121,12 +122,19 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Dispose();
-            mainGroup.Dispose();
-            reverbGroup.RemoveDSP(reverbUnit);
+            return;
+        }
+
+        public override void Dispose()
+        {
+            sound?.Dispose();
+            mainGroup?.Dispose();
+            reverbGroup?.RemoveDSP(reverbUnit);
             //reverbUnit.DisconnectAll(true, true); Disposing does this already
-            reverbUnit.Dispose();
-            reverbGroup.Dispose();
+            reverbUnit?.Dispose();
+            reverbGroup?.Dispose();
+
+            base.Dispose();
         }
     }
 }

@@ -8,11 +8,19 @@ using System.Threading;
 
 namespace Examples.Base
 {
-    public abstract class Example
+    public abstract class Example : IDisposable
     {
         protected ConcurrentQueue<Button> Commands => ConsoleHelpers.CommandQueue;
-        
+
+        protected FmodSystem System;
+
         public virtual string Title => "Fmod Example";
+
+        public virtual void Initialize()
+        {
+            System = Fmod.CreateSystem();
+            TestVersion(System);
+        }
 
         public abstract void Run();
 
@@ -49,6 +57,11 @@ namespace Examples.Base
             {
                 throw new NotSupportedException($"FMOD Library version {version} is less than Binding version {Fmod.BindingVersion}");
             }
+        }
+
+        public virtual void Dispose()
+        {
+            System?.Dispose();
         }
     }
 }

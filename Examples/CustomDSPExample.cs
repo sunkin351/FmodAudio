@@ -182,38 +182,35 @@ namespace Examples
             return (system.RegisterDSP(dspDesc), dspDesc);
         }
 
-        private readonly FmodSystem system;
         private DspDescription desc;
 
-        public CustomDSPExample()
-        {
-            system = Fmod.CreateSystem();
+        private Sound sound;
+        private Channel channel;
+        private DSP dsp;
+        private ChannelGroup masterGroup;
+        private Plugin plugin;
 
-            TestVersion(system);
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            System.Init(32);
+
+            sound = System.CreateSound(MediaPath("stereo.ogg"), Mode.Loop_Normal);
+
+            channel = System.PlaySound(sound, paused: true);
+
+            (plugin, desc) = CreateDSPPlugin(System);
+
+            dsp = System.CreateDSPByPlugin(plugin);
+
+            masterGroup = System.MasterChannelGroup;
+
+            masterGroup.AddDSP(0, dsp);
         }
 
         public unsafe override void Run()
         {
-            Sound sound;
-            Channel channel;
-            DSP dsp;
-            ChannelGroup masterGroup;
-            Plugin plugin;
-            
-            system.Init(32);
-
-            sound = system.CreateSound(MediaPath("stereo.ogg"), Mode.Loop_Normal);
-
-            channel = system.PlaySound(sound, paused: true);
-
-            (plugin, desc) = CreateDSPPlugin(system);
-
-            dsp = system.CreateDSPByPlugin(plugin);
-
-            masterGroup = system.MasterChannelGroup;
-
-            masterGroup.AddDSP(0, dsp);
-            
             Span<char> display = stackalloc char[50];
 
             var ParamIndex = dsp.GetDataParameterIndex(ParameterDataType.User);
@@ -252,7 +249,7 @@ namespace Examples
                     }
                 }
 
-                system.Update();
+                System.Update();
 
                 ParameterDescription desc = dsp.GetParameterInfo(1);
 
@@ -307,10 +304,20 @@ namespace Examples
             } while (true);
 
             Exit:
-            sound.Dispose();
-            masterGroup.RemoveDSP(dsp);
-            dsp.Dispose();
-            system.Dispose();
+            return;
+        }
+
+        public override void Dispose()
+        {
+            sound?.Dispose();
+
+            if (dsp != null)
+            {
+                masterGroup.RemoveDSP(dsp);
+                dsp.Dispose();
+            }
+
+            base.Dispose();
         }
 
         static void AdjustVolume(DSP dsp, float adjustment)
