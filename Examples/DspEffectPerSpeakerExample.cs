@@ -14,6 +14,31 @@ namespace Examples
         Sound sound;
         Channel channel;
         DSP lowPass, highPass;
+        float pan = 0f;
+
+        public DspEffectPerSpeakerExample() : base("Fmod DSP Effects per Speaker Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => lowPass.Bypass = !lowPass.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => highPass.Bypass = !highPass.Bypass);
+            RegisterCommand(ConsoleKey.LeftArrow, () =>
+            {
+                var tmp = pan - 0.1f;
+
+                if (tmp < -1f)
+                {
+                    tmp = -1f;
+                }
+
+                pan = tmp;
+                channel.SetPan(tmp);
+            });
+            RegisterCommand(ConsoleKey.RightArrow, () =>
+            {
+                var tmp = Math.Clamp(pan + 0.1f, -1, 1);
+                pan = tmp;
+                channel.SetPan(tmp);
+            });
+        }
 
         public override void Initialize()
         {
@@ -114,49 +139,14 @@ namespace Examples
 
         public override void Run()
         {
-            float pan = 0f;
-
             //Main Loop
             do
             {
                 OnUpdate();
 
+                ProcessInput();
+
                 System.Update();
-
-                bool lowpassBypass = lowPass.Bypass, highpassBypass = highPass.Bypass;
-
-                if (!Commands.IsEmpty)
-                {
-                    while(Commands.TryDequeue(out Button btn))
-                    {
-                        switch (btn)
-                        {
-                            case Button.Action1:
-                                lowpassBypass = !lowpassBypass;
-                                lowPass.Bypass = lowpassBypass;
-                                break;
-
-                            case Button.Action2:
-                                highpassBypass = !highpassBypass;
-                                highPass.Bypass = highpassBypass;
-                                break;
-
-                            case Button.Left:
-                                pan = Math.Clamp(-1, 1, pan - 0.1f);
-                                channel.SetPan(pan);
-                                break;
-
-                            case Button.Right:
-                                pan = Math.Clamp(-1, 1, pan + 0.1f);
-                                channel.SetPan(pan);
-                                break;
-
-                            case Button.Quit:
-                                goto Exit;
-                        }
-
-                    }
-                }
 
                 DrawText("==================================================");
                 DrawText("DSP Effect Per Speaker Example.");
@@ -168,16 +158,13 @@ namespace Examples
                 DrawText("Press Left or Right Arrow to pan sound.");
                 DrawText("Press Esc to quit.");
                 DrawText();
-                DrawText("Lowpass (left) is " + (lowpassBypass ? "inactive" : "active"));
-                DrawText("Highpass (right) is " + (highpassBypass ? "inactive" : "active"));
+                DrawText("Lowpass (left) is " + (lowPass.Bypass ? "inactive" : "active"));
+                DrawText("Highpass (right) is " + (highPass.Bypass ? "inactive" : "active"));
                 DrawText("Pan is " + pan.ToString("N1"));
 
                 Sleep(50);
-
-            } while (true);
-
-            Exit:
-            return;
+            }
+            while (!ShouldExit);
         }
 
         public override void Dispose()

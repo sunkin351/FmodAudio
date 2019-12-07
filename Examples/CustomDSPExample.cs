@@ -190,6 +190,14 @@ namespace Examples
         private ChannelGroup masterGroup;
         private Plugin plugin;
 
+        public CustomDSPExample() : base("Fmod Custom DSP Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => dsp.Bypass = !dsp.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => AdjustVolume(dsp, -0.1f));
+            RegisterCommand(ConsoleKey.D3, () => AdjustVolume(dsp, 0.1f));
+            RegisterCommand(ConsoleKey.Spacebar, () => channel.Paused = !channel.Paused);
+        }
+
         public override void Initialize()
         {
             base.Initialize();
@@ -221,33 +229,9 @@ namespace Examples
             {
                 OnUpdate();
 
+                ProcessInput();
+
                 bool bypass = dsp.Bypass;
-
-                if (!Commands.IsEmpty)
-                {
-                    while(Commands.TryDequeue(out Button btn))
-                    {
-                        switch (btn)
-                        {
-                            case Button.Action1:
-                                dsp.Bypass = !bypass;
-                                break;
-
-                            case Button.Action2:
-                                AdjustVolume(dsp, -0.1f);
-                                break;
-
-                            case Button.Action3:
-                                AdjustVolume(dsp, 0.1f);
-                                break;
-                            case Button.More:
-                                channel.Paused = !channel.Paused;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
 
                 System.Update();
 
@@ -301,10 +285,8 @@ namespace Examples
                 }
                 
                 Sleep(50);
-            } while (true);
-
-            Exit:
-            return;
+            }
+            while (!ShouldExit);
         }
 
         public override void Dispose()

@@ -22,6 +22,19 @@ namespace Examples
 
         private Sound sound;
 
+        public AsyncIOExample() : base("Fmod Async IO Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () =>
+            {
+                if (sound != null)
+                {
+                    sound.Release();
+                    sound = null;
+                    Log("Released Sound");
+                }
+            });
+        }
+
         public override void Initialize()
         {
             base.Initialize();
@@ -57,21 +70,7 @@ namespace Examples
                     channel.Mute = starving;
                 }
 
-                if (!Commands.IsEmpty)
-                {
-                    while (Commands.TryDequeue(out Button btn))
-                    {
-                        if (btn == Button.Quit)
-                            goto Exit;
-
-                        if (sound != null && btn == Button.Action1)
-                        {
-                            sound.Release();
-                            sound = null;
-                            Log("Released Sound");
-                        }
-                    }
-                }
+                ProcessInput();
 
                 System.Update();
 
@@ -87,10 +86,7 @@ namespace Examples
 
                 Sleep(50);
             }
-            while (true);
-
-            Exit:
-            return;
+            while (!ShouldExit);
         }
 
         public override void Dispose()
@@ -132,8 +128,8 @@ namespace Examples
         
         static IntPtr AllocateHandle(FileStream stream)
         {
-            long tmp = FileHandleInc++;
-            lock(Handles)
+            long tmp = Interlocked.Increment(ref FileHandleInc);
+            lock (Handles)
             {
                 Handles.Add(tmp, stream);
             }

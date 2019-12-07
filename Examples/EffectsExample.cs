@@ -10,12 +10,26 @@ namespace Examples
     using Base;
     public class EffectsExample : Example
     {
-        public override string Title => "Fmod Effects Example";
-
         Sound sound;
         Channel channel;
 
         DSP dspLowpass, dspHighpass, dspEcho, dspFlange;
+
+        public EffectsExample() : base("Fmod Effects Example")
+        {
+            RegisterCommand(ConsoleKey.Spacebar, () =>
+            {
+                if (channel != null)
+                {
+                    channel.Paused = !channel.Paused;
+                }
+            });
+
+            RegisterCommand(ConsoleKey.D1, () => dspLowpass.Bypass = !dspLowpass.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => dspHighpass.Bypass = !dspHighpass.Bypass);
+            RegisterCommand(ConsoleKey.D3, () => dspEcho.Bypass = !dspEcho.Bypass);
+            RegisterCommand(ConsoleKey.D4, () => dspFlange.Bypass = !dspFlange.Bypass);
+        }
 
         public override void Initialize()
         {
@@ -47,39 +61,11 @@ namespace Examples
             master.AddDSP(0, dspEcho);
             master.AddDSP(0, dspFlange);
 
-            while (true)
+            do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    while (Commands.TryDequeue(out var command))
-                    {
-                        switch(command)
-                        {
-                            case Button.More:
-                                if (channel != null)
-                                {
-                                    channel.Paused = !channel.Paused;
-                                }
-                                break;
-                            case Button.Action1:
-                                dspLowpass.Bypass = !dspLowpass.Bypass;
-                                break;
-                            case Button.Action2:
-                                dspHighpass.Bypass = !dspHighpass.Bypass;
-                                break;
-                            case Button.Action3:
-                                dspEcho.Bypass = !dspEcho.Bypass;
-                                break;
-                            case Button.Action4:
-                                dspFlange.Bypass = !dspFlange.Bypass;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
+                ProcessInput();
 
                 System.Update();
                 bool Paused = true;
@@ -122,9 +108,8 @@ namespace Examples
 
                 Sleep(50);
             }
-
-            Exit:
-
+            while (!ShouldExit);
+            
             master.RemoveDSP(dspLowpass);
             master.RemoveDSP(dspHighpass);
             master.RemoveDSP(dspEcho);

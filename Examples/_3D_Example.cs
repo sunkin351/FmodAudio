@@ -22,6 +22,19 @@ namespace Examples
         private Channel c1, c2, c3;
         private bool autoMove = true;
 
+        public _3DExample() : base("Fmod 3D Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => c1.Paused = !c1.Paused);
+            RegisterCommand(ConsoleKey.D2, () => c2.Paused = !c2.Paused);
+            RegisterCommand(ConsoleKey.D3, () =>
+            {
+                if (c3 == null || !c3.IsPlaying)
+                    c3 = System.PlaySound(s3);
+            });
+
+            RegisterCommand(ConsoleKey.Spacebar, () => autoMove = !autoMove);
+        }
+
         public override void Initialize()
         {
             //Creates the FmodSystem object
@@ -69,30 +82,7 @@ namespace Examples
             {
                 OnUpdate();
 
-                if (!this.Commands.IsEmpty)
-                {
-                    while (this.Commands.TryDequeue(out Button button))
-                    {
-                        switch (button)
-                        {
-                            case Button.Action1:
-                                c1.Paused = !c1.Paused;
-                                break;
-                            case Button.Action2:
-                                c2.Paused = !c2.Paused;
-                                break;
-                            case Button.Action3:
-                                if (c3 == null || !c3.IsPlaying)
-                                    c3 = System.PlaySound(s3);
-                                break;
-                            case Button.More:
-                                autoMove = !autoMove;
-                                break;
-                            case Button.Quit:
-                                goto BreakLoop;
-                        }
-                    }
-                }
+                ProcessInput();
 
                 // ==========================================================================================
                 // UPDATE THE LISTENER
@@ -129,10 +119,8 @@ namespace Examples
                 DrawText(s);
                 
                 Sleep(InterfaceUpdateTime - 1);
-            } while (true);
-
-            BreakLoop:
-            return;
+            }
+            while (!ShouldExit);
         }
 
         public override void Dispose()
@@ -143,7 +131,5 @@ namespace Examples
 
             base.Dispose();
         }
-
-        public override string Title => "Fmod 3D Example";
     }
 }

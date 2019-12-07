@@ -11,41 +11,54 @@ namespace Examples
         const int Drift_MS = 1;
         const int Latency_MS = 50;
 
-        uint LastRecordPos = 0;
-        uint MinRecordDelta = uint.MaxValue;
-        uint LastPlayPos = 0;
-        
-        public override void Run()
+        uint LastRecordPos;
+        uint MinRecordDelta;
+        uint LastPlayPos;
+        int nativeRate;
+        bool dspEnabled = false;
+
+        Sound sound;
+
+        uint driftThreshold, desiredLatency, adjustedLatency;
+        int actualLatency;
+
+        public RecordExample() : base("Fmod Record Example")
         {
-            FmodSystem system = Fmod.CreateSystem();
+            RegisterCommand(ConsoleKey.D1, () =>
+            {
+                dspEnabled = !dspEnabled;
+                ReverbProperties prop = dspEnabled ? Preset.ConcertHall : Preset.Off;
+                System.SetReverbProperties(0, in prop);
+            });
+        }
 
-            TestVersion(system);
-            Channel channel = null;
-            Sound sound;
-            uint SamplesRecorded = 0;
-            uint SamplesPlayed = 0;
-            bool dspEnabled = false;
+        public override void Initialize()
+        {
+            LastRecordPos = 0;
+            MinRecordDelta = uint.MaxValue;
+            LastPlayPos = 0;
 
-            system.Init(32);
+            base.Initialize();
 
-            system.GetRecordDriverCount(out _, out int numDrivers);
+            System.Init(32);
+
+            System.GetRecordDriverCount(out _, out int numDrivers);
 
             if (numDrivers == 0)
             {
-                Console.WriteLine("No recording devices found/plugged in!  Aborting.");
-                return;
+                throw new Exception("No recording devices found/plugged in!  Aborting.");
             }
-            
-            RecordDriverInfo recordDriverInfo = system.GetRecordDriverInfo(DriverIndex);
 
-            int nativeRate = recordDriverInfo.SystemRate;
+            RecordDriverInfo recordDriverInfo = System.GetRecordDriverInfo(DriverIndex);
+
+            nativeRate = recordDriverInfo.SystemRate;
+
+            driftThreshold  = (uint)(nativeRate * Drift_MS / 1000);
+            desiredLatency  = (uint)(nativeRate * Latency_MS / 1000);
+            adjustedLatency = desiredLatency;
+            actualLatency   = (int)desiredLatency;
+
             int nativeChannels = recordDriverInfo.SpeakerModeChannels;
-
-            uint driftThreshold = (uint)(nativeRate * Drift_MS / 1000);
-            uint desiredLatency = (uint)(nativeRate * Latency_MS / 1000);
-            uint adjustedLatency = desiredLatency;
-            int actualLatency = (int)desiredLatency;
-
             CreateSoundInfo info = new CreateSoundInfo()
             {
                 ChannelCount = nativeChannels,
@@ -54,9 +67,16 @@ namespace Examples
                 Length = (uint)(nativeRate * sizeof(short) * nativeChannels)
             };
 
-            sound = system.CreateSoundOpenUser(Mode.Loop_Normal, info);
+            sound = System.CreateSoundOpenUser(Mode.Loop_Normal, info);
+        }
 
-            system.RecordStart(DriverIndex, sound, true);
+        public override void Run()
+        {
+            Channel channel = null;
+            uint SamplesRecorded = 0;
+            uint SamplesPlayed = 0;
+
+            System.RecordStart(DriverIndex, sound, true);
 
             uint SoundLength = sound.GetLength(TimeUnit.PCM);
             
@@ -64,37 +84,18 @@ namespace Examples
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    while(Commands.TryDequeue(out Button button))
-                    {
-                        switch (button)
-                        {
-                            case Button.Quit:
-                                goto Exit;
-                            case Button.Action1:
-                                dspEnabled = !dspEnabled;
-                                ReverbProperties prop = dspEnabled ? Preset.ConcertHall : Preset.Off;
-                                system.SetReverbProperties(0, in prop);
-                                break;
-                        }
+                ProcessInput();
 
-                    }
-                }
+                System.Update();
 
-                system.Update();
-                uint recordPos = 0;
-                try
+                var res = Fmod.Library.System_GetRecordPosition(System.Handle, DriverIndex, out uint recordPos);
+
+                if (res != Result.Ok)
                 {
-                    recordPos = system.GetRecordPosition(DriverIndex);
-                }
-                catch(FmodException e)
-                {
-                    var res = e.Result;
-                    if (!res.HasValue || res.Value != Result.Err_Record_Disconnected)
-                    {
-                        throw;
-                    }
+                    if (res != Result.Err_Record_Disconnected)
+                        res.CheckResult();
+
+                    recordPos = 0; //Not garuenteed to be 0 on error
                 }
 
                 uint recordDelta = (recordPos >= LastRecordPos) ? recordPos - LastRecordPos : recordPos + SoundLength - LastRecordPos;
@@ -109,23 +110,19 @@ namespace Examples
 
                 if (channel == null && SamplesRecorded >= adjustedLatency)
                 {
-                    channel = system.PlaySound(sound);
+                    channel = System.PlaySound(sound);
                 }
 
                 if (channel != null)
                 {
-                    bool isRecording = false;
-                    try
+                    res = Fmod.Library.System_IsRecording(System.Handle, DriverIndex, out bool isRecording);
+
+                    if (res != Result.Ok)
                     {
-                        isRecording = system.IsRecording(DriverIndex);
-                    }
-                    catch(FmodException e)
-                    {
-                        var res = e.Result;
-                        if (!res.HasValue || res.Value != Result.Err_Record_Disconnected)
-                        {
-                            throw;
-                        }
+                        if (res != Result.Err_Record_Disconnected)
+                            res.CheckResult();
+
+                        isRecording = false; //Not garuenteed to be false on error
                     }
 
                     if (!isRecording)
@@ -176,22 +173,25 @@ namespace Examples
                 DrawText($"Played: {SamplesPlayed} ({SamplesPlayed / nativeRate}s)");
 
                 Sleep(10);
+            }
+            while (!ShouldExit);
+        }
 
-            } while (true);
-
-            Exit:
-            try
+        public override void Dispose()
+        {
+            if (System != null)
             {
-                if (system.IsRecording(DriverIndex))
+                var res = Fmod.Library.System_IsRecording(System.Handle, DriverIndex, out bool recording); //Using this to obtain access to the Result
+
+                if (res == Result.Ok && recording)
                 {
-                    system.RecordStop(DriverIndex);
+                    System.RecordStop(DriverIndex);
                 }
+
+                sound?.Dispose();
             }
-            finally
-            {
-                sound.Dispose();
-                system.Dispose();
-            }
+
+            base.Dispose();
         }
     }
 }

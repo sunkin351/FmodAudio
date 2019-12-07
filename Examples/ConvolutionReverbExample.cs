@@ -13,6 +13,16 @@ namespace Examples
         private DSP reverbUnit;
         private Sound sound;
 
+        float wetVolume = 1f, dryVolume = 1f;
+
+        public ConvolutionReverbExample() : base ("Fmod Convolution Reverb Example")
+        {
+            RegisterCommand(ConsoleKey.LeftArrow, () => wetVolume = Math.Clamp(wetVolume - 0.05f, 0, 1));
+            RegisterCommand(ConsoleKey.RightArrow, () => wetVolume = Math.Clamp(wetVolume + 0.05f, 0, 1));
+            RegisterCommand(ConsoleKey.UpArrow, () => dryVolume = Math.Clamp(dryVolume + 0.05f, 0, 1));
+            RegisterCommand(ConsoleKey.DownArrow, () => dryVolume = Math.Clamp(dryVolume - 0.05f, 0, 1));
+        }
+
         public override void Initialize()
         {
             base.Initialize();
@@ -72,36 +82,12 @@ namespace Examples
 
             channel.Paused = false;
 
-            float wetVolume = 1f, dryVolume = 1f;
 
             do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    while (Commands.TryDequeue(out Button btn))
-                    {
-                        switch (btn)
-                        {
-                            case Button.Left:
-                                wetVolume = Math.Clamp(0, 1, wetVolume - 0.05f);
-                                break;
-                            case Button.Right:
-                                wetVolume = Math.Clamp(0, 1, wetVolume + 0.05f);
-                                break;
-                            case Button.Up:
-                                dryVolume = Math.Clamp(0, 1, dryVolume + 0.05f);
-                                break;
-                            case Button.Down:
-                                dryVolume = Math.Clamp(0, 1, dryVolume - 0.05f);
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-
-                    }
-                }
+                ProcessInput();
 
                 System.Update();
 
@@ -119,20 +105,26 @@ namespace Examples
 
                 Sleep(50);
 
-            } while (true);
-
-            Exit:
-            return;
+            }
+            while (!ShouldExit);
         }
 
         public override void Dispose()
         {
             sound?.Dispose();
             mainGroup?.Dispose();
-            reverbGroup?.RemoveDSP(reverbUnit);
-            //reverbUnit.DisconnectAll(true, true); Disposing does this already
-            reverbUnit?.Dispose();
-            reverbGroup?.Dispose();
+
+            if (reverbUnit != null && reverbGroup != null)
+            {
+                reverbGroup.RemoveDSP(reverbUnit);
+                reverbGroup.Dispose();
+                reverbUnit.Dispose();
+            }
+            else
+            {
+                reverbGroup?.Dispose();
+                reverbUnit?.Dispose();
+            }
 
             base.Dispose();
         }

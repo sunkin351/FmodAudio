@@ -10,7 +10,14 @@ namespace Examples
         private readonly Sound[] sounds = new Sound[6];
         private readonly Channel[] channels = new Channel[6];
         
-        ChannelGroup A, B, Master;
+        private ChannelGroup A, B, Master;
+
+        public ChannelGroupsExample() : base("Fmod Channel Groups Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => A.Mute = !A.Mute);
+            RegisterCommand(ConsoleKey.D2, () => B.Mute = !B.Mute);
+            RegisterCommand(ConsoleKey.D3, () => Master.Mute = !Master.Mute);
+        }
 
         public override void Initialize()
         {
@@ -45,34 +52,12 @@ namespace Examples
 
         public override void Run()
         {
-            
-
             do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    int i = 0;
-                    while (i++ < 5 && Commands.TryDequeue(out var btn))
-                    {
-                        switch(btn)
-                        {
-                            case Button.Action1:
-                                A.Mute = !A.Mute;
-                                break;
-                            case Button.Action2:
-                                B.Mute = !B.Mute;
-                                break;
-                            case Button.Action3:
-                                Master.Mute = !Master.Mute;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
-
+                ProcessInput();
+                
                 System.Update();
 
                 System.GetChannelsPlaying(out int channelsPlaying, out _);
@@ -93,9 +78,9 @@ namespace Examples
                 DrawText($"Channels playing: {channelsPlaying}");
 
                 Sleep(50);
-            } while (true);
+            }
+            while (!ShouldExit);
 
-            Exit:
             //A little fade out over 2 seconds
             float pitch = 1.0f, vol = 1.0f;
 
@@ -106,6 +91,10 @@ namespace Examples
 
                 vol -= 1.0f / 200;
                 pitch -= 0.5f / 200;
+
+                System.Update();
+
+                Sleep(10);
             }
         }
 

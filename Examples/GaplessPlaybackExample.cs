@@ -50,6 +50,41 @@ namespace Examples
         private readonly Sound[] sounds = new Sound[3];
         private ChannelGroup channelGroup;
 
+        public GaplessPlaybackExample() : base("Fmod Gapless Playback Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => channelGroup.Paused = !channelGroup.Paused);
+            RegisterCommand(ConsoleKey.D2, () =>
+            {
+                float pitch = channelGroup.Pitch;
+
+                for (int i = 0; i < 50; ++i)
+                {
+                    pitch += 0.01f;
+                    channelGroup.Pitch = pitch;
+                    System.Update();
+                    Sleep(10);
+                }
+            });
+
+            RegisterCommand(ConsoleKey.D3, () =>
+            {
+                float pitch = channelGroup.Pitch;
+
+                for (int i = 0; i < 50; ++i)
+                {
+                    if (pitch <= 0.01f)
+                    {
+                        break;
+                    }
+
+                    pitch -= 0.01f;
+                    channelGroup.Pitch = pitch;
+                    System.Update();
+                    Sleep(10);
+                }
+            });
+        }
+
         public override void Initialize()
         {
             base.Initialize(); //Creates FmodSystem object
@@ -116,58 +151,11 @@ namespace Examples
             /*
                 Main loop.
             */
-            while(true)
+            do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    while (Commands.TryDequeue(out Button btn))
-                    {
-                        float pitch;
-
-                        switch(btn)
-                        {
-                            case Button.Quit:
-                                goto Exit;
-                            case Button.Action1:
-                                channelGroup.Paused = !channelGroup.Paused;
-                                break;
-                            case Button.Action2:
-                                pitch = channelGroup.Pitch;
-
-                                for (int i = 0; i < 50; ++i)
-                                {
-                                    pitch += 0.01f;
-                                    channelGroup.Pitch = pitch;
-                                    System.Update();
-                                    Sleep(10);
-                                }
-
-                                break;
-                            case Button.Action3:
-                                pitch = channelGroup.Pitch;
-
-                                for (int i = 0; i < 50; ++i)
-                                {
-                                    if (pitch > 0.01f)
-                                    {
-                                        pitch -= 0.01f;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-
-                                    channelGroup.Pitch = pitch;
-                                    System.Update();
-                                    Sleep(10);
-                                }
-
-                                break;
-                        }
-                    }
-                }
+                ProcessInput();
 
                 System.Update();
 
@@ -187,9 +175,7 @@ namespace Examples
 
                 Sleep(50);
             }
-
-            Exit:
-            return;
+            while (!ShouldExit);
         }
 
         public override void Dispose()
