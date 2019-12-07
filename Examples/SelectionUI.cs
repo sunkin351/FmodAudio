@@ -46,7 +46,7 @@ namespace Examples
 
                     buffer[1] = (i == currentSelection) ? '>' : (char)0;
 
-                    example.Title.AsSpan().TryCopyTo(nameBuffer);
+                    WriteTitleToBuffer(example.Title, nameBuffer);
 
                     ConsoleHelpers.Draw(lineBuffer);
 
@@ -91,6 +91,18 @@ namespace Examples
                 ConsoleHelpers.OnUpdate(1);
                 Thread.Sleep(10);
             }
+        }
+
+        private static void WriteTitleToBuffer(string title, Span<char> buffer)
+        {
+            ReadOnlySpan<char> tmp = title;
+
+            if (tmp.Length > buffer.Length)
+            {
+                tmp = tmp.Slice(0, buffer.Length);
+            }
+
+            tmp.CopyTo(buffer);
         }
     }
 }
