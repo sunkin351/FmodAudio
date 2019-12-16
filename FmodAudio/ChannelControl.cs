@@ -254,7 +254,7 @@ namespace FmodAudio
             library.ChannelGroup_GetDSPClock(Handle, out dspClock, out parentClock).CheckResult();
         }
 
-        public void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels)
+        public void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels = true)
         {
             library.ChannelGroup_SetDelay(Handle, dspclock_start, dspclock_end, stopchannels).CheckResult();
         }
@@ -262,6 +262,11 @@ namespace FmodAudio
         public void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels)
         {
             library.ChannelGroup_GetDelay(Handle, out dspclock_start, out dspclock_end, out stopchannels).CheckResult();
+        }
+
+        public void GetDelay(out ulong dspclock_start, out ulong dspclock_end)
+        {
+            GetDelay(out dspclock_start, out dspclock_end, out _);
         }
 
         public void AddFadePoint(ulong dspClock, float volume)
