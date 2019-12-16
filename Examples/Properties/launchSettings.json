@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Examples": {
-      "commandName": "Project",
-      "commandLineArgs": "7"
-    }
-  }
-}

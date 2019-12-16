@@ -1,20 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.8.7.0</Version>
+    <Version>0.9.1.0</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunkin351/FmodAudio</RepositoryUrl>
     <RepositoryType></RepositoryType>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Description>Wrapper Library for the Fmod low level API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
+    <Description>Wrapper Library for the Fmod Core API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Bug fix for NullReferenceException being thrown from FmodSystem.CreateSound() when the CreateSoundInfo parameter is null. (Its allowed to be null)</PackageReleaseNotes>
-    <AssemblyVersion>0.8.7.0</AssemblyVersion>
-    <FileVersion>0.8.7.0</FileVersion>
+    <PackageReleaseNotes>Updated Wrapper and Binding to FMOD 2.0.5 from 1.16.X
+
+Exposed Reverb3D object oriented wrapper class and API methods. Experimental. Let me know if anything is missing.
+
+Exposed Codec Registration, You can now write your own codec for FMOD in C#
+
+Exposed Low Level binding for low level enthusiasts. Access through the `Library` property of the `Fmod` static class.
+
+Bare Bones support for Output plugin registration, exposed singular method and structure for doing this.  (Low Level Binding exclusive)</PackageReleaseNotes>
+    <AssemblyVersion>0.9.1.0</AssemblyVersion>
+    <FileVersion>0.9.1.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

@@ -157,14 +157,14 @@ namespace Examples
             return Result.Ok;
         }
 
-        static unsafe Plugin CreateDSPPlugin(FmodSystem system)
+        static unsafe (Plugin, DspDescription) CreateDSPPlugin(FmodSystem system)
         {
             ParameterDescription WaveDataDesc = new DataParameterDescription("wave data", null, ParameterDataType.User);
             ParameterDescription VolumeDesc = new FloatParameterDescription("volume", "%", 0, 1, 1);
 
             var dspDesc = new DspDescription()
             {
-                PluginSDKVersion = FmodSystem.BindingVersion,
+                PluginSDKVersion = Fmod.BindingVersion,
 
                 InputBufferCount = 1,
                 OutputBufferCount = 1,
@@ -179,39 +179,46 @@ namespace Examples
 
             dspDesc.SetParameterDescriptions(WaveDataDesc, VolumeDesc);
 
-            return system.RegisterDSP(dspDesc);
+            return (system.RegisterDSP(dspDesc), dspDesc);
         }
 
-        readonly FmodSystem system;
+        private DspDescription desc;
 
-        public CustomDSPExample()
+        private Sound sound;
+        private Channel channel;
+        private DSP dsp;
+        private ChannelGroup masterGroup;
+        private Plugin plugin;
+
+        public CustomDSPExample() : base("Fmod Custom DSP Example")
         {
-            system = Fmod.CreateSystem();
+            RegisterCommand(ConsoleKey.D1, () => dsp.Bypass = !dsp.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => AdjustVolume(dsp, -0.1f));
+            RegisterCommand(ConsoleKey.D3, () => AdjustVolume(dsp, 0.1f));
+            RegisterCommand(ConsoleKey.Spacebar, () => channel.Paused = !channel.Paused);
+        }
 
-            TestVersion(system);
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            System.Init(32);
+
+            sound = System.CreateSound(MediaPath("stereo.ogg"), Mode.Loop_Normal);
+
+            channel = System.PlaySound(sound, paused: true);
+
+            (plugin, desc) = CreateDSPPlugin(System);
+
+            dsp = System.CreateDSPByPlugin(plugin);
+
+            masterGroup = System.MasterChannelGroup;
+
+            masterGroup.AddDSP(0, dsp);
         }
 
         public unsafe override void Run()
         {
-            Sound sound;
-            Channel channel;
-            DSP dsp;
-            ChannelGroup masterGroup;
-            
-            system.Init(32);
-
-            sound = system.CreateSound(MediaPath("stereo.ogg"), Mode.Loop_Normal);
-
-            channel = system.PlaySound(sound, paused: true);
-
-            var plugin = CreateDSPPlugin(system);
-
-            dsp = system.CreateDSPByPlugin(plugin);
-
-            masterGroup = system.MasterChannelGroup;
-
-            masterGroup.AddDSP(0, dsp);
-            
             Span<char> display = stackalloc char[50];
 
             var ParamIndex = dsp.GetDataParameterIndex(ParameterDataType.User);
@@ -222,35 +229,11 @@ namespace Examples
             {
                 OnUpdate();
 
+                ProcessInput();
+
                 bool bypass = dsp.Bypass;
 
-                if (!Commands.IsEmpty)
-                {
-                    while(Commands.TryDequeue(out Button btn))
-                    {
-                        switch (btn)
-                        {
-                            case Button.Action1:
-                                dsp.Bypass = !bypass;
-                                break;
-
-                            case Button.Action2:
-                                AdjustVolume(dsp, -0.1f);
-                                break;
-
-                            case Button.Action3:
-                                AdjustVolume(dsp, 0.1f);
-                                break;
-                            case Button.More:
-                                channel.Paused = !channel.Paused;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
-
-                system.Update();
+                System.Update();
 
                 ParameterDescription desc = dsp.GetParameterInfo(1);
 
@@ -302,13 +285,21 @@ namespace Examples
                 }
                 
                 Sleep(50);
-            } while (true);
+            }
+            while (!ShouldExit);
+        }
 
-            Exit:
-            sound.Dispose();
-            masterGroup.RemoveDSP(dsp);
-            dsp.Dispose();
-            system.Dispose();
+        public override void Dispose()
+        {
+            sound?.Dispose();
+
+            if (dsp != null)
+            {
+                masterGroup.RemoveDSP(dsp);
+                dsp.Dispose();
+            }
+
+            base.Dispose();
         }
 
         static void AdjustVolume(DSP dsp, float adjustment)

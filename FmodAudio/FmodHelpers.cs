@@ -80,10 +80,23 @@ namespace FmodAudio
             {Result.Err_SubSound_CantMove, "Shared subsounds cannot be replaced or moved from their parent stream, such as when the parent stream is an FSB file." },
             {Result.Err_TagNotFound, "The specified tag could not be found or there are no tags." },
             {Result.Err_TooManyChannels, "The sound created exceeds the allowable input channel count. This can be increased using the 'maxinputchannels' parameter in System.SetSoftwareFormat()." },
-            {Result.Err_TooManySamples, "The length provided exceeds the allowable limit." },
             {Result.Err_Truncated, "The retrieved string is too long to fit in the supplied buffer and has been truncated." },
-            
-
+            {Result.Err_Unimplemented, "Something in FMOD hasn't been implemented when it should be! contact support!" },
+            {Result.Err_Uninitialized, "This command failed because FmodSystem.Init() or FmodSystem.SetDriver() was not called." },
+            {Result.Err_Unsupported, "A command issued was not supported by this object. Possibly a plugin without certain callbacks specified." },
+            {Result.Err_Version, "The version number of this file format is not supported." },
+            {Result.Err_Event_Already_Loaded, "The specified bank has already been loaded." },
+            {Result.Err_Event_LiveUpdate_Busy, "The live update connection failed due to the game already being connected." },
+            {Result.Err_Event_LiveUpdate_Mismatch, "The live update connection failed due to the game data being out of sync with the tool." },
+            {Result.Err_Event_LiveUpdate_Timeout, "The live update connection timed out." },
+            {Result.Err_Event_NotFound, "The requested event, bus or vca could not be found." },
+            {Result.Err_Studio_Uninitialized, "The Studio::System object is not yet initialized." },
+            {Result.Err_Studio_Not_Loaded, "The specified resource is not loaded, so it can't be unloaded." },
+            {Result.Err_Invalid_String, "An invalid string was passed to this function." },
+            {Result.Err_Already_Locked, "The specified resource is already locked." },
+            {Result.Err_Not_Locked, "The specified resource is not locked, so it can't be unlocked." },
+            {Result.Err_Record_Disconnected, "The specified recording driver has been disconnected." },
+            {Result.Err_TooManySamples, "The length provided exceeds the allowable limit." }
         };
 
         internal static string GetErrorMessage(Result res)

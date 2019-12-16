@@ -8,11 +8,28 @@ using System.Threading;
 
 namespace Examples.Base
 {
-    public abstract class Example
+    public abstract class Example : IDisposable
     {
-        protected ConcurrentQueue<Button> Commands => ConsoleHelpers.CommandQueue;
-        
-        public virtual string Title => "Fmod Example";
+        protected FmodSystem System;
+
+        public string Title { get; }
+
+        private readonly Dictionary<ConsoleKey, Action> Commands = new Dictionary<ConsoleKey, Action>();
+
+        protected bool ShouldExit { get; private set; }
+
+        protected Example(string title)
+        {
+            Title = title;
+        }
+
+        public virtual void Initialize()
+        {
+            ShouldExit = false;
+
+            System = Fmod.CreateSystem();
+            TestVersion(System);
+        }
 
         public abstract void Run();
 
@@ -47,7 +64,44 @@ namespace Examples.Base
             
             if (version < Fmod.BindingVersion)
             {
-                throw new NotSupportedException($"FMOD Library version {version} is less than Binding version {FmodSystem.BindingVersion}");
+                throw new NotSupportedException($"FMOD Library version {version} is less than Binding version {Fmod.BindingVersion}");
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            System?.Dispose();
+        }
+
+        protected void RegisterCommand(ConsoleKey key, Action action)
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (!Commands.TryAdd(key, action))
+            {
+                throw new InvalidOperationException("An action has already been registered to keybind " + key.ToString());
+            }
+        }
+
+        protected void ProcessInput()
+        {
+            while (Console.KeyAvailable)
+            {
+                var info = Console.ReadKey(true);
+
+                if (info.Key == ConsoleKey.Escape)
+                {
+                    ShouldExit = true;
+                    return;
+                }
+
+                if (Commands.TryGetValue(info.Key, out var action))
+                {
+                    action();
+                }
             }
         }
     }

@@ -10,90 +10,77 @@ namespace Examples
     using Base;
     public class EffectsExample : Example
     {
-        readonly FmodSystem System;
+        Sound sound;
+        Channel channel;
 
-        public override string Title => "Fmod Effects Example";
+        DSP dspLowpass, dspHighpass, dspEcho, dspFlange;
 
-        public EffectsExample()
+        public EffectsExample() : base("Fmod Effects Example")
         {
-            System = Fmod.CreateSystem();
+            RegisterCommand(ConsoleKey.Spacebar, () =>
+            {
+                if (channel != null)
+                {
+                    channel.Paused = !channel.Paused;
+                }
+            });
 
-            TestVersion(System);
+            RegisterCommand(ConsoleKey.D1, () => dspLowpass.Bypass = !dspLowpass.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => dspHighpass.Bypass = !dspHighpass.Bypass);
+            RegisterCommand(ConsoleKey.D3, () => dspEcho.Bypass = !dspEcho.Bypass);
+            RegisterCommand(ConsoleKey.D4, () => dspFlange.Bypass = !dspFlange.Bypass);
         }
 
-        public override void Run()
+        public override void Initialize()
         {
+            base.Initialize();
+
             System.Init(32);
 
-            Sound sound = System.CreateSound(MediaPath("drumloop.wav"));
+            sound = System.CreateSound(MediaPath("drumloop.wav"));
 
-            Channel channel = System.PlaySound(sound);
+            channel = System.PlaySound(sound);
 
-            var master = System.MasterChannelGroup;
-
-            var dspLowpass = System.CreateDSPByType(DSPType.LowPass);
-            var dspHighpass = System.CreateDSPByType(DSPType.HighPass);
-            var dspEcho = System.CreateDSPByType(DSPType.Echo);
-            var dspFlange = System.CreateDSPByType(DSPType.Flange);
+            dspLowpass = System.CreateDSPByType(DSPType.LowPass);
+            dspHighpass = System.CreateDSPByType(DSPType.HighPass);
+            dspEcho = System.CreateDSPByType(DSPType.Echo);
+            dspFlange = System.CreateDSPByType(DSPType.Flange);
 
             dspLowpass.Bypass = true;
             dspHighpass.Bypass = true;
             dspEcho.Bypass = true;
             dspFlange.Bypass = true;
+        }
+
+        public override void Run()
+        {
+            var master = System.MasterChannelGroup;
 
             master.AddDSP(0, dspLowpass);
             master.AddDSP(0, dspHighpass);
             master.AddDSP(0, dspEcho);
             master.AddDSP(0, dspFlange);
 
-            while (true)
+            do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    while (Commands.TryDequeue(out var command))
-                    {
-                        switch(command)
-                        {
-                            case Button.More:
-                                if (channel != null)
-                                {
-                                    channel.Paused = !channel.Paused;
-                                }
-                                break;
-                            case Button.Action1:
-                                dspLowpass.Bypass = !dspLowpass.Bypass;
-                                break;
-                            case Button.Action2:
-                                dspHighpass.Bypass = !dspHighpass.Bypass;
-                                break;
-                            case Button.Action3:
-                                dspEcho.Bypass = !dspEcho.Bypass;
-                                break;
-                            case Button.Action4:
-                                dspFlange.Bypass = !dspFlange.Bypass;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
+                ProcessInput();
 
                 System.Update();
                 bool Paused = true;
 
                 if (channel != null)
                 {
-                    try
+                    var res = Fmod.Library.ChannelGroup_GetPaused(channel.Handle, out Paused);
+
+                    if (res != Result.Ok)
                     {
-                        Paused = channel.Paused;
-                    }
-                    catch(FmodException exception)
-                    {
-                        if (exception.Result != Result.Err_Invalid_Handle && exception.Result != Result.Err_Channel_Stolen)
+                        Paused = true;
+
+                        if (res != Result.Err_Invalid_Handle && res != Result.Err_Channel_Stolen)
                         {
-                            throw;
+                            res.CheckResult();
                         }
                     }
                 }
@@ -121,22 +108,24 @@ namespace Examples
 
                 Sleep(50);
             }
-
-            Exit:
-
+            while (!ShouldExit);
+            
             master.RemoveDSP(dspLowpass);
             master.RemoveDSP(dspHighpass);
             master.RemoveDSP(dspEcho);
             master.RemoveDSP(dspFlange);
+        }
 
-            dspLowpass.Dispose();
-            dspHighpass.Dispose();
-            dspEcho.Dispose();
-            dspFlange.Dispose();
+        public override void Dispose()
+        {
+            dspLowpass?.Dispose();
+            dspHighpass?.Dispose();
+            dspEcho?.Dispose();
+            dspFlange?.Dispose();
 
-            sound.Dispose();
+            sound?.Dispose();
 
-            System.Dispose();
+            base.Dispose();
         }
     }
 }

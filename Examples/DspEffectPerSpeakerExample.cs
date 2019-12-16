@@ -11,31 +11,57 @@ namespace Examples
 
     public class DspEffectPerSpeakerExample : Example
     {
-        public override void Run()
-        {
-            FmodSystem system = Fmod.CreateSystem();
+        Sound sound;
+        Channel channel;
+        DSP lowPass, highPass;
+        float pan = 0f;
 
-            TestVersion(system);
+        public DspEffectPerSpeakerExample() : base("Fmod DSP Effects per Speaker Example")
+        {
+            RegisterCommand(ConsoleKey.D1, () => lowPass.Bypass = !lowPass.Bypass);
+            RegisterCommand(ConsoleKey.D2, () => highPass.Bypass = !highPass.Bypass);
+            RegisterCommand(ConsoleKey.LeftArrow, () =>
+            {
+                var tmp = pan - 0.1f;
+
+                if (tmp < -1f)
+                {
+                    tmp = -1f;
+                }
+
+                pan = tmp;
+                channel.SetPan(tmp);
+            });
+            RegisterCommand(ConsoleKey.RightArrow, () =>
+            {
+                var tmp = Math.Clamp(pan + 0.1f, -1, 1);
+                pan = tmp;
+                channel.SetPan(tmp);
+            });
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
 
             //In this special case, we want to use stereo output and not worry about
             //varying matrix sizes depending on user speaker mode.
-            system.SetSoftwareFormat(48_000, SpeakerMode.Stereo, 0);
+            System.SetSoftwareFormat(48_000, SpeakerMode.Stereo, 0);
 
             //Initialize FMOD
-            system.Init(32);
+            System.Init(32);
 
-            Sound sound = system.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
+            sound = System.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
 
-            Channel channel = system.PlaySound(sound);
+            channel = System.PlaySound(sound);
 
             //Create DSP Effects
-            DSP lowPass, highPass;
 
-            lowPass = system.CreateDSPByType(DSPType.LowPass);
+            lowPass = System.CreateDSPByType(DSPType.LowPass);
             lowPass.SetParameterFloat(0, 1000f); //Lowpass Cutoff
             lowPass.SetParameterFloat(1, 4f); //Lowpass Resonance
 
-            highPass = system.CreateDSPByType(DSPType.HighPass);
+            highPass = System.CreateDSPByType(DSPType.HighPass);
             highPass.SetParameterFloat(0, 4000f); //Highpass Cutoff
             highPass.SetParameterFloat(1, 4f); //Highpass Resonance
 
@@ -47,7 +73,7 @@ namespace Examples
             //[DSPHEAD]<------------[DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
             DSP head, channelMixer;
 
-            ChannelGroup masterGroup = system.MasterChannelGroup;
+            ChannelGroup masterGroup = System.MasterChannelGroup;
             head = masterGroup.GetDSP(ChannelControlDSPIndex.DspHead);
             channelMixer = head.GetInput(0).Item1;
 
@@ -109,50 +135,18 @@ namespace Examples
             lowPass.Active = true;
             highPass.Bypass = true;
             highPass.Active = true;
+        }
 
-            float pan = 0f;
-
+        public override void Run()
+        {
             //Main Loop
             do
             {
                 OnUpdate();
 
-                system.Update();
+                ProcessInput();
 
-                bool lowpassBypass = lowPass.Bypass, highpassBypass = highPass.Bypass;
-
-                if (!Commands.IsEmpty)
-                {
-                    while(Commands.TryDequeue(out Button btn))
-                    {
-                        switch (btn)
-                        {
-                            case Button.Action1:
-                                lowpassBypass = !lowpassBypass;
-                                lowPass.Bypass = lowpassBypass;
-                                break;
-
-                            case Button.Action2:
-                                highpassBypass = !highpassBypass;
-                                highPass.Bypass = highpassBypass;
-                                break;
-
-                            case Button.Left:
-                                pan = Math.Clamp(-1, 1, pan - 0.1f);
-                                channel.SetPan(pan);
-                                break;
-
-                            case Button.Right:
-                                pan = Math.Clamp(-1, 1, pan + 0.1f);
-                                channel.SetPan(pan);
-                                break;
-
-                            case Button.Quit:
-                                goto Exit;
-                        }
-
-                    }
-                }
+                System.Update();
 
                 DrawText("==================================================");
                 DrawText("DSP Effect Per Speaker Example.");
@@ -164,21 +158,23 @@ namespace Examples
                 DrawText("Press Left or Right Arrow to pan sound.");
                 DrawText("Press Esc to quit.");
                 DrawText();
-                DrawText("Lowpass (left) is " + (lowpassBypass ? "inactive" : "active"));
-                DrawText("Highpass (right) is " + (highpassBypass ? "inactive" : "active"));
+                DrawText("Lowpass (left) is " + (lowPass.Bypass ? "inactive" : "active"));
+                DrawText("Highpass (right) is " + (highPass.Bypass ? "inactive" : "active"));
                 DrawText("Pan is " + pan.ToString("N1"));
 
                 Sleep(50);
+            }
+            while (!ShouldExit);
+        }
 
-            } while (true);
+        public override void Dispose()
+        {
+            sound?.Dispose();
 
-            Exit:
-            sound.Dispose();
+            lowPass?.Dispose();
+            highPass?.Dispose();
 
-            lowPass.Dispose();
-            highPass.Dispose();
-
-            system.Dispose();
+            base.Dispose();
         }
     }
 }

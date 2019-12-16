@@ -7,22 +7,22 @@ namespace Examples
 
     public class ChannelGroupsExample : Example
     {
-        readonly FmodSystem System;
+        private readonly Sound[] sounds = new Sound[6];
+        private readonly Channel[] channels = new Channel[6];
+        
+        private ChannelGroup A, B, Master;
 
-        public ChannelGroupsExample()
+        public ChannelGroupsExample() : base("Fmod Channel Groups Example")
         {
-            System = Fmod.CreateSystem();
-
-            TestVersion(System);
+            RegisterCommand(ConsoleKey.D1, () => A.Mute = !A.Mute);
+            RegisterCommand(ConsoleKey.D2, () => B.Mute = !B.Mute);
+            RegisterCommand(ConsoleKey.D3, () => Master.Mute = !Master.Mute);
         }
 
-        public override void Run()
+        public override void Initialize()
         {
-            Sound[] sounds = new Sound[6];
-            Channel[] channels = new Channel[6];
+            base.Initialize();
 
-            ChannelGroup A, B, Master;
-            
             System.Init(32);
 
             sounds[0] = System.CreateSound(MediaPath("drumloop.wav"), Mode.Loop_Normal);
@@ -40,7 +40,7 @@ namespace Examples
             Master.AddGroup(A, false);
             Master.AddGroup(B, false);
 
-            for(int i = 0; i < 6; ++i)
+            for (int i = 0; i < 6; ++i)
             {
                 channels[i] = System.PlaySound(sounds[i], i < 3 ? A : B);
             }
@@ -48,33 +48,16 @@ namespace Examples
             //Change the volume of each group, just because we can! (reduce overall noise).
             A.Volume = 0.5f;
             B.Volume = 0.5f;
+        }
 
+        public override void Run()
+        {
             do
             {
                 OnUpdate();
 
-                if (!Commands.IsEmpty)
-                {
-                    int i = 0;
-                    while (i++ < 5 && Commands.TryDequeue(out var btn))
-                    {
-                        switch(btn)
-                        {
-                            case Button.Action1:
-                                A.Mute = !A.Mute;
-                                break;
-                            case Button.Action2:
-                                B.Mute = !B.Mute;
-                                break;
-                            case Button.Action3:
-                                Master.Mute = !Master.Mute;
-                                break;
-                            case Button.Quit:
-                                goto Exit;
-                        }
-                    }
-                }
-
+                ProcessInput();
+                
                 System.Update();
 
                 System.GetChannelsPlaying(out int channelsPlaying, out _);
@@ -95,9 +78,9 @@ namespace Examples
                 DrawText($"Channels playing: {channelsPlaying}");
 
                 Sleep(50);
-            } while (true);
+            }
+            while (!ShouldExit);
 
-            Exit:
             //A little fade out over 2 seconds
             float pitch = 1.0f, vol = 1.0f;
 
@@ -108,18 +91,24 @@ namespace Examples
 
                 vol -= 1.0f / 200;
                 pitch -= 0.5f / 200;
-            }
 
-            //Shutdown
+                System.Update();
+
+                Sleep(10);
+            }
+        }
+
+        public override void Dispose()
+        {
             foreach (var sound in sounds)
             {
-                sound.Dispose();
+                sound?.Dispose();
             }
 
-            A.Dispose();
-            B.Dispose();
+            A?.Dispose();
+            B?.Dispose();
 
-            System.Dispose();
+            base.Dispose();
         }
     }
 }

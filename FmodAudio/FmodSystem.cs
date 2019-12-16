@@ -315,6 +315,26 @@ namespace FmodAudio
             library.System_GetSoftwareFormat(Handle, out SampleRate, out speakerMode, out RawSpeakerCount).CheckResult();
         }
 
+        public void GetDSPBufferSize(out uint bufferLength, out int bufferCount)
+        {
+            library.System_GetDSPBufferSize(Handle, out bufferLength, out bufferCount).CheckResult();
+        }
+
+        public void SetDSPBufferSize(uint bufferLength, int bufferCount)
+        {
+            library.System_SetDSPBufferSize(Handle, bufferLength, bufferCount).CheckResult();
+        }
+
+        public void SetStreamBufferSize(uint FileBufferSize, TimeUnit SizeType)
+        {
+            library.System_SetStreamBufferSize(Handle, FileBufferSize, SizeType).CheckResult();
+        }
+
+        public void GetStreamBufferSize(out uint FileBufferSize, out TimeUnit SizeType)
+        {
+            library.System_GetStreamBufferSize(Handle, out FileBufferSize, out SizeType).CheckResult();
+        }
+
         //Keep References to all delegates passed as filesystem functions
         private FileOpenCallback UserOpen;
         private FileCloseCallback UserClose;
@@ -471,16 +491,6 @@ namespace FmodAudio
         public void GetSpeakerPosition(Speaker speaker, out float x, out float y, out bool active)
         {
             library.System_GetSpeakerPosition(Handle, speaker, out x, out y, out active).CheckResult();
-        }
-
-        public void SetStreamBufferSize(uint FileBufferSize, TimeUnit SizeType)
-        {
-            library.System_SetStreamBufferSize(Handle, FileBufferSize, SizeType).CheckResult();
-        }
-
-        public void GetStreamBufferSize(out uint FileBufferSize, out TimeUnit SizeType)
-        {
-            library.System_GetStreamBufferSize(Handle, out FileBufferSize, out SizeType).CheckResult();
         }
 
         public void Set3DSettings(float DopplerScale, float DistanceFactor, float RolloffScale)
