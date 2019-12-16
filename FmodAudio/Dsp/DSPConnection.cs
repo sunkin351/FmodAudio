@@ -76,7 +76,7 @@ namespace FmodAudio.Dsp
         {
             if (matrix.Length < outChannels * inChannels)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("Matrix length is too small!");
             }
 
             fixed (float* mptr = matrix)
