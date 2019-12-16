@@ -92,10 +92,7 @@ namespace FmodAudio
             {Result.Err_Event_NotFound, "The requested event, bus or vca could not be found." },
             {Result.Err_Studio_Uninitialized, "The Studio::System object is not yet initialized." },
             {Result.Err_Studio_Not_Loaded, "The specified resource is not loaded, so it can't be unloaded." },
-            {Result.Err_Invalid_String, "An invalid string was passed to this function." },
-            {Result.Err_Already_Locked, "The specified resource is already locked." },
             {Result.Err_Not_Locked, "The specified resource is not locked, so it can't be unlocked." },
-            {Result.Err_Record_Disconnected, "The specified recording driver has been disconnected." },
             {Result.Err_TooManySamples, "The length provided exceeds the allowable limit." }
         };
 
@@ -116,21 +113,15 @@ namespace FmodAudio
             }
 
             string message = GetErrorMessage(result);
-            switch (result)
+
+            throw result switch
             {
-                case Result.Err_Invalid_Handle:
-                    throw new ObjectDisposedException(message, new FmodException(result));
-                case Result.Err_File_NotFound:
-                    throw new FileNotFoundException(message);
-                case Result.Err_File_Bad:
-                    throw new FileLoadException(message, new FmodException(result));
-                case Result.Err_Unsupported:
-                    throw new InvalidOperationException(message);
-                case Result.Err_Invalid_Param:
-                    throw new ArgumentException(message);
-                default:
-                    throw new FmodException(result, message);
-            }
+                Result.Err_File_NotFound => new FileNotFoundException(message),
+                Result.Err_File_Bad => new FileLoadException(message, new FmodException(result)),
+                Result.Err_Unsupported => new InvalidOperationException(message),
+                Result.Err_Invalid_Param => new ArgumentException(message),
+                _ => new FmodException(result, message),
+            };
         }
         
         internal static Memory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
