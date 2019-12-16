@@ -151,7 +151,7 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetInput(Handle, index, out IntPtr input, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(input);
+            var dsp = SystemObject.GetDSP(input, false);
             var con = new DSPConnection(SystemObject, connection);
             return (dsp, con);
         }
@@ -160,7 +160,7 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetOutput(Handle, index, out IntPtr output, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(output);
+            var dsp = SystemObject.GetDSP(output, false);
             var con = new DSPConnection(SystemObject, connection);
             return (dsp, con);
         }
