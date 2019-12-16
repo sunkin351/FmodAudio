@@ -4,9 +4,10 @@ using System.Runtime.InteropServices;
 namespace FmodAudio
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct FmodVersion : IComparable<FmodVersion>, IEquatable<FmodVersion>
+    public readonly struct FmodVersion : IComparable<FmodVersion>, IEquatable<FmodVersion>
     {
         private readonly uint EncodedVersion;
+
         public int Major { get => (int)(EncodedVersion >> 16); }
         public int Minor { get => (int)((EncodedVersion >> 8) & 0xff); }
         public int Patch { get => (int)(EncodedVersion & 0xff); }
