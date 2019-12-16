@@ -147,7 +147,7 @@ namespace FmodAudio.Dsp
             library.DSP_DisconnectAll(Handle, inputs, outputs).CheckResult();
         }
 
-        public (DSP, DSPConnection) GetInput(int index)
+        public (DSP Dsp, DSPConnection Connection) GetInput(int index)
         {
             library.DSP_GetInput(Handle, index, out IntPtr input, out IntPtr connection).CheckResult();
 
@@ -156,7 +156,7 @@ namespace FmodAudio.Dsp
             return (dsp, con);
         }
 
-        public (DSP, DSPConnection) GetOutput(int index)
+        public (DSP Dsp, DSPConnection Connection) GetOutput(int index)
         {
             library.DSP_GetOutput(Handle, index, out IntPtr output, out IntPtr connection).CheckResult();
 
