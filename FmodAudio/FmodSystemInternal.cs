@@ -198,6 +198,10 @@ namespace FmodAudio
         /// </summary>
         private readonly ConcurrentDictionary<Plugin, DspDescription> UserRegisteredDSPs = new ConcurrentDictionary<Plugin, DspDescription>();
 
+        /// <summary>
+        /// Same purpose as UserRegisteredDSPs
+        /// </summary>
+        private readonly ConcurrentDictionary<Plugin, Codec.CodecDescription> UserRegisteredCodecs = new ConcurrentDictionary<Plugin, Codec.CodecDescription>();
 
     }
 }
