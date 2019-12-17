@@ -120,7 +120,7 @@ namespace FmodAudio
             ChannelGroupLookup.TryRemove(handle, out _);
         }
 
-        internal Dsp.DSP GetDSP(IntPtr handle)
+        internal Dsp.DSP GetDSP(IntPtr handle, bool ownsObjectIfNotFound = true)
         {
             if (handle == IntPtr.Zero)
                 return null;
@@ -137,9 +137,16 @@ namespace FmodAudio
                 goto InvalidState;
             }
 
-            dsp = new DSP(this, handle);
+            dsp = new DSP(this, handle, ownsObjectIfNotFound);
 
-            if (DSPLookup.TryAdd(handle, new WeakReference<DSP>(dsp)))
+            if (ownsObjectIfNotFound)
+            {
+                if (DSPLookup.TryAdd(handle, new WeakReference<DSP>(dsp)))
+                {
+                    return dsp;
+                }
+            }
+            else
             {
                 return dsp;
             }
@@ -191,6 +198,10 @@ namespace FmodAudio
         /// </summary>
         private readonly ConcurrentDictionary<Plugin, DspDescription> UserRegisteredDSPs = new ConcurrentDictionary<Plugin, DspDescription>();
 
+        /// <summary>
+        /// Same purpose as UserRegisteredDSPs
+        /// </summary>
+        private readonly ConcurrentDictionary<Plugin, Codec.CodecDescription> UserRegisteredCodecs = new ConcurrentDictionary<Plugin, Codec.CodecDescription>();
 
     }
 }

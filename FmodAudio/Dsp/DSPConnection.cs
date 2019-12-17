@@ -21,7 +21,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetInput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle);
+                return system.GetDSP(handle, false);
             }
         }
 
@@ -31,7 +31,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetOutput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle);
+                return system.GetDSP(handle, false);
             }
         }
 
@@ -76,7 +76,7 @@ namespace FmodAudio.Dsp
         {
             if (matrix.Length < outChannels * inChannels)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("Matrix length is too small!");
             }
 
             fixed (float* mptr = matrix)

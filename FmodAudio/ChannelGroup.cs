@@ -60,8 +60,11 @@ namespace FmodAudio
             }
         }
 
-        public DSPConnection AddGroup(ChannelGroup group, bool propagateDSPClock)
+        public DSPConnection AddGroup(ChannelGroup group, bool propagateDSPClock = true)
         {
+            if (group is null)
+                throw new ArgumentNullException(nameof(group));
+
             library.ChannelGroup_AddGroup(Handle, group.Handle, propagateDSPClock, out IntPtr dspConnectionHandle).CheckResult();
 
             return new DSPConnection(SystemObject, dspConnectionHandle);

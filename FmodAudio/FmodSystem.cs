@@ -140,6 +140,11 @@ namespace FmodAudio
         public void UnloadPlugin(Plugin plugin)
         {
             library.System_UnloadPlugin(Handle, plugin.Handle).CheckResult();
+
+            if (!UserRegisteredDSPs.TryRemove(plugin, out _))
+            {
+                UserRegisteredCodecs.TryRemove(plugin, out _);
+            }
         }
 
         public int GetPluginCount (PluginType type)
@@ -218,6 +223,21 @@ namespace FmodAudio
             library.System_GetDSPInfoByPlugin(Handle, plugin.Handle, out IntPtr ptr).CheckResult();
 
             return (DspDescription.Structure*)ptr;
+        }
+
+        public Plugin RegisterCodec(Codec.CodecDescription description, uint priority = 0)
+        {
+            uint handle = default;
+            library.System_RegisterCodec(Handle, description, &handle, priority);
+
+            var plugin = new Plugin(handle);
+
+            if (!UserRegisteredCodecs.TryAdd(plugin, description))
+            {
+                throw new InvalidOperationException();
+            }
+
+            return plugin;
         }
 
         public Plugin RegisterDSP(DspDescription description)
