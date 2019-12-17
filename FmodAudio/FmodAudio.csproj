@@ -20,7 +20,7 @@ FmodSystem:
 ChannelControl:
     An overload was added to GetOutput(), and a parameter of SetOutput() was [made optional/given a default value].
 
-On a side note, I've noticed a lot of downloads of this library, and not one of those who have downloaded it pointed out to me that there was a problem with FmodHelpers, the above mentioned issue. C'mon guys, I want those bug reports so I can further improve my library. Don't just go back to the last known working release, contact me about your issues...</PackageReleaseNotes>
+On a side note, I've noticed a lot of downloads of this library, and not one of those who have downloaded it pointed out to me that there was a problem with FmodHelpers, the above mentioned issue. C'mon guys, I want those bug reports so I can further improve my library. Don't just go back to the last known working release, contact me about your issues... (Bug reports can be filed on the project Github Repository)</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
