@@ -16,6 +16,8 @@ namespace FmodAudio
     {
         public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
 
+        public static uint PluginSDKVersion => 110;
+
         public const int MaxAllowedSystemObjects = 8;
 
         #region Pre-Native Setup

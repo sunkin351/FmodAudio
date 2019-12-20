@@ -39,7 +39,7 @@ namespace FmodAudio.Dsp
         private DspStateCallback SystemDeregister;
         private DspSystemMixCallback SystemMix;
 
-        public FmodVersion PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
+        public uint PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
 
         public string Name { get => Struct.Name; set => Struct.Name = value; }
 
@@ -194,7 +194,7 @@ namespace FmodAudio.Dsp
             /// <summary>
             /// The Plugin SDK version this plugin is built for.
             /// </summary>
-            public FmodVersion PluginSDKVersion;
+            public uint PluginSDKVersion;
 
             /// <summary>
             /// Name of the unit to be displayed in the network
