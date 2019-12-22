@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -164,7 +164,8 @@ namespace Examples
 
             var dspDesc = new DspDescription()
             {
-                PluginSDKVersion = Fmod.BindingVersion,
+                PluginSDKVersion = Fmod.PluginSDKVersion,
+                Version = new FmodVersion(1, 0, 0),
 
                 InputBufferCount = 1,
                 OutputBufferCount = 1,
