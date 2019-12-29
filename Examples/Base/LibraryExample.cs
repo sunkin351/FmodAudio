@@ -1,4 +1,4 @@
-﻿using FmodAudio;
+using FmodAudio;
 using System;
 using System.IO;
 using System.Collections.Concurrent;
@@ -18,6 +18,8 @@ namespace Examples.Base
 
         protected bool ShouldExit { get; private set; }
 
+        private int ConsoleUpdateStart;
+
         protected Example(string title)
         {
             Title = title;
@@ -26,6 +28,7 @@ namespace Examples.Base
         public virtual void Initialize()
         {
             ShouldExit = false;
+            ConsoleUpdateStart = 0;
 
             System = Fmod.CreateSystem();
             TestVersion(System);
@@ -33,9 +36,14 @@ namespace Examples.Base
 
         public abstract void Run();
 
-        protected static void OnUpdate()
+        protected void SetConsoleUpdateStart()
         {
-            ConsoleHelpers.OnUpdate();
+            ConsoleUpdateStart = Console.CursorTop + 1;
+        }
+
+        protected void OnUpdate()
+        {
+            ConsoleHelpers.SetCursorRow(ConsoleUpdateStart);
         }
         
         protected static void DrawText()

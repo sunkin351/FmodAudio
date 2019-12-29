@@ -9,13 +9,15 @@ namespace Examples
 
     public class SelectionUI
     {
-        private readonly Example[] List;
+        private readonly string[] List;
         private readonly char[] lineBuffer;
+        private readonly Type[] ExampleTypes;
         private int currentSelection = 0;
 
-        public SelectionUI(Example[] list)
+        public SelectionUI(string[] list, Type[] exampleTypes)
         {
             List = list;
+            ExampleTypes = exampleTypes;
             lineBuffer = new char[ConsoleHelpers.ColumnCount];
         }
 
@@ -25,13 +27,14 @@ namespace Examples
             Console.SetCursorPosition(0, 0);
         }
 
-        public Example Select()
+        public Type Select()
         {
+            Console.Title = "Fmod Example Selection";
+
             ClearScreen();
 
             Span<char> buffer = lineBuffer;
 
-            buffer[0] = ' ';
             buffer[2] = ':';
 
             Span<char> nameBuffer = buffer.Slice(4);
@@ -44,9 +47,9 @@ namespace Examples
                 {
                     var example = List[i];
 
-                    buffer[1] = (i == currentSelection) ? '>' : (char)0;
+                    buffer[1] = (i == currentSelection) ? '>' : default;
 
-                    WriteTitleToBuffer(example.Title, nameBuffer);
+                    WriteTitleToBuffer(example, nameBuffer);
 
                     ConsoleHelpers.Draw(lineBuffer);
 
@@ -81,14 +84,14 @@ namespace Examples
                         case ConsoleKey.Enter:
                             ClearScreen();
 
-                            return List[currentSelection];
+                            return ExampleTypes[currentSelection];
 
                         case ConsoleKey.Escape:
                             return null;
                     }
                 }
 
-                ConsoleHelpers.OnUpdate(1);
+                ConsoleHelpers.SetCursorRow(1);
                 Thread.Sleep(10);
             }
         }

@@ -15,6 +15,8 @@ namespace Examples
 
         DSP dspLowpass, dspHighpass, dspEcho, dspFlange;
 
+        ChannelGroup Master;
+
         public EffectsExample() : base("Fmod Effects Example")
         {
             RegisterCommand(ConsoleKey.Spacebar, () =>
@@ -87,14 +89,14 @@ namespace Examples
 
                 char lp, hp, e, f;
 
-                lp = dspLowpass.Bypass ? ' ' : 'x';
+                lp = dspLowpass.Bypass  ? ' ' : 'x';
                 hp = dspHighpass.Bypass ? ' ' : 'x';
-                e = dspEcho.Bypass ? ' ' : 'x';
-                f = dspFlange.Bypass ? ' ' : 'x';
+                e  = dspEcho.Bypass     ? ' ' : 'x';
+                f  = dspFlange.Bypass   ? ' ' : 'x';
 
                 DrawText("==================================================");
                 DrawText("Effects Example");
-                DrawText();
+                DrawText("");
                 DrawText("==================================================");
                 DrawText();
                 DrawText("Press Space to toggle pause sound");
