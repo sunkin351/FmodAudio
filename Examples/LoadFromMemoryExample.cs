@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -50,8 +50,6 @@ namespace Examples
             do
             {
                 OnUpdate();
-
-                ProcessInput();
 
                 System.Update();
 

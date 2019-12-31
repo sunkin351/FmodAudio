@@ -85,8 +85,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
 
                 reverbConnection.Mix = wetVolume;

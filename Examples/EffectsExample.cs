@@ -67,8 +67,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
                 bool Paused = true;
 

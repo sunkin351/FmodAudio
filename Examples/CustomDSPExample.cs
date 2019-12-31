@@ -239,8 +239,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 bool bypass = dsp.Bypass;
 
                 System.Update();

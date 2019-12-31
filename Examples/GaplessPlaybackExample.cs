@@ -155,8 +155,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
 
                 System.GetChannelsPlaying(out int playing, out _);

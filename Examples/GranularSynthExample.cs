@@ -79,8 +79,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
 
                 var res = Fmod.Library.ChannelGroup_IsPlaying(Channels[Slot].Handle, out bool isPlaying);

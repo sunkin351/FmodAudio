@@ -44,6 +44,8 @@ namespace Examples.Base
         protected void OnUpdate()
         {
             ConsoleHelpers.SetCursorRow(ConsoleUpdateStart);
+
+            ProcessInput();
         }
         
         protected static void DrawText()
