@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -119,60 +119,6 @@ namespace Examples
             Sound3?.Dispose();
 
             base.Dispose();
-        }
-
-        private static void DrawTime(int ms, int totalms)
-        {
-            const string PreText = "Time: ";
-
-            Span<char> buffer = stackalloc char[50];
-
-            PreText.AsSpan().CopyTo(buffer);
-
-            int count = RenderTime(ms, buffer.Slice(PreText.Length));
-
-            buffer[PreText.Length + count] = '/';
-            count += 1;
-
-            count += RenderTime(totalms, buffer.Slice(PreText.Length + count));
-
-            DrawText(buffer.Slice(0, PreText.Length + count));
-        }
-
-        private static int RenderTime(int ms, Span<char> buffer)
-        {
-            if (ms < 0)
-                throw new ArgumentOutOfRangeException(nameof(ms));
-
-            int total = 0;
-
-            var seconds = Math.DivRem(ms, 1000, out ms);
-
-            var minutes = Math.DivRem(seconds, 60, out seconds);
-
-            int count;
-            if (minutes != 0)
-            {
-                minutes.TryFormat(buffer, out count);
-
-                buffer[count] = ':';
-                buffer = buffer.Slice(count + 1);
-
-                total += count + 1;
-            }
-
-            seconds.TryFormat(buffer, out count);
-
-            buffer[count] = '.';
-            buffer = buffer.Slice(count + 1);
-
-            total += count + 1;
-
-            ms.TryFormat(buffer, out count);
-
-            total += count;
-
-            return total;
         }
     }
 }
