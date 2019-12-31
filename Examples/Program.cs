@@ -26,6 +26,7 @@ namespace Examples
                 typeof(GenerateToneExample),
                 typeof(GranularSynthExample),
                 typeof(LoadFromMemoryExample),
+                typeof(MultipleSpeakerExample),
                 typeof(RecordExample)
             };
 
@@ -42,6 +43,7 @@ namespace Examples
                 "Generate Tone Example",
                 "Granular Synth Example",
                 "Load From Memory Exmaple",
+                "Multiple Speaker Example",
                 "Record Example"
             };
 
