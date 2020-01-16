@@ -39,13 +39,6 @@ namespace Examples
         {
             Debug.Assert(inChannels == outChannels);
 
-            if (state->plugindata == default)
-            {
-                new Span<byte>((void*)inBuffer, (int)length).CopyTo(new Span<byte>((void*)outBuffer, (int)length));
-
-                return Result.Ok;
-            }
-
             ref MyDSPData data = ref AsRef<MyDSPData>(state->plugindata);
 
             int LengthInFloats = (int)length / sizeof(float);
@@ -75,11 +68,6 @@ namespace Examples
 
         static unsafe Result MyDSPCreateCallback(DspState* state)
         {
-            if (state->plugindata != default)
-            {
-                return Result.Ok;
-            }
-
             //Writing this method sure felt like I was using C...
             var functions = state->Functions;
             var res = functions->GetBlockSize.Invoke(state, out uint blockSize);
