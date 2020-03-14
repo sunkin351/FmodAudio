@@ -55,6 +55,7 @@ namespace FmodAudio
             }
         }
 
+        [Obsolete]
         public unsafe IntPtr UserData
         {
             get

@@ -234,6 +234,7 @@ namespace FmodAudio.Dsp
 
             public IntPtr ShouldIProcess;
 
+            [Obsolete]
             public IntPtr UserData;
 
             public IntPtr SystemRegister;

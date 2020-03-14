@@ -519,6 +519,7 @@ namespace FmodAudio
             library.ChannelGroup_Get3DDistanceFilter(Handle, out custom, out customLevel, out centerFreq).CheckResult();
         }
 
+        [Obsolete]
         public IntPtr UserData
         {
             get

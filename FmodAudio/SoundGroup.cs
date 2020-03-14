@@ -116,6 +116,7 @@ namespace FmodAudio
             }
         }
 
+        [Obsolete]
         public IntPtr UserData
         {
             get

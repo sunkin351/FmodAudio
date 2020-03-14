@@ -145,6 +145,7 @@ namespace FmodAudio
             return TrySave(buffer, out _);
         }
 
+        [Obsolete]
         public IntPtr UserData
         {
             get

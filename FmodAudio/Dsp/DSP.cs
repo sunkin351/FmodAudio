@@ -115,6 +115,7 @@ namespace FmodAudio.Dsp
             }
         }
 
+        [Obsolete("DSP UserData pointer is used for the Managed Object's GCHandle, setting it will break managed library code and is deprecated. Refer to the Custom DSP Example for more information.", true)]
         public IntPtr UserData
         {
             get
