@@ -46,7 +46,7 @@ namespace Examples
 
             protected override Result Create(DspState* state)
             {
-                var res = state->Functions->GetBlockSize.Invoke(state, out uint size);
+                var res = state->GetBlockSize(out uint size);
 
                 if (res != Result.Ok)
                 {
@@ -66,48 +66,42 @@ namespace Examples
             }
 
             // A little look into C# intrinsics, .NET Core 3+ only
-            private static void AdjustVolumeAllSamples(float* inbuffer, float* outbuffer, uint length, float volume)
+            private static void AdjustVolumeAllSamples(float* inbuffer, float* outbuffer, int length, float volume)
             {
-                uint i = 0;
+                int i = 0;
 
                 if (Avx.IsSupported)
                 {
                     Vector256<float> volVec = Vector256.Create(volume);
 
-                    uint vectorElementLength = (uint)Vector256<float>.Count;
-
-                    while (length - i >= vectorElementLength)
+                    while (length - i >= Vector256<float>.Count)
                     {
                         Vector256<float> tmp = Avx.Multiply(volVec, Avx.LoadVector256(inbuffer + i)); //Load from input, multiply by volume
 
                         Avx.Store(outbuffer + i, tmp); //Store in output
 
-                        i += vectorElementLength;
+                        i += Vector256<float>.Count; //Increment index by the number of vector elements
                     }
 
-                    vectorElementLength = (uint)Vector128<float>.Count;
-
-                    if (length - i >= vectorElementLength)
+                    if (length - i >= Vector128<float>.Count)
                     {
                         Vector128<float> tmp = Sse.Multiply(volVec.GetLower(), Sse.LoadVector128(inbuffer + i));
                         Sse.Store(outbuffer + i, tmp);
 
-                        i += vectorElementLength;
+                        i += Vector128<float>.Count;
                     }
                 }
                 else if (Sse.IsSupported)
                 {
                     Vector128<float> volVec = Vector128.Create(volume); //Broadcast the volume value across all vector elements
 
-                    uint vectorElementLength = (uint)Vector128<float>.Count;
-
-                    while (length - i >= vectorElementLength)
+                    while (length - i >= Vector128<float>.Count)
                     {
                         Vector128<float> tmp = Sse.Multiply(volVec, Sse.LoadVector128(inbuffer + i)); //Load from input, multiply by volume
 
                         Sse.Store(outbuffer + i, tmp); //Store in output
 
-                        i += vectorElementLength;
+                        i += Vector128<float>.Count;
                     }
                 }
 
@@ -121,21 +115,27 @@ namespace Examples
 
             protected override unsafe Result Read(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
             {
-                if (this.volumeLinear != 1f)
-                {
-                    AdjustVolumeAllSamples(inBuffer, outBuffer, length, this.volumeLinear);
-                }
-                else
-                {
-                    new Span<float>(inBuffer, (int)length).CopyTo(new Span<float>(outBuffer, (int)length));
-                }
+                Debug.Assert(inChannels == outChannels);
 
-                if (inChannels <= 8)
-                {
-                    var outSpan = new Span<float>(outBuffer, (int)length);
+                int lengthInFloats = (int)length * inChannels;
 
-                    outSpan.CopyTo(this.buffer);
-                    this.channels = inChannels;
+                AdjustVolumeAllSamples(inBuffer, outBuffer, lengthInFloats, this.volumeLinear);
+
+                if (inChannels <= 8 && this.DspLock.TryEnterWriteLock(0))
+                {
+                    try
+                    {
+                        var outSpan = new Span<float>(outBuffer, lengthInFloats);
+
+                        outSpan.CopyTo(this.buffer);
+
+                        this.channels = inChannels;
+                        this.lengthSamples = (int)length;
+                    }
+                    finally
+                    {
+                        this.DspLock.ExitWriteLock();
+                    }
                 }
 
                 return Result.Ok;
@@ -269,7 +269,7 @@ namespace Examples
 
                 var data = dsp.Data;
 
-                string volstr = dsp.Volume.ToString("N1");
+                string volstr = (dsp.Volume * 100).ToString("N1");
 
                 DrawText("==================================================");
                 DrawText("Custom DSP Example.");
@@ -288,7 +288,18 @@ namespace Examples
                 {
                     Debug.Assert((uint)dsp.Channels <= 10);
 
-                    float[] levels = DetermineChannelLevels(data, dsp.Channels, dsp.LengthSamples);
+                    float[] levels;
+
+                    dsp.DspLock.EnterReadLock();
+
+                    try
+                    {
+                        levels = DetermineChannelLevels(data, dsp.Channels, dsp.LengthSamples);
+                    }
+                    finally
+                    {
+                        dsp.DspLock.ExitReadLock();
+                    }
 
                     int channel = 0;
 
@@ -323,16 +334,9 @@ namespace Examples
             base.Dispose();
         }
 
-        private static void AdjustVolume(DSP dsp, float adjustment)
+        private static void AdjustVolume(MyCustomDSP dsp, float adjustment)
         {
-            var vol = dsp.GetParameterFloat(1);
-
-            var vol2 = Math.Clamp(vol + adjustment, 0, 1);
-
-            if (vol != vol2) //Optimization
-            {
-                dsp.SetParameterFloat(1, vol2);
-            }
+            dsp.Volume = Math.Clamp(dsp.Volume + adjustment, 0, 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
