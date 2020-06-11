@@ -1,37 +1,40 @@
 using System;
 using System.Text;
+using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace FmodAudio.Dsp
 {
     using FmodAudio.Interop;
-    public sealed class DSP : HandleBase
+    public unsafe abstract partial class DSP : HandleBase
     {
-        private readonly NativeLibrary library;
+        protected static NativeLibrary library = Fmod.Library;
 
-        public FmodSystem SystemObject { get; }
-        internal DspDescription Description;
-        int? ParamCount;
-        readonly bool OwnsHandle;
-
-        internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle = true) : base(handle)
+        internal static DSP GetDSPByHandle(FmodSystem system, IntPtr dsp)
         {
-            SystemObject = sys;
-            library = sys.library;
-            OwnsHandle = ownsHandle;
+            library.DSP_GetUserData(dsp, out IntPtr udata).CheckResult();
 
-            if (!ownsHandle)
+            if (udata == default)
             {
-                GC.SuppressFinalize(this);
+                return new SystemDefinedDsp(system, dsp);
             }
+
+            var handle = GCHandle.FromIntPtr(udata);
+
+            return (DSP)handle.Target;
         }
 
-        protected override void ReleaseImpl()
+        public FmodSystem SystemObject { get; }
+
+        internal DSP(FmodSystem sys)
         {
-            if (OwnsHandle)
-            {
-                this.DisconnectAll(true, true);
-                SystemObject.ReleaseDSP(Handle);
-            }
+            SystemObject = sys;
+        }
+
+        internal DSP(FmodSystem sys, IntPtr handle) : base (handle)
+        {
+            this.SystemObject = sys;
         }
 
         public int InputCount
@@ -78,30 +81,13 @@ namespace FmodAudio.Dsp
             }
         }
 
-        public int ParameterCount
-        {
-            get
-            {
-                if (Description != null)
-                {
-                    return Description.ParameterCount;
-                }
-
-                if (ParamCount is null)
-                {
-                    library.DSP_GetNumParameters(Handle, out int paramCount).CheckResult();
-                    ParamCount = paramCount;
-                }
-                
-                return ParamCount.Value;
-            }
-        }
+        public abstract int ParameterCount { get; }
 
         public DSPType Type
         {
             get
             {
-                library.DSP_GetType(Handle, out var type).CheckResult();
+                library.DSP_GetType(this.Handle, out var type).CheckResult();
                 return type;
             }
         }
@@ -120,13 +106,12 @@ namespace FmodAudio.Dsp
         {
             get
             {
-                library.DSP_GetUserData(Handle, out IntPtr value).CheckResult();
-                return value;
+                throw new NotSupportedException();
             }
 
             set
             {
-                library.DSP_SetUserData(Handle, value).CheckResult();
+                throw new NotSupportedException();
             }
         }
 
@@ -152,7 +137,7 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetInput(Handle, index, out IntPtr input, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(input, false);
+            var dsp = GetDSPByHandle(this.SystemObject, input);
             var con = new DSPConnection(SystemObject, connection);
             return (dsp, con);
         }
@@ -161,7 +146,7 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetOutput(Handle, index, out IntPtr output, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(output, false);
+            var dsp = GetDSPByHandle(this.SystemObject, output);
             var con = new DSPConnection(SystemObject, connection);
             return (dsp, con);
         }
@@ -198,7 +183,7 @@ namespace FmodAudio.Dsp
 
         private void CheckParamIndex(int index)
         {
-            if ((uint)index >= (uint)ParameterCount)
+            if ((uint)index >= (uint)this.ParameterCount)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -258,21 +243,7 @@ namespace FmodAudio.Dsp
             return data;
         }
 
-        public unsafe ParameterDescription GetParameterInfo(int index)
-        {
-            CheckParamIndex(index);
-
-            if (Description != null)
-            {
-                return Description.ParameterDescriptions[index];
-            }
-
-            Interop.ParameterDescriptionStruct* ptr;
-
-            library.DSP_GetParameterInfo(Handle, index, &ptr).CheckResult();
-
-            return ParameterDescription.CreateFromPointer(ptr);
-        }
+        public abstract ParameterDescription GetParameterInfo(int index);
 
         public int GetDataParameterIndex(int dataType)
         {

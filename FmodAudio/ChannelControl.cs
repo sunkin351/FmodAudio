@@ -316,14 +316,14 @@ namespace FmodAudio
         {
             library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
 
-            return SystemObject.GetDSP(handle, false);
+            return DSP.GetDSPByHandle(this.SystemObject, handle);
         }
 
         public DSP GetDSP(ChannelControlDSPIndex index)
         {
             library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
 
-            return SystemObject.GetDSP(handle, false);
+            return DSP.GetDSPByHandle(this.SystemObject, handle);
         }
 
         public void AddDSP(int index, DSP dsp)

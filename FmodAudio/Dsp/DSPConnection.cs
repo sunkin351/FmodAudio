@@ -21,7 +21,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetInput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle, false);
+                return DSP.GetDSPByHandle(this.system, handle);
             }
         }
 
@@ -31,7 +31,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetOutput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle, false);
+                return DSP.GetDSPByHandle(this.system, handle);
             }
         }
 
@@ -58,6 +58,7 @@ namespace FmodAudio.Dsp
             }
         }
 
+        [Obsolete]
         public IntPtr UserData
         {
             get

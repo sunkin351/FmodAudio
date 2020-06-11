@@ -1,7 +1,7 @@
-﻿using AdvancedDLSupport;
-using System;
-using System.Runtime.InteropServices;
+﻿using System;
 using System.Numerics;
+using AdvancedDLSupport;
+
 namespace FmodAudio.Interop
 {
     using Codec;

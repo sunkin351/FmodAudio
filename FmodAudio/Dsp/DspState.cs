@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace FmodAudio.Dsp
@@ -48,5 +49,68 @@ namespace FmodAudio.Dsp
         /// [r] FMOD::System object index, relating to the System object that created this DSP.
         /// </summary>
         public readonly int SystemObjectIndex;
+
+        public IntPtr Allocate(uint size, MemoryType type, IntPtr sourceString)
+        {
+            return Functions->Alloc.Invoke(size, type, sourceString);
+        }
+
+        public IntPtr Reallocate(IntPtr ptr, uint size, MemoryType type, IntPtr sourceString)
+        {
+            return Functions->Realloc.Invoke(ptr, size, type, sourceString);
+        }
+
+        public void Free(IntPtr ptr, MemoryType type, IntPtr sourceString)
+        {
+            Functions->Free.Invoke(ptr, type, sourceString);
+        }
+
+        public Result GetSampleRate(out int sampleRate)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetSampleRate.Invoke(ThisPtr, out sampleRate);
+        }
+
+        public Result GetBlockSize(out uint size)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetBlockSize.Invoke(ThisPtr, out size);
+        }
+
+        public Result GetSpeakerMode(out SpeakerMode mixer, out SpeakerMode output)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetSpeakerMode.Invoke(ThisPtr, out mixer, out output);
+        }
+
+        public Result GetDspClock(out ulong clock, out uint offset, out uint length)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetDSPClock.Invoke(ThisPtr, out clock, out offset, out length);
+        }
+
+        public Result ListenerAttributes(out int listenerCount, out Attributes3D attributes)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetListenerAttributes.Invoke(ThisPtr, out listenerCount, out attributes);
+        }
+
+        internal Result GetUserData(out IntPtr userData)
+        {
+            // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
+            var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);
+
+            return Functions->GetUserData.Invoke(ThisPtr, out userData);
+        }
     }
 }

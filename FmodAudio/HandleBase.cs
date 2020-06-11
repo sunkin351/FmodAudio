@@ -6,7 +6,7 @@ namespace FmodAudio
 {
     public abstract class HandleBase : IDisposable
     {
-        private IntPtr handle;
+        internal IntPtr handle;
 
         public IntPtr Handle => handle;
 

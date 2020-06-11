@@ -273,7 +273,7 @@ namespace FmodAudio.Dsp
             return (DspDescription)this.MemberwiseClone();
         }
 
-        private sealed class ParameterDescriptionManager
+        internal sealed class ParameterDescriptionManager
         {
             private readonly IntPtr ptrArray, descArray;
             private readonly int length;

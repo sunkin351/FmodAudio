@@ -120,40 +120,40 @@ namespace FmodAudio
             ChannelGroupLookup.TryRemove(handle, out _);
         }
 
-        internal Dsp.DSP GetDSP(IntPtr handle, bool ownsObjectIfNotFound = true)
-        {
-            if (handle == IntPtr.Zero)
-                return null;
+        //internal Dsp.DSP GetDSP(IntPtr handle, bool ownsObjectIfNotFound = true)
+        //{
+        //    if (handle == IntPtr.Zero)
+        //        return null;
 
-            DSP dsp;
+        //    DSP dsp;
 
-            if (DSPLookup.TryGetValue(handle, out var wref))
-            {
-                if (wref.TryGetTarget(out dsp))
-                {
-                    return dsp;
-                }
+        //    if (DSPLookup.TryGetValue(handle, out var wref))
+        //    {
+        //        if (wref.TryGetTarget(out dsp))
+        //        {
+        //            return dsp;
+        //        }
 
-                goto InvalidState;
-            }
+        //        goto InvalidState;
+        //    }
 
-            dsp = new DSP(this, handle, ownsObjectIfNotFound);
+        //    dsp = new DSP(this, handle, ownsObjectIfNotFound);
 
-            if (ownsObjectIfNotFound)
-            {
-                if (DSPLookup.TryAdd(handle, new WeakReference<DSP>(dsp)))
-                {
-                    return dsp;
-                }
-            }
-            else
-            {
-                return dsp;
-            }
+        //    if (ownsObjectIfNotFound)
+        //    {
+        //        if (DSPLookup.TryAdd(handle, new WeakReference<DSP>(dsp)))
+        //        {
+        //            return dsp;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return dsp;
+        //    }
 
-            InvalidState:
-            throw new InvalidOperationException();
-        }
+        //    InvalidState:
+        //    throw new InvalidOperationException();
+        //}
 
         internal void ReleaseDSP(IntPtr handle)
         {

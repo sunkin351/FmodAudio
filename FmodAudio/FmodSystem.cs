@@ -2,22 +2,17 @@
 #pragma warning disable IDE1006
 
 using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace FmodAudio
 {
-    using Interop;
     using Dsp;
+    using Interop;
 
     public unsafe sealed partial class FmodSystem : HandleBase
     {
-        
-
         internal const int MaxInteropNameStringLength = 200;
 
         /// <summary>
@@ -207,15 +202,8 @@ namespace FmodAudio
         {
             IntPtr handle = default;
             library.System_CreateDSPByPlugin(Handle, plugin.Handle, &handle).CheckResult();
-            
-            var dsp = GetDSP(handle);
 
-            if (UserRegisteredDSPs.TryGetValue(plugin, out var value))
-            {
-                dsp.Description = value;
-            }
-
-            return dsp;
+            return new SystemDefinedDsp(this, handle);
         }
 
         public DspDescription.Structure* GetDSPInfoByPlugin(Plugin plugin)
@@ -403,13 +391,13 @@ namespace FmodAudio
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            library.System_GetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
+            library.System_GetAdvancedSettings(Handle, settings).CheckResult();
         }
 
         public AdvancedSettings GetAdvancedSettings()
         {
             var settings = new AdvancedSettings();
-            library.System_GetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
+            library.System_GetAdvancedSettings(Handle, settings).CheckResult();
             return settings;
         }
 
@@ -457,8 +445,8 @@ namespace FmodAudio
                     case SystemCallbackType.BadDSPConnection:
                         if (BadDSPConnection != null)
                         {
-                            var target = new DSP(this, ptr1, false);
-                            var source = new DSP(this, ptr2, false);
+                            var target = DSP.GetDSPByHandle(this, ptr1);
+                            var source = DSP.GetDSPByHandle(this, ptr2);
                             BadDSPConnection(target, source);
                         }
                         break;
@@ -757,23 +745,24 @@ namespace FmodAudio
             return GetSound(handle);
         }
 
+        [Obsolete("Refer to the Custom DSP Example")]
         public unsafe DSP CreateDSP(DspDescription description)
         {
             IntPtr handle;
             library.System_CreateDSP(Handle, description, &handle).CheckResult();
 
-            var dsp = GetDSP(handle);
-
-            dsp.Description = description;
-
-            return dsp;
+            return new SystemDefinedDsp(this, handle, true)
+            {
+                Description = description
+            };
         }
 
         public DSP CreateDSPByType(DSPType type)
         {
             IntPtr handle = default;
             library.System_CreateDSPByType(Handle, type, &handle).CheckResult();
-            return GetDSP(handle);
+
+            return new SystemDefinedDsp(this, handle, true);
         }
         
         public unsafe ChannelGroup CreateChannelGroup(string name)
@@ -918,7 +907,7 @@ namespace FmodAudio
         {
             IntPtr handle;
             library.System_CreateReverb3D(Handle, &handle).CheckResult();
-            return new Reverb3D(handle, library);
+            return new Reverb3D(handle);
         }
 
         public float GeomatryWorldSize

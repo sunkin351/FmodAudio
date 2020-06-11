@@ -11,7 +11,7 @@ namespace FmodAudio.Dsp
         public int BufferCount;
         public int* BufferChannelCount;
         public ChannelMask* BufferChannelMask;
-        public IntPtr* Buffers;
+        public float** Buffers;
         public SpeakerMode SpeakerMode;
     }
 }
