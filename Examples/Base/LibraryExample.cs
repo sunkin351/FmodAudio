@@ -1,10 +1,8 @@
-using FmodAudio;
 using System;
-using System.IO;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Threading;
+using FmodAudio;
 
 namespace Examples.Base
 {
