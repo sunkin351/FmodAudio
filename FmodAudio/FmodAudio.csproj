@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.10.0</Version>
+    <Version>1.0.0-Preview-1</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -12,15 +12,11 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Description>Wrapper Library for the Fmod Core API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Bug Fixing Spree. A Bug of notable concern was an exception being thrown from within the FmodHelpers class Type Initializer, this has been fixed.
+    <PackageReleaseNotes>Greatly simplifies creating a custom DSP for those using FMOD's DSP api. You can now simply inherit from `FmodAudio.Dsp.UserDefinedDSP` and overload the methods you wish FMOD to use.
 
-API additions were made to FmodSystem and ChannelControl.
-FmodSystem:
-    The RegisterCodec() method has now been Exposed.
-ChannelControl:
-    An overload was added to GetOutput(), and a parameter of SetOutput() was [made optional/given a default value].
+Various other changes and fixes have been implemented as well.
 
-On a side note, I've noticed a lot of downloads of this library, and not one of those who have downloaded it pointed out to me that there was a problem with FmodHelpers, the above mentioned issue. C'mon guys, I want those bug reports so I can further improve my library. Don't just go back to the last known working release, contact me about your issues... (Bug reports can be filed on the project Github Repository)</PackageReleaseNotes>
+As Always, please log an issue on the github repo if you run into any issues.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
