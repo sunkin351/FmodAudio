@@ -6,6 +6,8 @@ This wrapper was written for .NET Core 2.1 and above.
 
 This wrapper is now downloadable as a nuget package. https://www.nuget.org/packages/FmodAudio
 
+Update: 1.0.0-Preview-1 has been released on nugget, feel free to try it out.
+
 In order to use this wrapper, you will need to download the FMOD native binaries from https://www.fmod.com/download
 
 If you find a bug, or have a feature request, please file an issue on github, and I'll review it as soon as possible. If you wish to contribute, see `CONTRIBUTING.md`

@@ -59,6 +59,12 @@ namespace Examples
                 return Result.Ok;
             }
 
+            protected override unsafe Result Release(DspState* state)
+            {
+                DspLock.Dispose();
+                return Result.Ok;
+            }
+
             protected override Result Reset(DspState* state)
             {
                 this.buffer.AsSpan().Clear();
