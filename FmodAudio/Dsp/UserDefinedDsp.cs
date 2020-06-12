@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1031, IDE1006, CS0612
+#pragma warning disable CA1031, IDE1006, CS0612
 using System;
 using System.Runtime.InteropServices;
 
@@ -497,13 +497,13 @@ namespace FmodAudio.Dsp
 
         public override int ParameterCount => throw new NotImplementedException();
 
-        protected UserDefinedDsp(FmodSystem sys, string name, FmodVersion version, int inputBufferCount, int outputBufferCount, ParameterDescription[] descriptions, DSPProcessType processType) : base(sys)
+        protected UserDefinedDsp(FmodSystem sys, string name, FmodVersion pluginVersion, int inputBufferCount, int outputBufferCount, ParameterDescription[] descriptions, DSPProcessType processType) : base(sys)
         {
             var createStruct = DspCreateStructure;
 
             createStruct.InputBufferCount = inputBufferCount;
             createStruct.OutputBufferCount = outputBufferCount;
-            createStruct.Version = version;
+            createStruct.Version = pluginVersion;
             createStruct.PluginSDKVersion = Fmod.PluginSDKVersion;
             createStruct.Name = name;
 
