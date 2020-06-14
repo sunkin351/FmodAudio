@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+#nullable enable
+
 namespace FmodAudio
 {
     public sealed class Sound : HandleBase
@@ -11,13 +13,13 @@ namespace FmodAudio
 
         public FmodSystem SystemObject { get; }
 
-        public Sound Parent { get; internal set; } = null;
+        public Sound? Parent { get; internal set; } = null;
 
         private string name;
         private int? SubsoundCount;
         private Memory.SaferPointer CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
         private readonly List<Sound> Subsounds = new List<Sound>();
-        public SoundGroup soundGroup = null;
+        internal SoundGroup? soundGroup = null;
 
         internal Sound(FmodSystem sys, IntPtr inst) : base(inst)
         {
