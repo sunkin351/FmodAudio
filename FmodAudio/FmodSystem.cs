@@ -112,9 +112,9 @@ namespace FmodAudio
             if (!SystemOpen)
                 return;
 
-            library.System_Close(Handle).CheckResult();
-
             CleanupMasterGroups();
+
+            library.System_Close(Handle).CheckResult();
 
             SystemOpen = false;
         }
