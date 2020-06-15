@@ -1,18 +1,17 @@
-﻿using System;
+using System;
+using FmodAudio.Interop;
 
 namespace FmodAudio.Dsp
-{
-    using global::FmodAudio.Interop;
-    public sealed class DSPConnection : HandleBase
+{   
+    public readonly struct DSPConnection
     {
-        private readonly NativeLibrary library;
+        private static readonly NativeLibrary library = Fmod.Library;
 
-        private readonly FmodSystem system;
+        internal readonly IntPtr Handle;
 
-        internal DSPConnection(FmodSystem sys, IntPtr handle) : base(handle)
+        internal DSPConnection(IntPtr handle)
         {
-            system = sys;
-            library = sys.library;
+            Handle = handle;
         }
         
         public DSP Input
