@@ -59,9 +59,14 @@ namespace FmodAudio
 
             if (count != 0)
             {
-                Subsounds.Capacity = count;
+                Subsounds = new List<Sound>(count);
 
+                for (int i = 0; i < count; ++i)
+                {
+                    library.Sound_GetSubSound(Handle, i, out IntPtr subsoundHandle).CheckResult();
 
+                    Subsounds.Add(new Sound(sys, subsoundHandle, false) { Parent = this });
+                }
             }
         }
 
@@ -162,42 +167,35 @@ namespace FmodAudio
         {
             get
             {
-                if (!SubsoundCount.HasValue)
+                if (Subsounds != null)
                 {
-                    library.Sound_GetNumSubSounds(Handle, out int number).CheckResult();
-
-                    SubsoundCount = number;
-
-                    return number;
+                    return Subsounds.Count;
                 }
 
-                return SubsoundCount.Value;
+                library.Sound_GetNumSubSounds(Handle, out int number).CheckResult();
+
+                return number;
             }
         }
 
         public Sound GetSubSound(int index)
         {
+            if (Subsounds != null)
+            {
+                return Subsounds[index];
+            }
+
             int total = SubSoundCount;
 
-            if (index >= total || index < 0)
+            if ((uint)index >= (uint)total)
                 throw new ArgumentOutOfRangeException(nameof(index));
             
             library.Sound_GetSubSound(Handle, index, out IntPtr handle).CheckResult();
 
-            var tmp = new Sound(SystemObject, handle, false);
-
-            tmp.Parent = this;
-            
-            int count = Subsounds.Count;
-            if (count < total)
+            return new Sound(SystemObject, handle, false)
             {
-                Subsounds.Capacity = total;
-                Subsounds.AddRange(Enumerable.Repeat(default(Sound), count == 0 ? total : total - count));
-            }
-
-            Subsounds[index] = tmp;
-
-            return tmp;
+                Parent = this
+            };
         }
 
         public unsafe string Name
