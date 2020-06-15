@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -114,7 +114,7 @@ namespace Examples
                 //process remaining, if any
                 while (i < length)
                 {
-                    outbuffer[i] = inbuffer[i] * volume;
+                    outbuffer[i] = volume * inbuffer[i];
                     i += 1;
                 }
             }
