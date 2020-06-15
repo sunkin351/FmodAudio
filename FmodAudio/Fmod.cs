@@ -122,7 +122,6 @@ namespace FmodAudio
         }, LazyThreadSafetyMode.ExecutionAndPublication);
 
         internal static readonly object CreationSyncObject = new object();
-        private static readonly object InitSyncObject = new object();
 
         private static DebugCallback DebugCallbackReference;
 
@@ -147,37 +146,6 @@ namespace FmodAudio
             }    
         }
 
-        internal static readonly ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>> SystemLookup = new ConcurrentDictionary<IntPtr, WeakReference<FmodSystem>>();
-
-        internal static bool TryGetSystem(IntPtr handle, out FmodSystem system)
-        {
-            if (SystemLookup.TryGetValue(handle, out var wref))
-            {
-                if (wref.TryGetTarget(out system))
-                {
-                    return true;
-                }
-
-                goto InvalidState;
-            }
-
-            system = null;
-            return false;
-
-            InvalidState:
-            throw new InvalidOperationException();
-        }
-
-        internal static FmodSystem GetSystem(IntPtr handle)
-        {
-            if (!TryGetSystem(handle, out var system))
-            {
-                throw new ArgumentException("Invalid system handle");
-            }
-
-            return system;
-        }
-
         public unsafe static FmodSystem CreateSystem()
         {
             IntPtr handle;
@@ -187,13 +155,7 @@ namespace FmodAudio
                 Library.System_Create(&handle).CheckResult();
             }
 
-            var sys = new FmodSystem(Library, handle);
-
-            var tmp = SystemLookup.TryAdd(handle, new WeakReference<FmodSystem>(sys));
-
-            Debug.Assert(tmp);
-
-            return sys;
+            return new FmodSystem(handle);
         }
 
         public static class Memory

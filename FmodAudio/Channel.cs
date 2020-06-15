@@ -2,11 +2,19 @@ using System;
 
 namespace FmodAudio
 {
-    public sealed class Channel : ChannelControl
+    public sealed unsafe class Channel : ChannelControl
     {
-        internal Channel(FmodSystem system, IntPtr handle) : base(system, handle)
+        internal static Channel FromHandle(IntPtr handle)
         {
-            GC.SuppressFinalize(this); //Channels do not need to be released, and thus don't need finalizer.
+            Fmod.Library.ChannelGroup_GetSystemObject(handle, out IntPtr sysHandle).CheckResult();
+
+            var system = FmodSystem.FromHandle(sysHandle);
+
+            return new Channel(system, handle);
+        }
+
+        internal Channel(FmodSystem system, IntPtr handle) : base(system, handle, false)
+        {
         }
 
         #region Channel-Specific Control Functionality
@@ -15,7 +23,8 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetFrequency(Handle, out float value).CheckResult();
+                float value;
+                library.Channel_GetFrequency(Handle, &value).CheckResult();
 
                 return value;
             }
@@ -30,7 +39,8 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetPriority(Handle, out int value).CheckResult();
+                int value;
+                library.Channel_GetPriority(Handle, &value).CheckResult();
 
                 return value;
             }
@@ -57,9 +67,10 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetChannelGroup(Handle, out IntPtr handle).CheckResult();
+                IntPtr handle;
+                library.Channel_GetChannelGroup(Handle, &handle).CheckResult();
 
-                return SystemObject.GetChannelGroup(handle);
+                return handle == default ? null : (ChannelGroup.FromHandle(handle) ?? new ChannelGroup(SystemObject, handle, false));
             }
 
             set
@@ -72,7 +83,8 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetLoopCount(Handle, out int value).CheckResult();
+                int value;
+                library.Channel_GetLoopCount(Handle, &value).CheckResult();
 
                 return value;
             }
@@ -111,9 +123,10 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetCurrentSound(Handle, out IntPtr handle).CheckResult();
+                IntPtr handle;
+                library.Channel_GetCurrentSound(Handle, &handle).CheckResult();
 
-                return SystemObject.GetSound(handle);
+                return Sound.FromNewHandle(SystemObject, handle, false);
             }
         }
 
@@ -121,7 +134,8 @@ namespace FmodAudio
         {
             get
             {
-                library.Channel_GetIndex(Handle, out int value).CheckResult();
+                int value;
+                library.Channel_GetIndex(Handle, &value).CheckResult();
 
                 return value;
             }

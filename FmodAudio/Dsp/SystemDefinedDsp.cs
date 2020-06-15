@@ -12,25 +12,12 @@ namespace FmodAudio.Dsp
         internal DspDescription? Description;
         private readonly bool OwnHandle = false;
 
-        public SystemDefinedDsp(FmodSystem sys, IntPtr handle) : base(sys, handle)
+        public SystemDefinedDsp(FmodSystem sys, IntPtr handle) : base(sys, handle, false)
         {
-            GC.SuppressFinalize(this);
         }
 
-        public SystemDefinedDsp(FmodSystem sys, IntPtr handle, bool ownsHandle) : base (sys, handle)
+        public SystemDefinedDsp(FmodSystem sys, IntPtr handle, bool ownsHandle) : base (sys, handle, ownsHandle)
         {
-            if (!ownsHandle)
-            {
-                GC.SuppressFinalize(this);
-            }
-            else
-            {
-                var gcHandle = FmodHelpers.CreateGCHandle(this);
-
-                library.DSP_SetUserData(this.Handle, GCHandle.ToIntPtr(gcHandle)).CheckResult();
-            }
-
-            this.OwnHandle = ownsHandle;
         }
 
         public override int ParameterCount

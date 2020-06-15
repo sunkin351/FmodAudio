@@ -11,7 +11,7 @@ namespace FmodAudio
     {
         private static readonly NativeLibrary library = Fmod.Library;
 
-        internal Reverb3D(IntPtr handle) : base(handle)
+        internal Reverb3D(IntPtr handle) : base(handle, true)
         {
         }
 
@@ -54,19 +54,18 @@ namespace FmodAudio
             }
         }
 
-        [Obsolete]
-        public unsafe IntPtr UserData
+        internal override unsafe IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                library.Reverb3D_GetUserData(Handle, &value).CheckResult();
+                Fmod.UserDataMethods.Reverb3D_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                library.Reverb3D_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.Reverb3D_SetUserData(Handle, value).CheckResult();
             }
         }
     }

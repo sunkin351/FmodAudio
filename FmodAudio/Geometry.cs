@@ -1,18 +1,37 @@
-#pragma warning disable IDE0059
+﻿#pragma warning disable IDE0059
 
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
     using Interop;
+
     public class Geometry : HandleBase
     {
-        private readonly NativeLibrary library;
-
-        internal Geometry(IntPtr handle, NativeLibrary lib) : base(handle)
+        internal static unsafe Geometry FromHandle(IntPtr handle)
         {
-            library = lib;
+            IntPtr value;
+            Fmod.UserDataMethods.Geometry_GetUserData(handle, &value).CheckResult();
+
+            if (value != default)
+            {
+                var gchandle = (GCHandle)value;
+
+                Debug.Assert(gchandle.IsAllocated && gchandle.Target is Geometry);
+
+                return (Geometry)gchandle.Target;
+            }
+
+            return new Geometry(handle, false);
+        }
+
+        private readonly NativeLibrary library = Fmod.Library;
+
+        internal Geometry(IntPtr handle, bool ownsHandle = true) : base(handle, ownsHandle)
+        {
         }
 
         protected override void ReleaseImpl()
@@ -24,20 +43,21 @@ namespace FmodAudio
         {
             int polyIndex;
 
-            if (vertices.IsEmpty)
+            if (vertices.Length < 3)
             {
-                throw new ArgumentException("Vertex count is 0", nameof(vertices));
+                throw new ArgumentException("Vertex count is less than 3", nameof(vertices));
             }
 
             library.Geometry_AddPolygon(Handle, directOcclusion, reverbOcclusion, doubleSided, vertices, &polyIndex).CheckResult();
             return polyIndex;
         }
 
-        public int PolygonCount
+        public unsafe int PolygonCount
         {
             get
             {
-                library.Geometry_GetNumPolygons(Handle, out int value).CheckResult();
+                int value;
+                library.Geometry_GetNumPolygons(Handle, &value).CheckResult();
                 return value;
             }
         }
@@ -178,17 +198,18 @@ namespace FmodAudio
         }
 
         [Obsolete]
-        public IntPtr UserData
+        internal override unsafe IntPtr UserData
         {
             get
             {
-                library.Geometry_GetUserData(Handle, out IntPtr value).CheckResult();
+                IntPtr value;
+                Fmod.UserDataMethods.Geometry_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                library.Geometry_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.Geometry_SetUserData(Handle, value).CheckResult();
             }
         }
     }

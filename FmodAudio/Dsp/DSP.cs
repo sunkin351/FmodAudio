@@ -24,7 +24,7 @@ namespace FmodAudio.Dsp
                 if (gchandle.IsAllocated && gchandle.Target is DSP dsp)
                 {
                     return dsp;
-            }
+                }
             }
 
             library.DSP_GetSystemObject(handle, &value).CheckResult();
@@ -34,18 +34,37 @@ namespace FmodAudio.Dsp
             return new SystemDefinedDsp(system, handle);
         }
 
+        /// <summary>
+        /// Retrieves the system object that was used in this DSP's creation
+        /// </summary>
         public FmodSystem SystemObject { get; }
 
-        internal DSP(FmodSystem sys)
-        {
-            SystemObject = sys;
-        }
-
-        internal DSP(FmodSystem sys, IntPtr handle) : base (handle)
+        internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle) : base (handle, ownsHandle)
         {
             this.SystemObject = sys;
         }
 
+        internal override sealed IntPtr UserData
+        {
+            get 
+            {
+                IntPtr userData;
+                Fmod.UserDataMethods.DSP_GetUserData(Handle, &userData).CheckResult();
+
+                return userData;
+            }
+            set
+            {
+                Fmod.UserDataMethods.DSP_SetUserData(Handle, value).CheckResult();
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the number of DSP units in the input list.
+        /// </summary>
+        /// <remarks>
+        /// This will flush the DSP queue (which blocks against the mixer) to ensure the input list is correct, avoid this during time sensitive operations.
+        /// </remarks>
         public int InputCount
         {
             get
@@ -55,6 +74,12 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Retrieves the number of DSP units in the output list.
+        /// </summary>
+        /// <remarks>
+        /// This will flush the DSP queue (which blocks against the mixer) to ensure the input list is correct, avoid this during time sensitive operations.
+        /// </remarks>
         public int OutputCount
         {
             get
@@ -64,6 +89,9 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether this DSP is active. When inactive, processing of this dsp and all its inputs is stopped.
+        /// </summary>
         public bool Active
         {
             get
@@ -77,6 +105,9 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether this DSP is bypassed. If true, this DSP will not be processed, while continuing to process its inputs.
+        /// </summary>
         public bool Bypass
         {
             get
@@ -90,8 +121,20 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Retrieves the number of parameters exposed by this unit.
+        /// </summary>
+        /// <remarks>
+        /// Use this to enumerate all parameters of a DSP unit with <see cref="DSP.GetParameterInfo(int)"/>
+        /// </remarks>
         public abstract int ParameterCount { get; }
 
+        /// <summary>
+        /// Retrieves the pre-defined type of this FMOD registered DSP unit.
+        /// </summary>
+        /// <remarks>
+        /// This is only valid for built in FMOD effects. Any user plugins will simply return <see cref="DSPType.Unknown"/>
+        /// </remarks>
         public DSPType Type
         {
             get
@@ -101,6 +144,12 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Retrieves the idle state of this DSP.
+        /// </summary>
+        /// <remarks>
+        /// A DSP is considered idle when it stops receiving input signal and all internal processing of stored input has been exhausted.
+        /// </remarks>
         public bool Idle
         {
             get

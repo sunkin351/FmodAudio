@@ -1,20 +1,46 @@
 using System;
 
+#nullable enable
+
 namespace FmodAudio
 {
+    using System.Runtime.InteropServices;
     using Dsp;
 
-    public sealed class ChannelGroup : ChannelControl
+    public sealed unsafe class ChannelGroup : ChannelControl
     {
-        internal bool IsMaster;
+        internal static ChannelGroup FromNewHandle(FmodSystem system, IntPtr handle, bool ownsHandle)
+        {
+            return FromHandle(handle) ?? new ChannelGroup(system, handle, ownsHandle);
+        }
 
-        internal ChannelGroup(FmodSystem sys, IntPtr handle) : base(sys, handle)
+        internal static ChannelGroup? FromHandle(IntPtr handle)
+        {
+            IntPtr ptr;
+            Fmod.UserDataMethods.ChannelGroup_GetUserData(handle, &ptr).CheckResult();
+
+            if (ptr != default)
+            {
+                GCHandle gcHandle = (GCHandle)ptr;
+
+                if (gcHandle.IsAllocated && gcHandle.Target is ChannelGroup group)
+                {
+                    return group;
+                }
+            }
+
+            return null;
+        }
+
+        internal string? _name = null;
+
+        internal ChannelGroup(FmodSystem sys, IntPtr handle, bool ownsHandle) : base(sys, handle, ownsHandle)
         {
         }
 
         protected override void ReleaseImpl()
         {
-            SystemObject.ReleaseChannelGroup(Handle, IsMaster);
+            library.ChannelGroup_Release(Handle).CheckResult();
         }
 
         public int GroupCount
@@ -33,7 +59,7 @@ namespace FmodAudio
             {
                 library.ChannelGroup_GetParentGroup(Handle, out IntPtr handle).CheckResult();
 
-                return SystemObject.GetChannelGroup(handle);
+                return FromNewHandle(SystemObject, handle, false);
             }
         }
 
@@ -41,12 +67,17 @@ namespace FmodAudio
         {
             get
             {
-                const int len = FmodSystem.MaxInteropNameStringLength;
-                var ptr = stackalloc byte[len];
+                if (_name == null)
+                {
+                    const int len = FmodSystem.MaxInteropNameStringLength;
+                    var ptr = stackalloc byte[len];
 
-                var res = library.ChannelGroup_GetName(Handle, ptr, len);
+                    library.ChannelGroup_GetName(Handle, ptr, len).CheckResult();
 
-                return FmodHelpers.PtrToString(ptr, len);
+                    _name = FmodHelpers.PtrToString(ptr, len);
+                }
+
+                return _name;
             }
         }
 
@@ -67,14 +98,14 @@ namespace FmodAudio
 
             library.ChannelGroup_AddGroup(Handle, group.Handle, propagateDSPClock, out IntPtr dspConnectionHandle).CheckResult();
 
-            return new DSPConnection(SystemObject, dspConnectionHandle);
+            return new DSPConnection(dspConnectionHandle);
         }
         
         public ChannelGroup GetGroup(int index)
         {
             library.ChannelGroup_GetGroup(Handle, index, out IntPtr handle).CheckResult();
 
-            return SystemObject.GetChannelGroup(handle);
+            return FromNewHandle(SystemObject, handle, false);
         }
 
         public Channel GetChannel(int index)

@@ -12,11 +12,19 @@ namespace FmodAudio.Interop
     public unsafe interface INativeLibrary
     {
         //Global Functions
-        Result Memory_Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags);
+        Result Memory_Initialize(IntPtr poolmem,
+                                 int poollen,
+                                 [DelegateLifetime(DelegateLifetime.Persistent)] MemoryAllocCallback useralloc,
+                                 [DelegateLifetime(DelegateLifetime.Persistent)] MemoryReallocCallback userrealloc,
+                                 [DelegateLifetime(DelegateLifetime.Persistent)] MemoryFreeCallback userfree,
+                                 MemoryType memtypeflags);
         
         Result Memory_GetStats(int* currentalloced, int* maxalloced, bool blocking);
         
-        Result Debug_Initialize(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename);
+        Result Debug_Initialize(DebugFlags flags,
+                                DebugMode mode,
+                                [DelegateLifetime(DelegateLifetime.Persistent)] DebugCallback callback,
+                                string filename);
         
         Result File_SetDiskBusy(int busy);
         
@@ -52,15 +60,25 @@ namespace FmodAudio.Interop
         
         Result System_GetDSPBufferSize(IntPtr system, uint* bufferlength, int* numbuffers);
         
-        Result System_SetFileSystem(IntPtr system, FileOpenCallback useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek, FileAsyncReadCallback userasyncread, FileAsyncCancelCallback userasynccancel, int blockalign);
+        Result System_SetFileSystem(IntPtr system,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileOpenCallback useropen,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileCloseCallback userclose,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileReadCallback userread,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileSeekCallback userseek,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileAsyncReadCallback userasyncread,
+                                    [DelegateLifetime(DelegateLifetime.UserManaged)] FileAsyncCancelCallback userasynccancel, int blockalign);
         
-        Result System_AttachFileSystem(IntPtr system, FileOpenCallback useropen, FileCloseCallback userclose, FileReadCallback userread, FileSeekCallback userseek);
+        Result System_AttachFileSystem(IntPtr system,
+                                       [DelegateLifetime(DelegateLifetime.UserManaged)] FileOpenCallback useropen,
+                                       [DelegateLifetime(DelegateLifetime.UserManaged)] FileCloseCallback userclose,
+                                       [DelegateLifetime(DelegateLifetime.UserManaged)] FileReadCallback userread,
+                                       [DelegateLifetime(DelegateLifetime.UserManaged)] FileSeekCallback userseek);
         
         Result System_SetAdvancedSettings(IntPtr system, AdvancedSettings.Structure* settings);
         
         Result System_GetAdvancedSettings(IntPtr system, AdvancedSettings.Structure* settings);
         
-        Result System_SetCallback(IntPtr system, SystemCallback callback, SystemCallbackType callbackmask);
+        Result System_SetCallback(IntPtr system, [DelegateLifetime(DelegateLifetime.UserManaged)] SystemCallback callback, SystemCallbackType callbackmask);
         
         Result System_SetPluginPath(IntPtr system, byte* path);
         
@@ -118,7 +136,7 @@ namespace FmodAudio.Interop
         
         Result System_Get3DListenerAttributes(IntPtr system, int listener, Vector3* pos, Vector3* vel, Vector3* forward, Vector3* up);
         
-        Result System_Set3DRolloffCallback(IntPtr system, _3DRolloffCallback callback);
+        Result System_Set3DRolloffCallback(IntPtr system, [DelegateLifetime(DelegateLifetime.UserManaged)] _3DRolloffCallback callback);
         
         Result System_MixerSuspend(IntPtr system);
         
@@ -211,6 +229,8 @@ namespace FmodAudio.Interop
         //Sound Class Functions
 
         Result Sound_Release(IntPtr sound);
+
+        Result Sound_GetSystemObject(IntPtr sound, IntPtr* system);
         
         Result Sound_Lock(IntPtr sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
         

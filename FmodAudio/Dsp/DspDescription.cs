@@ -280,6 +280,11 @@ namespace FmodAudio.Dsp
 
             public ParameterDescriptionManager(ParameterDescription[] arr)
             {
+                if (arr is null || arr.Length == 0)
+                {
+                    return;
+                }
+
                 ptrArray = Memory.AllocateUnsafe(IntPtr.Size * arr.Length);
                 descArray = Memory.AllocateUnsafe(Unsafe.SizeOf<ParameterDescriptionStruct>() * arr.Length);
                 length = arr.Length;

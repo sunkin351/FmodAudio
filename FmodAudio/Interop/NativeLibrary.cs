@@ -913,6 +913,16 @@ namespace FmodAudio.Interop
         }
 
         public abstract Result Sound_Release(IntPtr sound);
+
+        public abstract Result Sound_GetSystemObject(IntPtr sound, IntPtr* system);
+
+        public Result Sound_GetSystemObject(IntPtr sound, out IntPtr system)
+        {
+            fixed (IntPtr* pSystem = &system)
+            {
+                return Sound_GetSystemObject(sound, pSystem);
+            }
+        }
         
         public abstract Result Sound_Lock(IntPtr sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
 

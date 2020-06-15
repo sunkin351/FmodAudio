@@ -1,10 +1,13 @@
-#pragma warning disable IDE0052
-#pragma warning disable IDE1006
+#pragma warning disable IDE0052, IDE1006
 
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
+
+#nullable enable
 
 namespace FmodAudio
 {
@@ -13,37 +16,55 @@ namespace FmodAudio
 
     public unsafe sealed partial class FmodSystem : HandleBase
     {
+        internal static FmodSystem FromHandle(IntPtr handle)
+        {
+            IntPtr ptr;
+            Fmod.UserDataMethods.System_GetUserData(handle, &ptr).CheckResult();
+
+            Debug.Assert(ptr != default);
+
+            GCHandle gcHandle = (GCHandle)ptr;
+
+            Debug.Assert(gcHandle.IsAllocated && gcHandle.Target is FmodSystem);
+
+            return (FmodSystem)gcHandle.Target;
+        }
+
         internal const int MaxInteropNameStringLength = 200;
 
         /// <summary>
         /// Affects string interop marshalling. If the buffer turns out to be too small, this will decide whether to throw an exception, or continue with the truncated string.
         /// </summary>
         public static bool AllowStringTruncation { get; set; }
-        
-        internal NativeLibrary library;
+
+        internal readonly NativeLibrary library = Fmod.Library;
 
         private bool SystemOpen = false;
         
-        public ChannelGroup MasterChannelGroup { get; private set; }
-        public SoundGroup MasterSoundGroup { get; private set; }
+        /// <summary>
+        /// Master Channel Group for this System Object. Null if System is not initialized
+        /// </summary>
+        public ChannelGroup? MasterChannelGroup { get; private set; }
+
+        /// <summary>
+        /// Master Sound Group for this System Object. Null if System is not initialized
+        /// </summary>
+        public SoundGroup? MasterSoundGroup { get; private set; }
 
         #region System Creation / Destruction
 
-        internal FmodSystem(NativeLibrary lib, IntPtr handle) : base(handle)
+        internal FmodSystem(IntPtr handle) : base(handle, true)
         {
-            library = lib;
             SetupEventCallbacks();
         }
 
         protected override void ReleaseImpl()
         {
             Close();
-            
+
             lock (Fmod.CreationSyncObject)
             {
                 library.System_Release(Handle).CheckResult();
-
-                Fmod.SystemLookup.TryRemove(Handle, out _);
             }
         }
 
@@ -67,8 +88,10 @@ namespace FmodAudio
             library.System_GetMasterChannelGroup(Handle, &handle).CheckResult();
 
             {
-                ChannelGroup group = GetChannelGroup(handle);
-                group.IsMaster = true;
+                ChannelGroup group = new ChannelGroup(this, handle, false);
+
+                group.UserData = (IntPtr)GCHandle.Alloc(group, GCHandleType.Weak);
+
                 MasterChannelGroup = group;
             }
 
@@ -76,8 +99,10 @@ namespace FmodAudio
             library.System_GetMasterSoundGroup(Handle, &handle).CheckResult();
 
             {
-                SoundGroup group = GetSoundGroup(handle);
-                group.IsMaster = true;
+                SoundGroup group = new SoundGroup(this, handle, false);
+
+                group.UserData = (IntPtr)GCHandle.Alloc(group, GCHandleType.Weak);
+
                 MasterSoundGroup = group;
             }
         }
@@ -89,7 +114,20 @@ namespace FmodAudio
 
             library.System_Close(Handle).CheckResult();
 
+            CleanupMasterGroups();
+
             SystemOpen = false;
+        }
+
+        private void CleanupMasterGroups()
+        {
+            GCHandle handle = (GCHandle)MasterChannelGroup!.UserData;
+
+            handle.Free();
+
+            handle = (GCHandle)MasterSoundGroup!.UserData;
+
+            handle.Free();
 
             MasterChannelGroup = null;
             MasterSoundGroup = null;
@@ -344,12 +382,12 @@ namespace FmodAudio
         }
 
         //Keep References to all delegates passed as filesystem functions
-        private FileOpenCallback UserOpen;
-        private FileCloseCallback UserClose;
-        private FileReadCallback UserRead;
-        private FileSeekCallback UserSeek;
-        private FileAsyncReadCallback UserAsyncRead;
-        private FileAsyncCancelCallback UserAsyncCancel;
+        private FileOpenCallback? UserOpen;
+        private FileCloseCallback? UserClose;
+        private FileReadCallback? UserRead;
+        private FileSeekCallback? UserSeek;
+        private FileAsyncReadCallback? UserAsyncRead;
+        private FileAsyncCancelCallback? UserAsyncCancel;
 
         public void SetFileSystem(
             FileOpenCallback userOpen,
@@ -445,8 +483,8 @@ namespace FmodAudio
                     case SystemCallbackType.BadDSPConnection:
                         if (BadDSPConnection != null)
                         {
-                            var target = DSP.GetDSPByHandle(this, ptr1);
-                            var source = DSP.GetDSPByHandle(this, ptr2);
+                            var target = DSP.FromHandle(ptr1);
+                            var source = DSP.FromHandle(ptr2);
                             BadDSPConnection(target, source);
                         }
                         break;
@@ -652,7 +690,7 @@ namespace FmodAudio
             return (Mode)m;
         }
 
-        public unsafe Sound CreateSound(string Filename, Mode mode = Mode.Default, CreateSoundInfo info = null)
+        public unsafe Sound CreateSound(string Filename, Mode mode = Mode.Default, CreateSoundInfo? info = null)
         {
             if (Filename is null)
             {
@@ -666,11 +704,10 @@ namespace FmodAudio
                 library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), info, &handle).CheckResult();
             }
 
-            var sound = GetSound(handle);
-
-            sound.soundGroup = info?.InitialSoundGroup;
-
-            return sound;
+            return new Sound(this, handle, true)
+            {
+                soundGroup = info?.InitialSoundGroup
+            };
         }
 
         public unsafe Sound CreateSound(ReadOnlySpan<byte> data, Mode mode, CreateSoundInfo info)
@@ -697,11 +734,10 @@ namespace FmodAudio
                 library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), info, &handle).CheckResult();
             }
 
-            var sound = GetSound(handle);
-
-            sound.soundGroup = info.InitialSoundGroup;
-
-            return sound;
+            return new Sound(this, handle, true)
+            {
+                soundGroup = info.InitialSoundGroup
+            };
         }
 
         /// <summary>
@@ -723,26 +759,15 @@ namespace FmodAudio
 
             library.System_CreateSound(Handle, null, mode, info, &handle).CheckResult();
 
-            var sound = GetSound(handle);
-
-            sound.soundGroup = info.InitialSoundGroup;
-
-            return sound;
+            return new Sound(this, handle, true)
+            {
+                soundGroup = info.InitialSoundGroup
+            };
         }
 
-        public Sound CreateStream(string Filename, Mode mode = Mode.Default, CreateSoundInfo info = null)
+        public Sound CreateStream(string Filename, Mode mode = Mode.Default, CreateSoundInfo? info = null)
         {
-            if (Filename is null)
-            {
-                throw new ArgumentNullException(nameof(Filename));
-            }
-
-            IntPtr handle;
-            fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(Filename))
-            {
-                library.System_CreateStream(Handle, pFilename, mode, info, &handle);
-            }
-            return GetSound(handle);
+            return CreateSound(Filename, mode | Mode.CreateStream, info);
         }
 
         [Obsolete("Refer to the Custom DSP Example")]
@@ -769,27 +794,35 @@ namespace FmodAudio
         {
             IntPtr handle = default;
             library.System_CreateChannelGroup(Handle, name, &handle).CheckResult();
-            return GetChannelGroup(handle);
+
+            return new ChannelGroup(this, handle, true)
+            {
+                _name = name
+            };
         }
 
         public unsafe SoundGroup CreateSoundGroup(string name)
         {
             IntPtr handle;
             library.System_CreateSoundGroup(Handle, name, &handle).CheckResult();
-            return GetSoundGroup(handle);
+
+            return new SoundGroup(this, handle, true)
+            {
+                _name = name
+            };
         }
         
-        public Channel PlaySound(Sound sound, ChannelGroup group = null, bool paused = false)
+        public Channel PlaySound(Sound sound, ChannelGroup? group = null, bool paused = false)
         {
             library.System_PlaySound(Handle, sound.Handle, group?.Handle ?? IntPtr.Zero, paused, out IntPtr handle).CheckResult();
 
             return new Channel(this, handle);
         }
 
-        public Channel PlayDsp(DSP dsp, ChannelGroup group = null, bool paused = false)
+        public Channel PlayDsp(DSP dsp, ChannelGroup? group = null, bool paused = false)
         {
             IntPtr handle;
-            library.System_PlayDSP(Handle, dsp.Handle, group?.Handle ?? IntPtr.Zero, paused, &handle).CheckResult();
+            library.System_PlayDSP(Handle, dsp.Handle, group is null ? default : group.Handle, paused, &handle).CheckResult();
             return new Channel(this, handle);
         }
 
@@ -900,14 +933,7 @@ namespace FmodAudio
             IntPtr handle = default;
             library.System_CreateGeometry(Handle, maxPolygons, maxVertices, &handle).CheckResult();
 
-            return GetGeometry(handle);
-        }
-
-        public Reverb3D CreateReverb3D()
-        {
-            IntPtr handle;
-            library.System_CreateReverb3D(Handle, &handle).CheckResult();
-            return new Reverb3D(handle);
+            return new Geometry(handle);
         }
 
         public float GeomatryWorldSize
@@ -928,16 +954,24 @@ namespace FmodAudio
         public unsafe Geometry LoadGeometry(ReadOnlySpan<byte> data)
         {
             if (data.IsEmpty)
-                return null;
+                throw new ArgumentException("data.Length == 0", nameof(data));
 
             IntPtr handle;
             library.System_LoadGeometry(Handle, data, &handle).CheckResult();
-            return GetGeometry(handle);
+
+            return new Geometry(handle);
         }
 
         public void GetGeometryOcclusion(out Vector3 listener, out Vector3 source, out float direct, out float reverb)
         {
             library.System_GetGeometryOcclusion(Handle, out listener, out source, out direct, out reverb).CheckResult();
+        }
+
+        public Reverb3D CreateReverb3D()
+        {
+            IntPtr handle;
+            library.System_CreateReverb3D(Handle, &handle).CheckResult();
+            return new Reverb3D(handle);
         }
 
         public unsafe string NetworkProxy
@@ -991,19 +1025,18 @@ namespace FmodAudio
             }
         }
 
-        [Obsolete]
-        public IntPtr UserData
+        internal override IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                library.System_GetUserData(Handle, &value).CheckResult();
+                Fmod.UserDataMethods.System_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                library.System_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.System_SetUserData(Handle, value).CheckResult();
             }
         }
 

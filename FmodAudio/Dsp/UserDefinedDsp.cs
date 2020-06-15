@@ -1,4 +1,4 @@
-#pragma warning disable CA1031, IDE1006, CS0612
+﻿#pragma warning disable CA1031, IDE1006, CS0612
 using System;
 using System.Runtime.InteropServices;
 
@@ -492,12 +492,15 @@ namespace FmodAudio.Dsp
             }
         }
 
-        private readonly DspDescription.ParameterDescriptionManager ParameterManager;
-        private readonly ParameterDescription[] Descriptions;
+        private DspDescription.ParameterDescriptionManager ParameterManager;
+        private ParameterDescription[] Descriptions;
 
-        public override int ParameterCount => throw new NotImplementedException();
+        public override int ParameterCount => Descriptions.Length;
 
-        protected UserDefinedDsp(FmodSystem sys, string name, FmodVersion pluginVersion, int inputBufferCount, int outputBufferCount, ParameterDescription[] descriptions, DSPProcessType processType) : base(sys)
+        internal override bool ClassManagedGCHandle => true;
+
+        protected UserDefinedDsp(FmodSystem sys, string name, FmodVersion pluginVersion, int inputBufferCount, int outputBufferCount, ParameterDescription[] descriptions, DSPProcessType processType)
+            : base(sys, default, true)
         {
             var createStruct = DspCreateStructure;
 
@@ -525,15 +528,13 @@ namespace FmodAudio.Dsp
             createStruct.ParameterCount = ParameterManager.Length;
             createStruct.ParameterDescriptions = (Interop.ParameterDescriptionStruct**)ParameterManager.PointerArray;
 
-            var gcHandle = FmodHelpers.CreateGCHandle(this);
+            createStruct.UserData = (IntPtr)GCHandle.Alloc(this, GCHandleType.Weak);
 
-            createStruct.UserData = GCHandle.ToIntPtr(gcHandle);
+            fixed (IntPtr* pHandle = &handle)
+            {
+                library.System_CreateDSP(sys.Handle, &createStruct, pHandle).CheckResult();
+            }
 
-            IntPtr dspHandle;
-
-            library.System_CreateDSP(sys.Handle, &createStruct, &dspHandle).CheckResult();
-
-            this.handle = dspHandle;
             this.Descriptions = descriptions;
         }
 

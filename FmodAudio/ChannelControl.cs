@@ -11,13 +11,13 @@ namespace FmodAudio
         protected readonly NativeLibrary library;
         public FmodSystem SystemObject { get; }
 
-        protected ChannelControl(FmodSystem sys, IntPtr handle) : base(handle)
+        protected ChannelControl(FmodSystem sys, IntPtr handle, bool ownsHandle) : base(handle, ownsHandle)
         {
             SystemObject = sys;
             library = sys.library;
         }
 
-        internal ChannelControl(FmodSystem sys, IntPtr handle, Memory.SaferPointer customRolloff) : this(sys, handle)
+        internal ChannelControl(FmodSystem sys, IntPtr handle, Memory.SaferPointer customRolloff) : this(sys, handle, true)
         {
             CustomRolloff = customRolloff;
         }
@@ -316,14 +316,14 @@ namespace FmodAudio
         {
             library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
 
-            return DSP.GetDSPByHandle(this.SystemObject, handle);
+            return DSP.FromHandle(handle);
         }
 
         public DSP GetDSP(ChannelControlDSPIndex index)
         {
             library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
 
-            return DSP.GetDSPByHandle(this.SystemObject, handle);
+            return DSP.FromHandle(handle);
         }
 
         public void AddDSP(int index, DSP dsp)
@@ -519,18 +519,18 @@ namespace FmodAudio
             library.ChannelGroup_Get3DDistanceFilter(Handle, out custom, out customLevel, out centerFreq).CheckResult();
         }
 
-        [Obsolete]
-        public IntPtr UserData
+        internal override unsafe IntPtr UserData
         {
             get
             {
-                library.ChannelGroup_GetUserData(Handle, out IntPtr value).CheckResult();
+                IntPtr value;
+                Fmod.UserDataMethods.ChannelGroup_GetUserData(Handle, &value).CheckResult();
 
                 return value;
             }
             set
             {
-                library.ChannelGroup_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.ChannelGroup_SetUserData(Handle, value).CheckResult();
             }
         }
 

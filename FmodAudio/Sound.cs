@@ -2,14 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 #nullable enable
 
 namespace FmodAudio
 {
-    public sealed class Sound : HandleBase
+    public sealed unsafe class Sound : HandleBase
     {
-        private readonly Interop.NativeLibrary library;
+        internal static Sound FromNewHandle(FmodSystem system, IntPtr handle, bool ownsHandle = true)
+        {
+            return FromHandle(handle) ?? new Sound(system, handle, ownsHandle);
+        }
+
+        internal static unsafe Sound? FromHandle(IntPtr handle)
+        {
+            IntPtr ptr;
+            Fmod.UserDataMethods.Sound_GetUserData(handle, &ptr).CheckResult();
+
+            if (ptr != default)
+            {
+                GCHandle gcHandle = (GCHandle)ptr;
+
+                if (gcHandle.IsAllocated && gcHandle.Target is Sound sound)
+                {
+                    return sound;
+                }
+            }
+
+            return null;
+        }
+
+        private readonly Interop.NativeLibrary library = Fmod.Library;
 
         public FmodSystem SystemObject { get; }
 
@@ -17,19 +41,36 @@ namespace FmodAudio
 
         private string name;
         private int? SubsoundCount;
-        private Memory.SaferPointer CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
-        private readonly List<Sound> Subsounds = new List<Sound>();
+        private Memory.SaferPointer? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
+        private readonly List<Sound>? Subsounds = null;
         internal SoundGroup? soundGroup = null;
 
-        internal Sound(FmodSystem sys, IntPtr inst) : base(inst)
+        internal Sound(FmodSystem sys, IntPtr inst, bool ownsHandle = true) : base(inst, ownsHandle)
         {
             SystemObject = sys;
-            library = sys.library;
+
+            if (!ownsHandle)
+            {
+                return;
+            }
+
+            int count;
+            library.Sound_GetNumSubSounds(inst, &count).CheckResult();
+
+            if (count != 0)
+            {
+                Subsounds.Capacity = count;
+
+
+            }
         }
 
         protected override void ReleaseImpl()
         {
-            SystemObject.ReleaseSound(Handle);
+            if (!IsSubsound)
+            {
+                library.Sound_Release(Handle).CheckResult();
+            }
         }
 
         public bool IsSubsound => Parent != null;
@@ -143,7 +184,7 @@ namespace FmodAudio
             
             library.Sound_GetSubSound(Handle, index, out IntPtr handle).CheckResult();
 
-            var tmp = SystemObject.GetSound(handle);
+            var tmp = new Sound(SystemObject, handle, false);
 
             tmp.Parent = this;
             
@@ -253,13 +294,13 @@ namespace FmodAudio
             library.Sound_SeekData(Handle, pcm).CheckResult();
         }
 
-        public SoundGroup SoundGroup
+        public SoundGroup? SoundGroup
         {
             get
             {
                 library.Sound_GetSoundGroup(Handle, out IntPtr handle).CheckResult();
 
-                return SystemObject.GetSoundGroup(handle);
+                return handle == default ? null : (SoundGroup.FromHandle(handle) ?? new SoundGroup(SystemObject, handle, false));
             }
 
             set
@@ -413,19 +454,19 @@ namespace FmodAudio
             }
         }
 
-        [Obsolete]
-        public IntPtr UserData
+        internal override unsafe IntPtr UserData
         {
             get
             {
-                library.Sound_GetUserData(Handle, out IntPtr value).CheckResult();
+                IntPtr userData;
+                Fmod.UserDataMethods.Sound_GetUserData(Handle, &userData).CheckResult();
 
-                return value;
+                return userData;
             }
 
             set
             {
-                library.Sound_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.Sound_SetUserData(Handle, value).CheckResult();
             }
         }
 
