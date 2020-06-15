@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0059
+#pragma warning disable IDE0059
 
 using System;
 using System.Numerics;
@@ -119,12 +119,16 @@ namespace FmodAudio
         }
 
         /// <summary>
+        /// Saves the Geometry data to memory.
         /// Returns false if the given buffer is not large enough, throws on API Errors
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
+        /// <param name="buffer">Buffer to save to</param>
+        /// <param name="RequiredSize">Total bytes required to save</param>
+        /// <returns>Whether the operation succeeded</returns>
         public unsafe bool TrySave(Span<byte> buffer, out int RequiredSize)
         {
+            RequiredSize = 0;
+
             fixed (int* pRequired = &RequiredSize)
             {
                 library.Geometry_Save(Handle, null, pRequired).CheckResult();
@@ -140,9 +144,37 @@ namespace FmodAudio
             }
         }
 
+        /// <summary>
+        /// Saves the Geometry data to memory.
+        /// Returns false if the given buffer is not large enough, throws on API Errors
+        /// </summary>
+        /// <param name="buffer">Buffer to save to</param>
+        /// <returns>Whether the operation succeeded</returns>
         public bool TrySave(Span<byte> buffer)
         {
             return TrySave(buffer, out _);
+        }
+
+        /// <summary>
+        /// Saves the Geometry data to memory.
+        /// </summary>
+        /// <returns>
+        /// Byte array containing the geometry data
+        /// </returns>
+        public unsafe byte[] Save()
+        {
+            int required = 0;
+
+            library.Geometry_Save(Handle, null, &required).CheckResult();
+
+            byte[] data = new byte[required];
+
+            fixed (byte* pData = data)
+            {
+                library.Geometry_Save(Handle, pData, &required).CheckResult();
+            }
+
+            return data;
         }
 
         [Obsolete]
