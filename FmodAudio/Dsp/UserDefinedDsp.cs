@@ -537,11 +537,8 @@ namespace FmodAudio.Dsp
             this.Descriptions = descriptions;
         }
 
-        protected override void ReleaseImpl()
+        protected override sealed void ReleaseImpl()
         {
-            IntPtr gcHandle;
-            Fmod.UserDataMethods.DSP_GetUserData(this.Handle, &gcHandle).CheckResult();
-
             library.DSP_Release(this.Handle).CheckResult();
         }
 

@@ -1,28 +1,37 @@
 using System;
-using System.Text;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+using FmodAudio.Interop;
 
 #nullable enable
 
 namespace FmodAudio.Dsp
 {
-    using FmodAudio.Interop;
     public unsafe abstract partial class DSP : HandleBase
     {
-        protected static NativeLibrary library = Fmod.Library;
+        internal static NativeLibrary library = Fmod.Library;
 
-        internal static DSP GetDSPByHandle(FmodSystem system, IntPtr dsp)
+        internal static DSP FromHandle(IntPtr handle)
         {
-            library.DSP_GetUserData(dsp, out IntPtr udata).CheckResult();
+            IntPtr value;
+            Fmod.UserDataMethods.DSP_GetUserData(handle, &value).CheckResult();
 
-            if (udata == default)
+            if (value != default)
             {
-                return new SystemDefinedDsp(system, dsp);
+                var gchandle = (GCHandle)value;
+
+                if (gchandle.IsAllocated && gchandle.Target is DSP dsp)
+                {
+                    return dsp;
+            }
             }
 
-            var handle = GCHandle.FromIntPtr(udata);
+            library.DSP_GetSystemObject(handle, &value).CheckResult();
 
-            return (DSP)handle.Target;
+            var system = FmodSystem.FromHandle(value);
+
+            return new SystemDefinedDsp(system, handle);
         }
 
         public FmodSystem SystemObject { get; }
@@ -101,31 +110,22 @@ namespace FmodAudio.Dsp
             }
         }
 
-        [Obsolete("DSP UserData pointer is used for the Managed Object's GCHandle, setting it will break managed library code and is deprecated. Refer to the Custom DSP Example for more information.", true)]
-        public IntPtr UserData
+        /// <summary>
+        /// Adds a DSP unit as an input to this object.
+        /// </summary>
+        /// <param name="input">DSP unit to be added</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public DSPConnection AddInput(DSP input, DSPConnectionType type = DSPConnectionType.Standard)
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
+            library.DSP_AddInput(Handle, input.Handle, out IntPtr connection, type).CheckResult();
 
-            set
-            {
-                throw new NotSupportedException();
-            }
+            return new DSPConnection(connection);
         }
 
-
-        public DSPConnection AddInput(DSP target, DSPConnectionType type = DSPConnectionType.Standard)
+        public void DisconnectFrom(DSP dsp, DSPConnection connection = default)
         {
-            library.DSP_AddInput(Handle, target.Handle, out IntPtr connection, type).CheckResult();
-
-            return new DSPConnection(SystemObject, connection);
-        }
-
-        public void DisconnectFrom(DSP dsp, DSPConnection connection = null)
-        {
-            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection?.Handle ?? default).CheckResult();
+            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection.Handle).CheckResult();
         }
 
         public void DisconnectAll(bool inputs, bool outputs)
@@ -137,8 +137,8 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetInput(Handle, index, out IntPtr input, out IntPtr connection).CheckResult();
 
-            var dsp = GetDSPByHandle(this.SystemObject, input);
-            var con = new DSPConnection(SystemObject, connection);
+            var dsp = FromHandle(input);
+            var con = new DSPConnection(connection);
             return (dsp, con);
         }
 
@@ -146,8 +146,8 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetOutput(Handle, index, out IntPtr output, out IntPtr connection).CheckResult();
 
-            var dsp = GetDSPByHandle(this.SystemObject, output);
-            var con = new DSPConnection(SystemObject, connection);
+            var dsp = FromHandle(output);
+            var con = new DSPConnection(connection);
             return (dsp, con);
         }
 
