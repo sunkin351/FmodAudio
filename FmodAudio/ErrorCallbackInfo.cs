@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CA1815
+
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 

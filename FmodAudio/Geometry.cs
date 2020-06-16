@@ -197,7 +197,6 @@ namespace FmodAudio
             return data;
         }
 
-        [Obsolete]
         internal override unsafe IntPtr UserData
         {
             get

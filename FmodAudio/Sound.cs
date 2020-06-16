@@ -1,3 +1,5 @@
+#pragma warning disable IDE0059, CA1034
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,8 +41,7 @@ namespace FmodAudio
 
         public Sound? Parent { get; internal set; } = null;
 
-        private string name;
-        private int? SubsoundCount;
+        private string? name;
         private Memory.SaferPointer? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
         private readonly List<Sound>? Subsounds = null;
         internal SoundGroup? soundGroup = null;

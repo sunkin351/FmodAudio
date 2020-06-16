@@ -77,5 +77,25 @@ namespace FmodAudio.Dsp
                 library.DSPConnection_GetMixMatrix(Handle, mptr, out outChannels, out inChannels, inChannelHop).CheckResult();
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DSPConnection other && this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Handle);
+        }
+
+        public static bool operator ==(DSPConnection left, DSPConnection right)
+        {
+            return left.Handle == right.Handle;
+        }
+
+        public static bool operator !=(DSPConnection left, DSPConnection right)
+        {
+            return left.Handle != right.Handle;
+        }
     }
 }

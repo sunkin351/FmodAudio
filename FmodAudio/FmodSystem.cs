@@ -1,4 +1,4 @@
-#pragma warning disable IDE0052, IDE1006
+#pragma warning disable IDE0052, IDE1006, CA1031
 
 using System;
 using System.Diagnostics;
@@ -444,17 +444,17 @@ namespace FmodAudio
             library.System_SetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
         }
 
-        public event Action DeviceListChanged;
+        public event Action? DeviceListChanged;
 
-        public event Action DeviceLost;
+        public event Action? DeviceLost;
 
-        public event Action<string> MemoryAllocationFailed;
+        public event Action<string>? MemoryAllocationFailed;
 
-        public event Action<DSP, DSP> BadDSPConnection;
+        public event Action<DSP, DSP>? BadDSPConnection;
 
-        public event Action<ErrorCallbackInfo> Error;
+        public event Action<ErrorCallbackInfo>? Error;
 
-        private SystemCallback syscallback;
+        private SystemCallback? syscallback;
 
         private unsafe Result SystemCallbackRoutine(IntPtr sysPtr, SystemCallbackType type, IntPtr ptr1, IntPtr ptr2, IntPtr userdata)
         {
@@ -575,7 +575,7 @@ namespace FmodAudio
             library.System_Get3DListenerAttributes(Handle, listener, out pos, out vel, out forward, out up).CheckResult();
         }
 
-        private _3DRolloffCallback rolloffCallback;
+        private _3DRolloffCallback? rolloffCallback;
 
         public void Set3DRolloffCallback(_3DRolloffCallback callback)
         {

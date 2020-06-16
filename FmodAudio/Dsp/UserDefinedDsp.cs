@@ -70,6 +70,8 @@ namespace FmodAudio.Dsp
             MethodReferences.GetParamData = _getParamData;
 
             MethodReferences.ShouldIProcess = _shouldIProcessMethod;
+            MethodReferences.SystemRegister = _systemRegisterMethod;
+            MethodReferences.SystemDeregister = _systemDeregisterMethod;
             MethodReferences.SystemMix = _systemMixMethod;
 
             DspCreateStructure.Create = Marshal.GetFunctionPointerForDelegate(MethodReferences.Create);
@@ -90,6 +92,8 @@ namespace FmodAudio.Dsp
             DspCreateStructure.GetParamData = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamData);
 
             DspCreateStructure.ShouldIProcess = Marshal.GetFunctionPointerForDelegate(MethodReferences.ShouldIProcess);
+            DspCreateStructure.SystemRegister = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemRegister);
+            DspCreateStructure.SystemDeregister = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemDeregister);
             DspCreateStructure.SystemMix = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemMix);
         }
 
@@ -469,6 +473,52 @@ namespace FmodAudio.Dsp
             }
         }
 
+        private static Result _systemRegisterMethod(DspState* state)
+        {
+            var dsp = GetDSPObject(state);
+
+            if (dsp is null)
+            {
+                return Result.Err_Internal;
+            }
+
+            try
+            {
+                return dsp.SystemRegister(state);
+            }
+            catch (FmodException e)
+            {
+                return e.Result ?? Result.Err_Internal;
+            }
+            catch
+            {
+                return Result.Err_Internal;
+            }
+        }
+
+        private static Result _systemDeregisterMethod(DspState* state)
+        {
+            var dsp = GetDSPObject(state);
+
+            if (dsp is null)
+            {
+                return Result.Err_Internal;
+            }
+
+            try
+            {
+                return dsp.SystemDeregister(state);
+            }
+            catch (FmodException e)
+            {
+                return e.Result ?? Result.Err_Internal;
+            }
+            catch
+            {
+                return Result.Err_Internal;
+            }
+        }
+
         private static Result _systemMixMethod(DspState* state, int stage)
         {
             var dsp = GetDSPObject(state);
@@ -492,8 +542,8 @@ namespace FmodAudio.Dsp
             }
         }
 
-        private DspDescription.ParameterDescriptionManager ParameterManager;
-        private ParameterDescription[] Descriptions;
+        private readonly DspDescription.ParameterDescriptionManager ParameterManager;
+        private readonly ParameterDescription[] Descriptions;
 
         public override int ParameterCount => Descriptions.Length;
 
@@ -636,21 +686,11 @@ namespace FmodAudio.Dsp
             return Result.Err_DSP_DontProcess;
         }
 
-        /// <summary>
-        /// Currently unsupported (That is, its boiler plate is currently unimplemented)
-        /// </summary>
-        /// <param name="state">Dsp state object</param>
-        /// <returns></returns>
         protected virtual Result SystemRegister(DspState* state)
         {
             return Result.Err_Unimplemented;
         }
 
-        /// <summary>
-        /// Currently unsupported (That is, its boiler plate is currently unimplemented)
-        /// </summary>
-        /// <param name="state">Dsp state object</param>
-        /// <returns></returns>
         protected virtual Result SystemDeregister(DspState* state)
         {
             return Result.Err_Unimplemented;
