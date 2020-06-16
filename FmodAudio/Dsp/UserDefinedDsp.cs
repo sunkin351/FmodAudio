@@ -617,8 +617,8 @@ namespace FmodAudio.Dsp
 
         protected virtual Result Read(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
         {
-            Span<float> inSpan = new Span<float>(inBuffer, (int)length),
-                outSpan = new Span<float>(outBuffer, (int)length);
+            Span<float> inSpan = new Span<float>(inBuffer, (int)length * inChannels),
+                outSpan = new Span<float>(outBuffer, (int)length * inChannels);
 
             inSpan.CopyTo(outSpan);
 
