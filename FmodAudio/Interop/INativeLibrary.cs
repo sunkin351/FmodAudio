@@ -222,10 +222,6 @@ namespace FmodAudio.Interop
         
         Result System_GetNetworkTimeout(IntPtr system, int* timeout);
         
-        Result System_SetUserData(IntPtr system, IntPtr userdata);
-        
-        Result System_GetUserData(IntPtr system, IntPtr* userdata);
-        
         //Sound Class Functions
 
         Result Sound_Release(IntPtr sound);
@@ -309,10 +305,6 @@ namespace FmodAudio.Interop
         Result Sound_SetMusicSpeed(IntPtr sound, float speed);
         
         Result Sound_GetMusicSpeed(IntPtr sound, float* speed);
-        
-        Result Sound_SetUserData(IntPtr sound, IntPtr userdata);
-        
-        Result Sound_GetUserData(IntPtr sound, IntPtr* userdata);
 
         // SoundGroup Class Functions
 
@@ -345,10 +337,6 @@ namespace FmodAudio.Interop
         Result SoundGroup_GetSound(IntPtr soundgroup, int index, IntPtr* sound);
         
         Result SoundGroup_GetNumPlaying(IntPtr soundgroup, int* numplaying);
-        
-        Result SoundGroup_SetUserData(IntPtr soundgroup, IntPtr userdata);
-        
-        Result SoundGroup_GetUserData(IntPtr soundgroup, IntPtr* userdata);
         
         //Channel Class Functions
 
@@ -385,10 +373,6 @@ namespace FmodAudio.Interop
         Result Channel_SetLoopPoints(IntPtr channel, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
         
         Result Channel_GetLoopPoints(IntPtr channel, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
-        
-        Result Channel_SetUserData(IntPtr channel, IntPtr userdata);
-        
-        Result Channel_GetUserData(IntPtr channel, IntPtr* userdata);
         
         //ChannelControl Class Functions
 
@@ -511,10 +495,6 @@ namespace FmodAudio.Interop
         
         Result ChannelGroup_GetDSPIndex(IntPtr channelgroup, IntPtr dsp, int* index);
         
-        Result ChannelGroup_SetUserData(IntPtr channelgroup, IntPtr userdata);
-        
-        Result ChannelGroup_GetUserData(IntPtr channelgroup, IntPtr* userdata);
-        
         //ChannelGroup Specific Functions
         
         Result ChannelGroup_Release(IntPtr Handle);
@@ -603,10 +583,6 @@ namespace FmodAudio.Interop
         
         Result DSP_GetIdle(IntPtr dsp, out bool idle);
         
-        Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
-        
-        Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
-        
         Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
         
         Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);
@@ -628,10 +604,6 @@ namespace FmodAudio.Interop
         Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
         
         Result DSPConnection_GetType(IntPtr dspconnection, DSPConnectionType* type);
-        
-        Result DSPConnection_SetUserData(IntPtr dspconnection, IntPtr userdata);
-        
-        Result DSPConnection_GetUserData(IntPtr dspconnection, IntPtr* userdata);
 
         //Geometry Class Functions
         
@@ -670,10 +642,6 @@ namespace FmodAudio.Interop
         Result Geometry_GetScale(IntPtr geometry, Vector3* scale);
         
         Result Geometry_Save(IntPtr geometry, void* data, int* datasize);
-        
-        Result Geometry_SetUserData(IntPtr geometry, IntPtr userdata);
-        
-        Result Geometry_GetUserData(IntPtr geometry, IntPtr* userdata);
 
         Result Reverb3D_Release(IntPtr reverb3D);
 
@@ -688,9 +656,5 @@ namespace FmodAudio.Interop
         Result Reverb3D_SetActive(IntPtr reverb3D, bool active);
 
         Result Reverb3D_GetActive(IntPtr reverb3D, out bool active);
-
-        Result Reverb3D_SetUserData(IntPtr reverb3D, IntPtr userdata);
-
-        Result Reverb3D_GetUserData(IntPtr reverb3D, IntPtr* userdata);
     }
 }
