@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using FmodAudio.Dsp;
 
 namespace FmodAudio
 {
@@ -34,9 +35,11 @@ namespace FmodAudio
                 case ErrorCallbackInstanceType.System:
                     Instance = FmodSystem.FromHandle(native.Instance);
                     break;
+
                 case ErrorCallbackInstanceType.Channel:
                     Instance = Channel.FromHandle(native.Instance);
                     break;
+
                 case ErrorCallbackInstanceType.ChannelGroup:
                     Instance = ChannelGroup.FromHandle(native.Instance);
 
@@ -48,8 +51,8 @@ namespace FmodAudio
 
                         Instance = new ChannelGroup(system, native.Instance, false);
                     }
-
                     break;
+
                 case ErrorCallbackInstanceType.ChannelControl:
                     Instance = ChannelGroup.FromHandle(native.Instance);
 
@@ -57,8 +60,8 @@ namespace FmodAudio
                     {
                         Instance = new ChannelControlHandle(native.Instance);
                     }
-
                     break;
+
                 case ErrorCallbackInstanceType.Sound:
                     Instance = Sound.FromHandle(native.Instance);
 
@@ -70,11 +73,44 @@ namespace FmodAudio
 
                         Instance = new Sound(system, native.Instance, false);
                     }
-
                     break;
+
+                case ErrorCallbackInstanceType.SoundGroup:
+                    Instance = SoundGroup.FromHandle(native.Instance);
+
+                    if (Instance is null)
+                    {
+                        Fmod.Library.SoundGroup_GetSystemObject(native.Instance, out IntPtr sysHandle).CheckResult();
+
+                        Instance = new SoundGroup(FmodSystem.FromHandle(sysHandle), native.Instance, false);
+                    }
+                    break;
+
+                case ErrorCallbackInstanceType.DSP:
+                    Instance = DSP.FromHandle(native.Instance);
+
+                    if (Instance is null)
+                    {
+                        Fmod.Library.DSP_GetSystemObject(native.Instance, out IntPtr sysHandle).CheckResult();
+
+                        Instance = new SystemDefinedDsp(FmodSystem.FromHandle(sysHandle), native.Instance, false);
+                    }
+                    break;
+
+                case ErrorCallbackInstanceType.DSPConnection:
+                    Instance = new DSPConnection(native.Instance);
+                    break;
+
                 case ErrorCallbackInstanceType.Geometry:
                     Instance = Geometry.FromHandle(native.Instance);
                     break;
+
+                case ErrorCallbackInstanceType.Reverb3D:
+                    Instance = new Reverb3D(native.Instance);
+                    break;
+                
+                default:
+                    throw new NotSupportedException("Unsupported instance type");
             }
 
             FunctionName = FmodHelpers.PtrToStringUnknownSize(native.FunctionName);
