@@ -47,9 +47,7 @@ namespace FmodAudio
                     {
                         Fmod.Library.ChannelGroup_GetSystemObject(native.Instance, out var sysHandle).CheckResult();
 
-                        var system = FmodSystem.FromHandle(sysHandle);
-
-                        Instance = new ChannelGroup(system, native.Instance, false);
+                        Instance = new ChannelGroup(FmodSystem.FromHandle(sysHandle), native.Instance, false);
                     }
                     break;
 
@@ -69,9 +67,7 @@ namespace FmodAudio
                     {
                         Fmod.Library.Sound_GetSystemObject(native.Instance, out var sysHandle).CheckResult();
 
-                        var system = FmodSystem.FromHandle(sysHandle);
-
-                        Instance = new Sound(system, native.Instance, false);
+                        Instance = new Sound(FmodSystem.FromHandle(sysHandle), native.Instance, false);
                     }
                     break;
 
