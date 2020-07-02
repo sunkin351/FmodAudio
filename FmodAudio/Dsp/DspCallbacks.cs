@@ -3,7 +3,7 @@
 namespace FmodAudio.Dsp
 {
     public unsafe delegate Result DspStateCallback(DspState* state);
-    public unsafe delegate Result DspReadCallback(DspState* state, IntPtr inbuffer, IntPtr outbuffer, uint length, int inchannels, ref int outchannels);
+    public unsafe delegate Result DspReadCallback(DspState* state, float* inbuffer, float* outbuffer, uint length, int inchannels, ref int outchannels);
     public unsafe delegate Result DspProcessCallback(DspState* state, uint length, DspBufferArray* inBufferArray, DspBufferArray* outBufferArray, bool inputsIdle, ProcessOperation operation);
     public unsafe delegate Result DspSetPositionCallback(DspState* state, uint pos);
 

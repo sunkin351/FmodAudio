@@ -1,25 +1,45 @@
 ﻿using System;
 
+#nullable enable
+
 namespace FmodAudio
 {
+    using System.Diagnostics;
+    using System.Runtime.InteropServices;
     using Interop;
-    public unsafe class SoundGroup : HandleBase
+    public sealed unsafe class SoundGroup : HandleBase
     {
-        private readonly NativeLibrary library;
+        internal static SoundGroup? FromHandle(IntPtr handle)
+        {
+            IntPtr value;
+            Fmod.UserDataMethods.SoundGroup_GetUserData(handle, &value).CheckResult();
+
+            if (value != default)
+            {
+                var gchandle = (GCHandle)value;
+
+                if (gchandle.IsAllocated && gchandle.Target is SoundGroup group)
+                {
+                    return group;
+                }
+            }
+
+            return null;
+        }
+
+        private readonly NativeLibrary library = Fmod.Library;
 
         public FmodSystem SystemObject { get; }
-        internal bool IsMaster = false;
-        internal string _name = null;
+        internal string? _name = null;
 
-        internal SoundGroup(FmodSystem sys, IntPtr inst) : base(inst)
+        internal SoundGroup(FmodSystem sys, IntPtr inst, bool ownsHandle) : base(inst, ownsHandle)
         {
             SystemObject = sys;
-            library = sys.library;
         }
 
         protected override void ReleaseImpl()
         {
-            SystemObject.ReleaseSoundGroup(Handle, IsMaster);
+            library.SoundGroup_Release(Handle).CheckResult();
         }
 
         public int MaxAudible
@@ -116,17 +136,17 @@ namespace FmodAudio
             }
         }
 
-        public IntPtr UserData
+        internal override IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                library.SoundGroup_GetUserData(Handle, &value).CheckResult();
+                Fmod.UserDataMethods.SoundGroup_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
             set
             {
-                library.Sound_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.SoundGroup_SetUserData(Handle, value).CheckResult();
             }
         }
 

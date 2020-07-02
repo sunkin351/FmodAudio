@@ -84,8 +84,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
 
                 var res = Fmod.Library.System_GetRecordPosition(System.Handle, DriverIndex, out uint recordPos);

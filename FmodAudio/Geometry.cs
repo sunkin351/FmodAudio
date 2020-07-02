@@ -1,18 +1,37 @@
 ﻿#pragma warning disable IDE0059
 
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
     using Interop;
+
     public class Geometry : HandleBase
     {
-        private readonly NativeLibrary library;
-
-        internal Geometry(IntPtr handle, NativeLibrary lib) : base(handle)
+        internal static unsafe Geometry FromHandle(IntPtr handle)
         {
-            library = lib;
+            IntPtr value;
+            Fmod.UserDataMethods.Geometry_GetUserData(handle, &value).CheckResult();
+
+            if (value != default)
+            {
+                var gchandle = (GCHandle)value;
+
+                Debug.Assert(gchandle.IsAllocated && gchandle.Target is Geometry);
+
+                return (Geometry)gchandle.Target;
+            }
+
+            return new Geometry(handle, false);
+        }
+
+        private readonly NativeLibrary library = Fmod.Library;
+
+        internal Geometry(IntPtr handle, bool ownsHandle = true) : base(handle, ownsHandle)
+        {
         }
 
         protected override void ReleaseImpl()
@@ -24,20 +43,21 @@ namespace FmodAudio
         {
             int polyIndex;
 
-            if (vertices.IsEmpty)
+            if (vertices.Length < 3)
             {
-                throw new ArgumentException("Vertex count is 0", nameof(vertices));
+                throw new ArgumentException("Vertex count is less than 3", nameof(vertices));
             }
 
             library.Geometry_AddPolygon(Handle, directOcclusion, reverbOcclusion, doubleSided, vertices, &polyIndex).CheckResult();
             return polyIndex;
         }
 
-        public int PolygonCount
+        public unsafe int PolygonCount
         {
             get
             {
-                library.Geometry_GetNumPolygons(Handle, out int value).CheckResult();
+                int value;
+                library.Geometry_GetNumPolygons(Handle, &value).CheckResult();
                 return value;
             }
         }
@@ -119,12 +139,16 @@ namespace FmodAudio
         }
 
         /// <summary>
+        /// Saves the Geometry data to memory.
         /// Returns false if the given buffer is not large enough, throws on API Errors
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
+        /// <param name="buffer">Buffer to save to</param>
+        /// <param name="RequiredSize">Total bytes required to save</param>
+        /// <returns>Whether the operation succeeded</returns>
         public unsafe bool TrySave(Span<byte> buffer, out int RequiredSize)
         {
+            RequiredSize = 0;
+
             fixed (int* pRequired = &RequiredSize)
             {
                 library.Geometry_Save(Handle, null, pRequired).CheckResult();
@@ -140,22 +164,51 @@ namespace FmodAudio
             }
         }
 
+        /// <summary>
+        /// Saves the Geometry data to memory.
+        /// Returns false if the given buffer is not large enough, throws on API Errors
+        /// </summary>
+        /// <param name="buffer">Buffer to save to</param>
+        /// <returns>Whether the operation succeeded</returns>
         public bool TrySave(Span<byte> buffer)
         {
             return TrySave(buffer, out _);
         }
 
-        public IntPtr UserData
+        /// <summary>
+        /// Saves the Geometry data to memory.
+        /// </summary>
+        /// <returns>
+        /// Byte array containing the geometry data
+        /// </returns>
+        public unsafe byte[] Save()
+        {
+            int required = 0;
+
+            library.Geometry_Save(Handle, null, &required).CheckResult();
+
+            byte[] data = new byte[required];
+
+            fixed (byte* pData = data)
+            {
+                library.Geometry_Save(Handle, pData, &required).CheckResult();
+            }
+
+            return data;
+        }
+
+        internal override unsafe IntPtr UserData
         {
             get
             {
-                library.Geometry_GetUserData(Handle, out IntPtr value).CheckResult();
+                IntPtr value;
+                Fmod.UserDataMethods.Geometry_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                library.Geometry_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.Geometry_SetUserData(Handle, value).CheckResult();
             }
         }
     }

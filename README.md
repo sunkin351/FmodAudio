@@ -1,4 +1,5 @@
 # FmodAudio
+# 1.0.0 has officially been released on NuGet! Feel free to try it out!
 
 Welcome to FmodAudio, a C# Wrapper for the FMOD audio library.
 

@@ -1,10 +1,8 @@
-﻿using FmodAudio;
 using System;
-using System.IO;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Threading;
+using FmodAudio;
 
 namespace Examples.Base
 {
@@ -18,6 +16,8 @@ namespace Examples.Base
 
         protected bool ShouldExit { get; private set; }
 
+        private int ConsoleUpdateStart;
+
         protected Example(string title)
         {
             Title = title;
@@ -26,6 +26,7 @@ namespace Examples.Base
         public virtual void Initialize()
         {
             ShouldExit = false;
+            ConsoleUpdateStart = 0;
 
             System = Fmod.CreateSystem();
             TestVersion(System);
@@ -33,9 +34,16 @@ namespace Examples.Base
 
         public abstract void Run();
 
-        protected static void OnUpdate()
+        protected void SetConsoleUpdateStart()
         {
-            ConsoleHelpers.OnUpdate();
+            ConsoleUpdateStart = Console.CursorTop + 1;
+        }
+
+        protected void OnUpdate()
+        {
+            ConsoleHelpers.SetCursorRow(ConsoleUpdateStart);
+
+            ProcessInput();
         }
         
         protected static void DrawText()
@@ -103,6 +111,123 @@ namespace Examples.Base
                     action();
                 }
             }
+        }
+
+        private static int RenderTime(int ms, Span<char> buffer)
+        {
+            if (ms < 0)
+                throw new ArgumentOutOfRangeException(nameof(ms));
+
+            int total = 0;
+
+            var seconds = Math.DivRem(ms, 1000, out ms);
+
+            var minutes = Math.DivRem(seconds, 60, out seconds);
+
+            int count;
+            if (minutes != 0)
+            {
+                minutes.TryFormat(buffer, out count);
+
+                buffer[count] = ':';
+                buffer = buffer.Slice(count + 1);
+
+                total += count + 1;
+            }
+
+            seconds.TryFormat(buffer, out count);
+
+            buffer[count] = '.';
+            buffer = buffer.Slice(count + 1);
+
+            total += count + 1;
+
+            ms.TryFormat(buffer, out count);
+
+            total += count;
+
+            return total;
+        }
+
+        protected static void DrawTime(int ms, int totalms)
+        {
+            const string PreText = "Time: ";
+
+            Span<char> buffer = stackalloc char[50];
+
+            PreText.AsSpan().CopyTo(buffer);
+
+            int count = RenderTime(ms, buffer.Slice(PreText.Length));
+
+            buffer[PreText.Length + count] = '/';
+            count += 1;
+
+            count += RenderTime(totalms, buffer.Slice(PreText.Length + count));
+
+            DrawText(buffer.Slice(0, PreText.Length + count));
+        }
+
+        protected ref struct BufferedStringBuilder
+        {
+            private readonly Span<char> Buffer;
+            private int contentLength;
+
+            public BufferedStringBuilder(Span<char> buffer)
+            {
+                Buffer = buffer;
+                contentLength = 0;
+            }
+
+            public int WriteToBuffer(ReadOnlySpan<char> input)
+            {
+                int availableRoom = Buffer.Length - contentLength;
+
+                if (availableRoom == 0)
+                {
+                    return 0;
+                }
+
+                if (input.Length > availableRoom)
+                {
+                    input.Slice(0, availableRoom).CopyTo(Buffer.Slice(contentLength));
+                    contentLength += availableRoom;
+                    return availableRoom;
+                }
+
+                input.CopyTo(Buffer.Slice(contentLength));
+                contentLength += input.Length;
+                return input.Length;
+            }
+
+            public bool WriteToBuffer(char input)
+            {
+                int availableRoom = Buffer.Length - contentLength;
+                if (availableRoom == 0)
+                {
+                    return false;
+                }
+
+                Buffer[contentLength] = input;
+                contentLength += 1;
+                return true;
+            }
+
+            public int WriteToBuffer(int input)
+            {
+                int availableRoom = Buffer.Length - contentLength;
+                if (availableRoom == 0)
+                {
+                    return 0;
+                }
+
+                input.TryFormat(Buffer.Slice(contentLength), out int written);
+                contentLength += written;
+                return written;
+            }
+
+            public void Clear() => contentLength = 0;
+
+            public ReadOnlySpan<char> CurrentContent => Buffer.Slice(0, contentLength);
         }
     }
 }

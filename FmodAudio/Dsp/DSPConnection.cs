@@ -1,18 +1,17 @@
 ﻿using System;
+using FmodAudio.Interop;
 
 namespace FmodAudio.Dsp
-{
-    using global::FmodAudio.Interop;
-    public sealed class DSPConnection : HandleBase
+{   
+    public readonly struct DSPConnection
     {
-        private readonly NativeLibrary library;
+        private static readonly NativeLibrary library = Fmod.Library;
 
-        private readonly FmodSystem system;
+        internal readonly IntPtr Handle;
 
-        internal DSPConnection(FmodSystem sys, IntPtr handle) : base(handle)
+        internal DSPConnection(IntPtr handle)
         {
-            system = sys;
-            library = sys.library;
+            Handle = handle;
         }
         
         public DSP Input
@@ -21,7 +20,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetInput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle, false);
+                return DSP.FromHandle(handle);
             }
         }
 
@@ -31,7 +30,7 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetOutput(Handle, out IntPtr handle).CheckResult();
 
-                return system.GetDSP(handle, false);
+                return DSP.FromHandle(handle);
             }
         }
 
@@ -57,20 +56,6 @@ namespace FmodAudio.Dsp
                 return type;
             }
         }
-
-        public IntPtr UserData
-        {
-            get
-            {
-                library.DSPConnection_GetUserData(Handle, out IntPtr value).CheckResult();
-                return value;
-            }
-
-            set
-            {
-                library.DSPConnection_SetUserData(Handle, value).CheckResult();
-            }
-        }
         
         public unsafe void SetMixMatrix(Span<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
         {
@@ -91,6 +76,26 @@ namespace FmodAudio.Dsp
             {
                 library.DSPConnection_GetMixMatrix(Handle, mptr, out outChannels, out inChannels, inChannelHop).CheckResult();
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DSPConnection other && this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Handle);
+        }
+
+        public static bool operator ==(DSPConnection left, DSPConnection right)
+        {
+            return left.Handle == right.Handle;
+        }
+
+        public static bool operator !=(DSPConnection left, DSPConnection right)
+        {
+            return left.Handle != right.Handle;
         }
     }
 }

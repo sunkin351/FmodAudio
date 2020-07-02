@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.9.1.0</Version>
+    <Version>1.0.0</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -12,17 +12,11 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Description>Wrapper Library for the Fmod Core API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Updated Wrapper and Binding to FMOD 2.0.5 from 1.16.X
+    <PackageReleaseNotes>Greatly simplifies creating a custom DSP for those using FMOD's DSP api. You can now simply inherit from `FmodAudio.Dsp.UserDefinedDSP` and overload the methods you wish FMOD to use.
 
-Exposed Reverb3D object oriented wrapper class and API methods. Experimental. Let me know if anything is missing.
+Internal tracking of managed objects has been rewritten to use GCHandle instead of manual handle to object Dictionary lookup. With this change, I am utilizing the user data pointer in FMOD native objects for this purpose, and will no longer be exposing the ability to retrieve or set them. I appologize if this causes any inconvenience to users of this class library.
 
-Exposed Codec Registration, You can now write your own codec for FMOD in C#
-
-Exposed Low Level binding for low level enthusiasts. Access through the `Library` property of the `Fmod` static class.
-
-Bare Bones support for Output plugin registration, exposed singular method and structure for doing this.  (Low Level Binding exclusive)</PackageReleaseNotes>
-    <AssemblyVersion>0.9.1.0</AssemblyVersion>
-    <FileVersion>0.9.1.0</FileVersion>
+As Always, please log an issue on the github repo if you run into any issues.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

@@ -22,13 +22,7 @@ namespace Examples
             RegisterCommand(ConsoleKey.D2, () => highPass.Bypass = !highPass.Bypass);
             RegisterCommand(ConsoleKey.LeftArrow, () =>
             {
-                var tmp = pan - 0.1f;
-
-                if (tmp < -1f)
-                {
-                    tmp = -1f;
-                }
-
+                var tmp = Math.Clamp(pan - 0.1f, -1, 1);
                 pan = tmp;
                 channel.SetPan(tmp);
             });
@@ -75,7 +69,7 @@ namespace Examples
 
             ChannelGroup masterGroup = System.MasterChannelGroup;
             head = masterGroup.GetDSP(ChannelControlDSPIndex.DspHead);
-            channelMixer = head.GetInput(0).Item1;
+            channelMixer = head.GetInput(0).Dsp;
 
             ///Now disconnect channel dsp head from the wavetable to look like this.
             //[DSPHEAD]             [DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
@@ -143,8 +137,6 @@ namespace Examples
             do
             {
                 OnUpdate();
-
-                ProcessInput();
 
                 System.Update();
 

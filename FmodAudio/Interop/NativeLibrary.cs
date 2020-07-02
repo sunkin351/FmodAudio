@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Numerics;
-using System.Text;
-using FmodAudio.Codec;
-using FmodAudio.Dsp;
 
 using AdvancedDLSupport;
+
+using FmodAudio.Codec;
+using FmodAudio.Dsp;
 using FmodAudio.Output;
 
 namespace FmodAudio.Interop
@@ -897,19 +897,17 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result System_SetUserData(IntPtr system, IntPtr userdata);
-        
-        public abstract Result System_GetUserData(IntPtr system, IntPtr* userdata);
+        public abstract Result Sound_Release(IntPtr sound);
 
-        public Result System_GetUserData(IntPtr system, out IntPtr userdata)
+        public abstract Result Sound_GetSystemObject(IntPtr sound, IntPtr* system);
+
+        public Result Sound_GetSystemObject(IntPtr sound, out IntPtr system)
         {
-            fixed (IntPtr* pUserdata = &userdata)
+            fixed (IntPtr* pSystem = &system)
             {
-                return System_GetUserData(system, pUserdata);
+                return Sound_GetSystemObject(sound, pSystem);
             }
         }
-
-        public abstract Result Sound_Release(IntPtr sound);
         
         public abstract Result Sound_Lock(IntPtr sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
 
@@ -1245,18 +1243,6 @@ namespace FmodAudio.Interop
             }
         }
         
-        public abstract Result Sound_SetUserData(IntPtr sound, IntPtr userData);
-        
-        public abstract Result Sound_GetUserData(IntPtr sound, IntPtr* userData);
-
-        public Result Sound_GetUserData(IntPtr sound, out IntPtr userData)
-        {
-            fixed (IntPtr* pUserData = &userData)
-            {
-                return Sound_GetUserData(sound, pUserData);
-            }
-        }
-
         public abstract Result SoundGroup_Release(IntPtr soundGroup);
        
         public abstract Result SoundGroup_GetSystemObject(IntPtr soundGroup, IntPtr* system);
@@ -1348,18 +1334,6 @@ namespace FmodAudio.Interop
             fixed (int* pSoundsPlaying = &soundsPlaying)
             {
                 return SoundGroup_GetNumPlaying(soundGroup, pSoundsPlaying);
-            }
-        }
-
-        public abstract Result SoundGroup_SetUserData(IntPtr soundGroup, IntPtr userdata);
-        
-        public abstract Result SoundGroup_GetUserData(IntPtr soundGroup, IntPtr* userdata);
-
-        public Result SoundGroup_GetUserData(IntPtr soundGroup, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserData = &userdata)
-            {
-                return SoundGroup_GetUserData(soundGroup, pUserData);
             }
         }
 
@@ -1466,18 +1440,6 @@ namespace FmodAudio.Interop
             fixed (uint* pLoopStart = &loopstart, pLoopEnd = &loopend)
             {
                 return Channel_GetLoopPoints(channel, pLoopStart, loopstarttype, pLoopEnd, loopendtype);
-            }
-        }
-
-        public abstract Result Channel_SetUserData(IntPtr channel, IntPtr userdata);
-        
-        public abstract Result Channel_GetUserData(IntPtr channel, IntPtr* userdata);
-
-        public Result Channel_GetUserData(IntPtr channel, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return Channel_GetUserData(channel, pUserdata);
             }
         }
 
@@ -1858,18 +1820,6 @@ namespace FmodAudio.Interop
             }
         }
 
-        public abstract Result ChannelGroup_SetUserData(IntPtr channelGroup, IntPtr userdata);
-        
-        public abstract Result ChannelGroup_GetUserData(IntPtr channelGroup, IntPtr* userdata);
-
-        public Result ChannelGroup_GetUserData(IntPtr channelGroup, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return ChannelGroup_GetUserData(channelGroup, pUserdata);
-            }
-        }
-
         public abstract Result ChannelGroup_Release(IntPtr Handle);
 
         public abstract Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, int propagatedspclock, IntPtr* connection);
@@ -2228,18 +2178,6 @@ namespace FmodAudio.Interop
 
         public abstract Result DSP_GetIdle(IntPtr dsp, out bool idle);
         
-        public abstract Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
-        
-        public abstract Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
-
-        public Result DSP_GetUserData(IntPtr dsp, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return DSP_GetUserData(dsp, pUserdata);
-            }
-        }
-
         public abstract Result DSP_SetMeteringEnabled(IntPtr dsp, bool inputEnabled, bool outputEnabled);
         
         public abstract Result DSP_GetMeteringEnabled(IntPtr dsp, out bool inputEnabled, out bool outputEnabled);
@@ -2305,18 +2243,6 @@ namespace FmodAudio.Interop
             fixed (DSPConnectionType* pType = &type)
             {
                 return DSPConnection_GetType(dspconnection, pType);
-            }
-        }
-
-        public abstract Result DSPConnection_SetUserData(IntPtr dspconnection, IntPtr userdata);
-        
-        public abstract Result DSPConnection_GetUserData(IntPtr dspconnection, IntPtr* userdata);
-
-        public Result DSPConnection_GetUserData(IntPtr dspconnection, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return DSPConnection_GetUserData(dspconnection, pUserdata);
             }
         }
 
@@ -2475,18 +2401,6 @@ namespace FmodAudio.Interop
         }
 
         public abstract Result Geometry_Save(IntPtr geometry, void* data, int* datasize);
-        
-        public abstract Result Geometry_SetUserData(IntPtr geometry, IntPtr userdata);
-        
-        public abstract Result Geometry_GetUserData(IntPtr geometry, IntPtr* userdata);
-
-        public Result Geometry_GetUserData(IntPtr geometry, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return Geometry_GetUserData(geometry, pUserdata);
-            }
-        }
 
         public abstract Result Reverb3D_Release(IntPtr reverb3D);
         
@@ -2534,17 +2448,5 @@ namespace FmodAudio.Interop
         public abstract Result Reverb3D_SetActive(IntPtr reverb3D, bool active);
         
         public abstract Result Reverb3D_GetActive(IntPtr reverb3D, out bool active);
-        
-        public abstract Result Reverb3D_SetUserData(IntPtr reverb3D, IntPtr userdata);
-        
-        public abstract Result Reverb3D_GetUserData(IntPtr reverb3D, IntPtr* userdata);
-
-        public Result Reverb3D_GetUserData(IntPtr reverb3D, out IntPtr userdata)
-        {
-            fixed (IntPtr* pUserdata = &userdata)
-            {
-                return Reverb3D_GetUserData(reverb3D, pUserdata);
-            }
-        }
     }
 }

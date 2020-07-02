@@ -1,33 +1,82 @@
+#pragma warning disable IDE0059, CA1034
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace FmodAudio
 {
-    public sealed class Sound : HandleBase
+    public sealed unsafe class Sound : HandleBase
     {
-        private readonly Interop.NativeLibrary library;
+        internal static Sound FromNewHandle(FmodSystem system, IntPtr handle, bool ownsHandle = true)
+        {
+            return FromHandle(handle) ?? new Sound(system, handle, ownsHandle);
+        }
+
+        internal static unsafe Sound? FromHandle(IntPtr handle)
+        {
+            IntPtr ptr;
+            Fmod.UserDataMethods.Sound_GetUserData(handle, &ptr).CheckResult();
+
+            if (ptr != default)
+            {
+                GCHandle gcHandle = (GCHandle)ptr;
+
+                if (gcHandle.IsAllocated && gcHandle.Target is Sound sound)
+                {
+                    return sound;
+                }
+            }
+
+            return null;
+        }
+
+        private readonly Interop.NativeLibrary library = Fmod.Library;
 
         public FmodSystem SystemObject { get; }
 
-        public Sound Parent { get; internal set; } = null;
+        public Sound? Parent { get; internal set; } = null;
 
-        private string name;
-        private int? SubsoundCount;
-        private Memory.SaferPointer CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
-        private readonly List<Sound> Subsounds = new List<Sound>();
-        public SoundGroup soundGroup = null;
+        private string? name;
+        private Memory.SaferPointer? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
+        private readonly List<Sound>? Subsounds = null;
+        internal SoundGroup? soundGroup = null;
 
-        internal Sound(FmodSystem sys, IntPtr inst) : base(inst)
+        internal Sound(FmodSystem sys, IntPtr inst, bool ownsHandle = true) : base(inst, ownsHandle)
         {
             SystemObject = sys;
-            library = sys.library;
+
+            if (!ownsHandle)
+            {
+                return;
+            }
+
+            int count;
+            library.Sound_GetNumSubSounds(inst, &count).CheckResult();
+
+            if (count != 0)
+            {
+                Subsounds = new List<Sound>(count);
+
+                for (int i = 0; i < count; ++i)
+                {
+                    library.Sound_GetSubSound(Handle, i, out IntPtr subsoundHandle).CheckResult();
+
+                    Subsounds.Add(new Sound(sys, subsoundHandle, false) { Parent = this });
+                }
+            }
         }
 
         protected override void ReleaseImpl()
         {
-            SystemObject.ReleaseSound(Handle);
+            if (!IsSubsound)
+            {
+                library.Sound_Release(Handle).CheckResult();
+            }
         }
 
         public bool IsSubsound => Parent != null;
@@ -119,42 +168,35 @@ namespace FmodAudio
         {
             get
             {
-                if (!SubsoundCount.HasValue)
+                if (Subsounds != null)
                 {
-                    library.Sound_GetNumSubSounds(Handle, out int number).CheckResult();
-
-                    SubsoundCount = number;
-
-                    return number;
+                    return Subsounds.Count;
                 }
 
-                return SubsoundCount.Value;
+                library.Sound_GetNumSubSounds(Handle, out int number).CheckResult();
+
+                return number;
             }
         }
 
         public Sound GetSubSound(int index)
         {
+            if (Subsounds != null)
+            {
+                return Subsounds[index];
+            }
+
             int total = SubSoundCount;
 
-            if (index >= total || index < 0)
+            if ((uint)index >= (uint)total)
                 throw new ArgumentOutOfRangeException(nameof(index));
             
             library.Sound_GetSubSound(Handle, index, out IntPtr handle).CheckResult();
 
-            var tmp = SystemObject.GetSound(handle);
-
-            tmp.Parent = this;
-            
-            int count = Subsounds.Count;
-            if (count < total)
+            return new Sound(SystemObject, handle, false)
             {
-                Subsounds.Capacity = total;
-                Subsounds.AddRange(Enumerable.Repeat(default(Sound), count == 0 ? total : total - count));
-            }
-
-            Subsounds[index] = tmp;
-
-            return tmp;
+                Parent = this
+            };
         }
 
         public unsafe string Name
@@ -251,13 +293,13 @@ namespace FmodAudio
             library.Sound_SeekData(Handle, pcm).CheckResult();
         }
 
-        public SoundGroup SoundGroup
+        public SoundGroup? SoundGroup
         {
             get
             {
                 library.Sound_GetSoundGroup(Handle, out IntPtr handle).CheckResult();
 
-                return SystemObject.GetSoundGroup(handle);
+                return handle == default ? null : (SoundGroup.FromHandle(handle) ?? new SoundGroup(SystemObject, handle, false));
             }
 
             set
@@ -411,18 +453,19 @@ namespace FmodAudio
             }
         }
 
-        public IntPtr UserData
+        internal override unsafe IntPtr UserData
         {
             get
             {
-                library.Sound_GetUserData(Handle, out IntPtr value).CheckResult();
+                IntPtr userData;
+                Fmod.UserDataMethods.Sound_GetUserData(Handle, &userData).CheckResult();
 
-                return value;
+                return userData;
             }
 
             set
             {
-                library.Sound_SetUserData(Handle, value).CheckResult();
+                Fmod.UserDataMethods.Sound_SetUserData(Handle, value).CheckResult();
             }
         }
 

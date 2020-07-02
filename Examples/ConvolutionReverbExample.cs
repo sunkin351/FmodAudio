@@ -13,6 +13,8 @@ namespace Examples
         private DSP reverbUnit;
         private Sound sound;
 
+        private IntPtr IRData;
+
         float wetVolume = 1f, dryVolume = 1f;
 
         public ConvolutionReverbExample() : base ("Fmod Convolution Reverb Example")
@@ -32,6 +34,9 @@ namespace Examples
             reverbGroup = System.CreateChannelGroup("reverb");
             mainGroup = System.CreateChannelGroup("main");
 
+            System.MasterChannelGroup.AddGroup(mainGroup);
+            System.MasterChannelGroup.Volume = 0.25f;
+
             reverbUnit = System.CreateDSPByType(DSPType.ConvolutionReverb);
 
             reverbGroup.AddDSP(ChannelControlDSPIndex.DSPTail, reverbUnit);
@@ -46,26 +51,20 @@ namespace Examples
                 Environment.Exit(-1);
             }
 
-            int irSoundLength = (int)sound.GetLength(TimeUnit.PCM);
+            int irSoundLength = (int)tmpsound.GetLength(TimeUnit.PCM);
 
             int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
 
             var irData = Marshal.AllocHGlobal(irDataLength);
+            IRData = irData;
 
-            try
-            {
-                sound.ReadData(irData, irDataLength);
+            tmpsound.ReadData(irData, irDataLength);
 
-                const int ReverbParamIR = 0;
-                const int ReverbParamDry = 2;
+            const int ReverbParamIR = 0;
+            const int ReverbParamDry = 2;
 
-                reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
-                reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(irData);
-            }
+            reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+            reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
 
             tmpsound.Release();
 
@@ -82,12 +81,9 @@ namespace Examples
 
             channel.Paused = false;
 
-
             do
             {
                 OnUpdate();
-
-                ProcessInput();
 
                 System.Update();
 
@@ -127,6 +123,12 @@ namespace Examples
             }
 
             base.Dispose();
+
+            if (IRData != default)
+            {
+                Marshal.FreeHGlobal(IRData);
+                IRData = default;
+            }
         }
     }
 }

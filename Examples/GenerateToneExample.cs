@@ -148,8 +148,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-
                 System.Update();
 
                 float freq = 0, volume = 0;

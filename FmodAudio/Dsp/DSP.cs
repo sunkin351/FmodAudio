@@ -1,39 +1,70 @@
 using System;
-using System.Text;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+using FmodAudio.Interop;
+
+#nullable enable
 
 namespace FmodAudio.Dsp
 {
-    using FmodAudio.Interop;
-    public sealed class DSP : HandleBase
+    public unsafe abstract partial class DSP : HandleBase
     {
-        private readonly NativeLibrary library;
+        internal static NativeLibrary library = Fmod.Library;
 
+        internal static DSP FromHandle(IntPtr handle)
+        {
+            IntPtr value;
+            Fmod.UserDataMethods.DSP_GetUserData(handle, &value).CheckResult();
+
+            if (value != default)
+            {
+                var gchandle = (GCHandle)value;
+
+                if (gchandle.IsAllocated && gchandle.Target is DSP dsp)
+                {
+                    return dsp;
+                }
+            }
+
+            library.DSP_GetSystemObject(handle, &value).CheckResult();
+
+            var system = FmodSystem.FromHandle(value);
+
+            return new SystemDefinedDsp(system, handle);
+        }
+
+        /// <summary>
+        /// Retrieves the system object that was used in this DSP's creation
+        /// </summary>
         public FmodSystem SystemObject { get; }
-        internal DspDescription Description;
-        int? ParamCount;
-        readonly bool OwnsHandle;
 
-        internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle = true) : base(handle)
+        internal DSP(FmodSystem sys, IntPtr handle, bool ownsHandle) : base (handle, ownsHandle)
         {
-            SystemObject = sys;
-            library = sys.library;
-            OwnsHandle = ownsHandle;
+            this.SystemObject = sys;
+        }
 
-            if (!ownsHandle)
+        internal override sealed IntPtr UserData
+        {
+            get 
             {
-                GC.SuppressFinalize(this);
+                IntPtr userData;
+                Fmod.UserDataMethods.DSP_GetUserData(Handle, &userData).CheckResult();
+
+                return userData;
+            }
+            set
+            {
+                Fmod.UserDataMethods.DSP_SetUserData(Handle, value).CheckResult();
             }
         }
 
-        protected override void ReleaseImpl()
-        {
-            if (OwnsHandle)
-            {
-                this.DisconnectAll(true, true);
-                SystemObject.ReleaseDSP(Handle);
-            }
-        }
-
+        /// <summary>
+        /// Retrieves the number of DSP units in the input list.
+        /// </summary>
+        /// <remarks>
+        /// This will flush the DSP queue (which blocks against the mixer) to ensure the input list is correct, avoid this during time sensitive operations.
+        /// </remarks>
         public int InputCount
         {
             get
@@ -43,6 +74,12 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Retrieves the number of DSP units in the output list.
+        /// </summary>
+        /// <remarks>
+        /// This will flush the DSP queue (which blocks against the mixer) to ensure the input list is correct, avoid this during time sensitive operations.
+        /// </remarks>
         public int OutputCount
         {
             get
@@ -52,6 +89,9 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether this DSP is active. When inactive, processing of this dsp and all its inputs is stopped.
+        /// </summary>
         public bool Active
         {
             get
@@ -65,6 +105,9 @@ namespace FmodAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether this DSP is bypassed. If true, this DSP will not be processed, while continuing to process its inputs.
+        /// </summary>
         public bool Bypass
         {
             get
@@ -78,34 +121,35 @@ namespace FmodAudio.Dsp
             }
         }
 
-        public int ParameterCount
-        {
-            get
-            {
-                if (Description != null)
-                {
-                    return Description.ParameterCount;
-                }
+        /// <summary>
+        /// Retrieves the number of parameters exposed by this unit.
+        /// </summary>
+        /// <remarks>
+        /// Use this to enumerate all parameters of a DSP unit with <see cref="DSP.GetParameterInfo(int)"/>
+        /// </remarks>
+        public abstract int ParameterCount { get; }
 
-                if (ParamCount is null)
-                {
-                    library.DSP_GetNumParameters(Handle, out int paramCount).CheckResult();
-                    ParamCount = paramCount;
-                }
-                
-                return ParamCount.Value;
-            }
-        }
-
+        /// <summary>
+        /// Retrieves the pre-defined type of this FMOD registered DSP unit.
+        /// </summary>
+        /// <remarks>
+        /// This is only valid for built in FMOD effects. Any user plugins will simply return <see cref="DSPType.Unknown"/>
+        /// </remarks>
         public DSPType Type
         {
             get
             {
-                library.DSP_GetType(Handle, out var type).CheckResult();
+                library.DSP_GetType(this.Handle, out var type).CheckResult();
                 return type;
             }
         }
 
+        /// <summary>
+        /// Retrieves the idle state of this DSP.
+        /// </summary>
+        /// <remarks>
+        /// A DSP is considered idle when it stops receiving input signal and all internal processing of stored input has been exhausted.
+        /// </remarks>
         public bool Idle
         {
             get
@@ -115,31 +159,22 @@ namespace FmodAudio.Dsp
             }
         }
 
-        public IntPtr UserData
+        /// <summary>
+        /// Adds a DSP unit as an input to this object.
+        /// </summary>
+        /// <param name="input">DSP unit to be added</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public DSPConnection AddInput(DSP input, DSPConnectionType type = DSPConnectionType.Standard)
         {
-            get
-            {
-                library.DSP_GetUserData(Handle, out IntPtr value).CheckResult();
-                return value;
-            }
+            library.DSP_AddInput(Handle, input.Handle, out IntPtr connection, type).CheckResult();
 
-            set
-            {
-                library.DSP_SetUserData(Handle, value).CheckResult();
-            }
+            return new DSPConnection(connection);
         }
 
-
-        public DSPConnection AddInput(DSP target, DSPConnectionType type = DSPConnectionType.Standard)
+        public void DisconnectFrom(DSP dsp, DSPConnection connection = default)
         {
-            library.DSP_AddInput(Handle, target.Handle, out IntPtr connection, type).CheckResult();
-
-            return new DSPConnection(SystemObject, connection);
-        }
-
-        public void DisconnectFrom(DSP dsp, DSPConnection connection = null)
-        {
-            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection?.Handle ?? default).CheckResult();
+            library.DSP_DisconnectFrom(Handle, dsp.Handle, connection.Handle).CheckResult();
         }
 
         public void DisconnectAll(bool inputs, bool outputs)
@@ -151,8 +186,8 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetInput(Handle, index, out IntPtr input, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(input, false);
-            var con = new DSPConnection(SystemObject, connection);
+            var dsp = FromHandle(input);
+            var con = new DSPConnection(connection);
             return (dsp, con);
         }
 
@@ -160,8 +195,8 @@ namespace FmodAudio.Dsp
         {
             library.DSP_GetOutput(Handle, index, out IntPtr output, out IntPtr connection).CheckResult();
 
-            var dsp = SystemObject.GetDSP(output, false);
-            var con = new DSPConnection(SystemObject, connection);
+            var dsp = FromHandle(output);
+            var con = new DSPConnection(connection);
             return (dsp, con);
         }
 
@@ -197,7 +232,7 @@ namespace FmodAudio.Dsp
 
         private void CheckParamIndex(int index)
         {
-            if ((uint)index >= (uint)ParameterCount)
+            if ((uint)index >= (uint)this.ParameterCount)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -257,21 +292,7 @@ namespace FmodAudio.Dsp
             return data;
         }
 
-        public unsafe ParameterDescription GetParameterInfo(int index)
-        {
-            CheckParamIndex(index);
-
-            if (Description != null)
-            {
-                return Description.ParameterDescriptions[index];
-            }
-
-            Interop.ParameterDescriptionStruct* ptr;
-
-            library.DSP_GetParameterInfo(Handle, index, &ptr).CheckResult();
-
-            return ParameterDescription.CreateFromPointer(ptr);
-        }
+        public abstract ParameterDescription GetParameterInfo(int index);
 
         public int GetDataParameterIndex(int dataType)
         {

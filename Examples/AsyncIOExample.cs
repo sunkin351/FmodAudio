@@ -70,8 +70,6 @@ namespace Examples
                     channel.Mute = starving;
                 }
 
-                ProcessInput();
-
                 System.Update();
 
                 DrawText("==================================================");

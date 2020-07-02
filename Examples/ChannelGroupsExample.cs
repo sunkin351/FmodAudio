@@ -56,8 +56,6 @@ namespace Examples
             {
                 OnUpdate();
 
-                ProcessInput();
-                
                 System.Update();
 
                 System.GetChannelsPlaying(out int channelsPlaying, out _);

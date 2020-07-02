@@ -39,7 +39,7 @@ namespace FmodAudio.Dsp
         private DspStateCallback SystemDeregister;
         private DspSystemMixCallback SystemMix;
 
-        public FmodVersion PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
+        public uint PluginSDKVersion { get => Struct.PluginSDKVersion; set => Struct.PluginSDKVersion = value; }
 
         public string Name { get => Struct.Name; set => Struct.Name = value; }
 
@@ -194,7 +194,7 @@ namespace FmodAudio.Dsp
             /// <summary>
             /// The Plugin SDK version this plugin is built for.
             /// </summary>
-            public FmodVersion PluginSDKVersion;
+            public uint PluginSDKVersion;
 
             /// <summary>
             /// Name of the unit to be displayed in the network
@@ -234,6 +234,7 @@ namespace FmodAudio.Dsp
 
             public IntPtr ShouldIProcess;
 
+            [Obsolete]
             public IntPtr UserData;
 
             public IntPtr SystemRegister;
@@ -272,13 +273,18 @@ namespace FmodAudio.Dsp
             return (DspDescription)this.MemberwiseClone();
         }
 
-        private sealed class ParameterDescriptionManager
+        internal sealed class ParameterDescriptionManager
         {
             private readonly IntPtr ptrArray, descArray;
             private readonly int length;
 
             public ParameterDescriptionManager(ParameterDescription[] arr)
             {
+                if (arr is null || arr.Length == 0)
+                {
+                    return;
+                }
+
                 ptrArray = Memory.AllocateUnsafe(IntPtr.Size * arr.Length);
                 descArray = Memory.AllocateUnsafe(Unsafe.SizeOf<ParameterDescriptionStruct>() * arr.Length);
                 length = arr.Length;
