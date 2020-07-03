@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -42,9 +43,10 @@ namespace FmodAudio
         public Sound? Parent { get; internal set; } = null;
 
         private string? name;
-        private Memory.SaferPointer? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
         private readonly List<Sound>? Subsounds = null;
         internal SoundGroup? soundGroup = null;
+
+        private Vector3[]? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
 
         internal Sound(FmodSystem sys, IntPtr inst, bool ownsHandle = true) : base(inst, ownsHandle)
         {
@@ -133,35 +135,44 @@ namespace FmodAudio
         
         public unsafe Span<Vector3> GetCustomRolloff3D()
         {
-            library.Sound_Get3DCustomRolloff(Handle, out IntPtr points, out int Number).CheckResult();
+            Vector3* points;
+            int count;
 
-            if (points == IntPtr.Zero)
-            {
-                return default;
-            }
-            else
-            {
-                return new Span<Vector3>((void*)points, Number);
-            }
+            library.Sound_Get3DCustomRolloff(Handle, &points, &count).CheckResult();
+
+            return new Span<Vector3>(points, count);
         }
 
         public void SetCustomRolloff3D(ReadOnlySpan<Vector3> points)
         {
-            int num = 0;
-            Memory.SaferPointer arrptr = FmodHelpers.AllocateCustomRolloff(points);
+            Vector3[]? fixedArr = null;
 
-            if (arrptr != null)
+            Vector3* ptr = null;
+            int count = 0;
+
+            if (points.Length != 0)
             {
-                num = points.Length;
+                if (points.Length == CustomRolloff3D?.Length)
+                {
+                    points.CopyTo(CustomRolloff3D);
+                    return;
+                }
+
+                fixedArr = GC.AllocateArray<Vector3>(points.Length, pinned: true);
+
+                points.CopyTo(fixedArr);
+
+                ptr = (Vector3*)Unsafe.AsPointer(ref fixedArr[0]);
+                count = points.Length;
             }
-            else if(CustomRolloff3D == null)
+            else if (CustomRolloff3D == null)
             {
                 return;
             }
 
-            library.Sound_Set3DCustomRolloff(Handle, arrptr, num).CheckResult();
+            library.Sound_Set3DCustomRolloff(Handle, ptr, count).CheckResult();
 
-            CustomRolloff3D = arrptr;
+            CustomRolloff3D = fixedArr;
         }
         
         public int SubSoundCount
@@ -269,7 +280,7 @@ namespace FmodAudio
             if (blength == 0)
                 return 0;
 
-            if (buffer == null)
+            if (buffer == default)
                 throw new ArgumentNullException(nameof(buffer));
 
             return ReadDataInternal((void*)buffer, (uint)blength);

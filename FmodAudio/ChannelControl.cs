@@ -1,5 +1,8 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+
+#nullable enable
 
 namespace FmodAudio
 {
@@ -17,9 +20,9 @@ namespace FmodAudio
             library = sys.library;
         }
 
-        internal ChannelControl(FmodSystem sys, IntPtr handle, Memory.SaferPointer customRolloff) : this(sys, handle, true)
+        internal ChannelControl(FmodSystem sys, IntPtr handle, Vector3[] customRolloff) : this(sys, handle, true)
         {
-            CustomRolloff = customRolloff;
+            CustomRolloff3D = customRolloff;
         }
 
         #region General Control Functionality for Channels and ChannelGroups
@@ -420,38 +423,51 @@ namespace FmodAudio
             library.ChannelGroup_Get3DConeOrientation(Handle, out orientation).CheckResult();
         }
 
-        private Memory.SaferPointer CustomRolloff = null;
+        private Vector3[]? CustomRolloff3D = null;
 
-        public void Set3DCustomRolloff(ReadOnlySpan<Vector3> rolloff)
+        public unsafe void Set3DCustomRolloff(ReadOnlySpan<Vector3> points)
         {
-            if (this is Channel)
+            if (!(this is ChannelGroup))
                 throw new NotSupportedException();
 
-            var ptr = FmodHelpers.AllocateCustomRolloff(rolloff);
+            Vector3[]? fixedArr = null;
+
+            Vector3* ptr = null;
             int count = 0;
 
-            if (ptr != null)
+            if (points.Length != 0)
             {
-                count = rolloff.Length;
+                if (points.Length == CustomRolloff3D?.Length)
+                {
+                    points.CopyTo(CustomRolloff3D);
+                    return;
+                }
+
+                fixedArr = GC.AllocateArray<Vector3>(points.Length, pinned: true);
+
+                points.CopyTo(fixedArr);
+
+                ptr = (Vector3*)Unsafe.AsPointer(ref fixedArr[0]);
+                count = points.Length;
             }
-            else if (CustomRolloff == null)
+            else if (CustomRolloff3D == null)
             {
                 return;
             }
 
             library.ChannelGroup_Set3DCustomRolloff(Handle, ptr, count).CheckResult();
 
-            CustomRolloff = ptr;
+            CustomRolloff3D = fixedArr;
         }
 
         public unsafe ReadOnlySpan<Vector3> Get3DCustomRolloff()
         {
-            library.ChannelGroup_Get3DCustomRolloff(Handle, out IntPtr points, out int pointCount).CheckResult();
+            Vector3* points;
+            int count;
 
-            if (points == IntPtr.Zero)
-                return default;
+            library.ChannelGroup_Get3DCustomRolloff(Handle, &points, &count).CheckResult();
 
-            return new ReadOnlySpan<Vector3>((void*)points, pointCount);
+            return new ReadOnlySpan<Vector3>(points, count);
         }
 
         public void Set3DOcclusion(float directOcclusion, float reverbOcclusion)
