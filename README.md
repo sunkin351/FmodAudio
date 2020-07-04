@@ -9,7 +9,10 @@ This wrapper is now downloadable as a nuget package. https://www.nuget.org/packa
 
 In order to use this wrapper, you will need to download the FMOD native binaries from https://www.fmod.com/download
 
-If you find a bug, or have a feature request, please file an issue on github, and I'll review it as soon as possible. If you wish to contribute, see `CONTRIBUTING.md`
+If you find a bug, or have a feature request, please file an issue on github, and I'll review it as soon as possible.
+Alternatively you can now join a Discord server for FmodAudio, and talk with me directly. https://Discord.gg/cNcbHF5
+
+If you wish to contribute, see `CONTRIBUTING.md`
 
 How to use FmodAudio
 --------------------
