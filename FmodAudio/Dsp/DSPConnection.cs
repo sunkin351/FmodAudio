@@ -1,36 +1,46 @@
 ﻿using System;
-using FmodAudio.Interop;
+using FmodAudio.Base;
 
-namespace FmodAudio.Dsp
-{   
-    public readonly struct DSPConnection
+namespace FmodAudio.DigitalSignalProcessing
+{
+    public readonly struct DspConnection
     {
-        private static readonly NativeLibrary library = Fmod.Library;
+        public static implicit operator DspConnection(DspConnectionHandle handle)
+        {
+            return new DspConnection(handle);
+        }
 
-        internal readonly IntPtr Handle;
+        public static implicit operator DspConnectionHandle(DspConnection connection)
+        {
+            return connection.Handle;
+        }
 
-        internal DSPConnection(IntPtr handle)
+        private static readonly FmodLibrary library = Fmod.Library;
+
+        public readonly DspConnectionHandle Handle;
+
+        internal DspConnection(DspConnectionHandle handle)
         {
             Handle = handle;
         }
         
-        public DSP Input
+        public Dsp Input
         {
             get
             {
-                library.DSPConnection_GetInput(Handle, out IntPtr handle).CheckResult();
+                library.DSPConnection_GetInput(Handle, out DspHandle handle).CheckResult();
 
-                return DSP.FromHandle(handle);
+                return handle;
             }
         }
 
-        public DSP Output
+        public Dsp Output
         {
             get
             {
-                library.DSPConnection_GetOutput(Handle, out IntPtr handle).CheckResult();
+                library.DSPConnection_GetOutput(Handle, out DspHandle handle).CheckResult();
 
-                return DSP.FromHandle(handle);
+                return handle;
             }
         }
 
@@ -80,7 +90,7 @@ namespace FmodAudio.Dsp
 
         public override bool Equals(object obj)
         {
-            return obj is DSPConnection other && this == other;
+            return obj is DspConnection other && this == other;
         }
 
         public override int GetHashCode()
@@ -88,12 +98,12 @@ namespace FmodAudio.Dsp
             return HashCode.Combine(this.Handle);
         }
 
-        public static bool operator ==(DSPConnection left, DSPConnection right)
+        public static bool operator ==(DspConnection left, DspConnection right)
         {
             return left.Handle == right.Handle;
         }
 
-        public static bool operator !=(DSPConnection left, DSPConnection right)
+        public static bool operator !=(DspConnection left, DspConnection right)
         {
             return left.Handle != right.Handle;
         }

@@ -4,7 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace FmodAudio.Dsp
+namespace FmodAudio.DigitalSignalProcessing
 {
     public struct ParameterOverallGain
     {

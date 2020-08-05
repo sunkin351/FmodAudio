@@ -5,17 +5,34 @@ using System.Numerics;
 
 namespace FmodAudio
 {
-    using Interop;
+    using Base;
 
-    public class Reverb3D : HandleBase
+    public readonly struct Reverb3D : IDisposable
     {
-        private static readonly NativeLibrary library = Fmod.Library;
-
-        internal Reverb3D(IntPtr handle) : base(handle, true)
+        public static implicit operator Reverb3D(Reverb3DHandle handle)
         {
+            return new Reverb3D(handle);
         }
 
-        protected override void ReleaseImpl()
+        public static implicit operator Reverb3DHandle(Reverb3D reverb)
+        {
+            return reverb.Handle;
+        }
+
+        private static readonly FmodLibrary library = Fmod.Library;
+        private readonly Reverb3DHandle Handle;
+
+        internal Reverb3D(Reverb3DHandle handle)
+        {
+            Handle = handle;
+        }
+
+        public void Dispose()
+        {
+            Release();
+        }
+
+        public void Release()
         {
             library.Reverb3D_Release(Handle).CheckResult();
         }
@@ -44,7 +61,7 @@ namespace FmodAudio
         {
             get
             {
-                library.Reverb3D_GetActive(Handle, out bool value).CheckResult();
+                library.Reverb3D_GetActive(Handle, out FmodBool value).CheckResult();
                 return value;
             }
 
@@ -54,18 +71,18 @@ namespace FmodAudio
             }
         }
 
-        internal override unsafe IntPtr UserData
+        internal unsafe IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                Fmod.UserDataMethods.Reverb3D_GetUserData(Handle, &value).CheckResult();
+                library.Reverb3D_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                Fmod.UserDataMethods.Reverb3D_SetUserData(Handle, value).CheckResult();
+                library.Reverb3D_SetUserData(Handle, value).CheckResult();
             }
         }
     }

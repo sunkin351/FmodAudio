@@ -5,27 +5,103 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using FmodAudio.Base;
+
 namespace FmodAudio
 {
-    public class CreateSoundInfo
+    public unsafe struct CreateSoundInfoStruct
     {
-        internal Structure Struct = default;
+        /// <summary>
+        /// Size of this structure.  This is used so the structure can be expanded in the future and still work on older versions of FMOD Ex.
+        /// </summary>
+        public int cbsize;
 
-        private Memory.SaferPointer InclusionListMemory = null;
+        public uint Length;
 
-        private int[] InclusionListManaged = null;
+        public uint FileOffset;
+
+        public int ChannelCount;
+
+        public int DefaultFrequency;
+
+        public SoundFormat Format;
+
+        public uint DecodeBufferSize;
+
+        public int InitialSubsound;
+
+        public int SubsoundCount;
+
+        public int* InclusionList;
+
+        public int InclusionListCount;
+
+        public delegate* stdcall<IntPtr, IntPtr, uint, Result> PCMReadCallback;
+
+        public delegate* stdcall<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback;
+
+        public delegate* stdcall<IntPtr, Result, Result> NonBlockCallback;
+
+        public byte* DLSName;
+
+        public byte* EncryptionKey;
+
+        public int MaxPolyphony;
+
+        internal IntPtr UserData;
+
+        public SoundType SuggestedSoundType;
+
+        public delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen;
+
+        public delegate* stdcall<IntPtr, IntPtr, Result> FileUserClose;
+
+        public delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead;
+
+        public delegate* stdcall<IntPtr, uint, IntPtr, Result> FileUserSeek;
+
+        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead;
+
+        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel;
+
+        public IntPtr FileUserData;
+
+        public int FileBufferSize;
+
+        public ChannelOrder ChannelOrder;
+
+        public SoundGroupHandle InitialSoundGroup;
+
+        public uint InitialSeekPosition;
+
+        public TimeUnit InitialSeekPosType;
+
+        public FmodBool IgnoreSetFilesystem;
+
+        public uint AudioQueuePolicy;
+
+        public uint MinMidiGranularity;
+
+        public int Nonblockthreadid;
+
+        public Guid* FSBGUID;
+    }
+
+    public unsafe class CreateSoundInfo
+    {
+        internal CreateSoundInfoStruct Struct;
+
+        private int[] InclusionListMemory = null;
         
         private Encoding encoding = Encoding.UTF8;
 
         private string DLSNameManaged = null;
 
-        private Memory.SaferPointer DLSNameMemory = null;
+        private byte[] DLSNameMemory = null;
         
         private string encryptionKey = null;
 
-        private Memory.SaferPointer encryptionKeyMemory = null;
-
-        private SoundGroup initSoundGroup;
+        private byte[] encryptionKeyMemory = null;
 
         /// <summary>
         /// Affects how the encryption key will be translated to bytes, Default is UTF8
@@ -54,7 +130,7 @@ namespace FmodAudio
         
         public CreateSoundInfo()
         {
-            Struct.cbsize = Unsafe.SizeOf<Structure>();
+            Struct.cbsize = Unsafe.SizeOf<CreateSoundInfoStruct>();
         }
 
         /// <summary>
@@ -94,77 +170,69 @@ namespace FmodAudio
         /// In a user created multi-sample sound, specify the number of subsounds within the sound that are accessable with Sound.GetSubSound() / SoundGetSubSound().
         /// </summary>
         public int SubsoundCount { get => Struct.SubsoundCount; set => Struct.SubsoundCount = value; }
+
         /// <summary>
         /// [w] Optional.
         /// In a multi-sample format such as .FSB/.DLS/.SF2 it may be desirable to specify only a subset of sounds to be loaded out of the whole file.
         /// This is an array of subsound indicies to load into memory when created.
         /// </summary>
-        public int[] InclusionList
+        public ReadOnlySpan<int> InclusionList => InclusionListMemory;
+
+        public void SetInclusionList(ReadOnlySpan<int> list)
         {
-            get => InclusionListManaged.ArrayClone();
-            set
+            if (list.IsEmpty)
             {
-                if (value == null || value.Length == 0)
-                {
-                    InclusionListManaged = null;
-                    InclusionListMemory = null;
-                    Struct.InclusionList = IntPtr.Zero;
-                    Struct.InclusionListCount = 0;
-                    return;
-                }
+                InclusionListMemory = null;
+                Struct.InclusionList = null;
+                Struct.InclusionListCount = 0;
+                return;
+            };
 
-                int count = value.Length;
-                InclusionListManaged = value;
-                InclusionListMemory = Memory.Allocate(count * sizeof(int));
-                value.CopyTo(InclusionListMemory.AsSpan<int>());
-                Struct.InclusionList = InclusionListMemory;
-                Struct.InclusionListCount = count;
+            if (InclusionListMemory != null && InclusionListMemory.Length >= list.Length)
+            {
+                list.CopyTo(InclusionListMemory);
+                goto NoAlloc;
             }
-        }
 
-        private SoundPCMReadCallback pcmReadCallback;
+            int[] tmp = GC.AllocateArray<int>(list.Length, pinned: true);
+            list.CopyTo(tmp);
+
+            InclusionListMemory = tmp;
+            Struct.InclusionList = (int*)Unsafe.AsPointer(ref tmp[0]);
+
+        NoAlloc:
+            Struct.InclusionListCount = list.Length;
+        }
 
         /// <summary>
         /// [w] Optional.
         /// Callback to 'piggyback' on FMOD's read functions and accept or even write PCM data while FMOD is opening the sound.
         /// Used for user sounds created with OPENUSER or for capturing decoded data as FMOD reads it.
         /// </summary>
-        public SoundPCMReadCallback PCMReadCallback
+        public delegate* stdcall<IntPtr, IntPtr, uint, Result> PCMReadCallback
         {
-            get => pcmReadCallback;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out pcmReadCallback, out Struct.PCMReadCallback);
-            }
+            get => Struct.PCMReadCallback;
+            set => Struct.PCMReadCallback = value;
         }
-
-        private SoundPCMSetPosCallback pcmSetPosCallback;
 
         /// <summary>
         /// [w] Optional. Callback for when the user calls a seeking function such as Channel::setPosition within a multi-sample sound, and for when it is opened.
         /// </summary>
-        public SoundPCMSetPosCallback PCMSetPosCallback
+        public delegate* stdcall<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback
         {
-            get => pcmSetPosCallback;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out pcmSetPosCallback, out Struct.PCMSetPosCallback);
-            }
+            get => Struct.PCMSetPosCallback;
+            set => Struct.PCMSetPosCallback = value;
         }
-
-        private SoundNonBlockCallback nonBlockCallback;
 
         /// <summary>
         /// [w] Optional. Callback for successful completion, or error while loading a sound that used the FMOD_NONBLOCKING flag.
         /// </summary>
-        public SoundNonBlockCallback NonBlockCallback
+        public delegate* stdcall<IntPtr, Result, Result> NonBlockCallback
         {
-            get => nonBlockCallback;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out nonBlockCallback, out Struct.NonBlockCallback);
-            }
+            get => Struct.NonBlockCallback;
+            set => Struct.NonBlockCallback = value;
         }
+
         /// <summary>
         /// [w] Optional.
         /// Filename for a DLS or SF2 sample set when loading a MIDI file.
@@ -186,7 +254,7 @@ namespace FmodAudio
                     {
                         DLSNameManaged = null;
                         DLSNameMemory = null;
-                        Struct.DLSName = IntPtr.Zero;
+                        Struct.DLSName = null;
                         return;
                     }
                     else if (DLSNameManaged.Equals(value, StringComparison.Ordinal))
@@ -195,9 +263,9 @@ namespace FmodAudio
 
                 DLSNameManaged = value;
                 
-                if (FmodHelpers.StringToPointer(value, Encoding.UTF8, ref DLSNameMemory))
+                if (FmodHelpers.FixedDataForString(value, Encoding.UTF8, ref DLSNameMemory))
                 {
-                    Struct.DLSName = DLSNameMemory;
+                    Struct.DLSName = (byte*)Unsafe.AsPointer(ref DLSNameMemory[0]);
                 }
             }
         }
@@ -232,88 +300,58 @@ namespace FmodAudio
         /// </summary>
         public SoundType SuggestedSoundType { get => Struct.SuggestedSoundType; set => Struct.SuggestedSoundType = value; }
 
-        private FileOpenCallback fileOpen;
-
         /// <summary>
         /// [w] Optional. Callback for opening this file.
         /// </summary>
-        public FileOpenCallback FileUserOpen
+        public delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen
         {
-            get => fileOpen;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileOpen, out Struct.FileUserOpen);
-            }
+            get => Struct.FileUserOpen;
+            set => Struct.FileUserOpen = value;
         }
-
-        private FileCloseCallback fileUserClose;
 
         /// <summary>
         /// [w] Optional. Callback for closing this file.
         /// </summary>
-        public FileCloseCallback FileUserClose
+        public delegate* stdcall<IntPtr, IntPtr, Result> FileUserClose
         {
-            get => fileUserClose;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileUserClose, out Struct.FileUserClose);
-            }
+            get => Struct.FileUserClose;
+            set => Struct.FileUserClose = value;
         }
-
-        private FileReadCallback fileUserRead;
 
         /// <summary>
         /// [w] Optional. Callback for reading from this file.
         /// </summary>
-        public FileReadCallback FileUserRead
+        public delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead
         {
-            get => fileUserRead;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileUserRead, out Struct.FileUserRead);
-            }
+            get => Struct.FileUserRead;
+            set => Struct.FileUserRead = value;
         }
-
-        private FileSeekCallback fileUserSeek;
 
         /// <summary>
         /// [w] Optional. Callback for seeking within this file.
         /// </summary>
-        public FileSeekCallback FileUserSeek
+        public delegate* stdcall<IntPtr, uint, IntPtr, Result> FileUserSeek
         {
-            get => fileUserSeek;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileUserSeek, out Struct.FileUserSeek);
-            }
+            get => Struct.FileUserSeek;
+            set => Struct.FileUserSeek = value;
         }
-
-        private FileAsyncReadCallback fileUserAsyncRead;
 
         /// <summary>
         /// [w] Optional. Callback for asyncronously reading from this file.
         /// </summary>
-        public FileAsyncReadCallback FileUserAsyncRead
+        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead
         {
-            get => fileUserAsyncRead;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileUserAsyncRead, out Struct.FileUserAsyncRead);
-            }
+            get => Struct.FileUserAsyncRead;
+            set => Struct.FileUserAsyncRead = value;
         }
-
-        private FileAsyncCancelCallback fileUserAsyncCancel;
 
         /// <summary>
         /// [w] Optional. Callback for cancelling an asyncronous read.
         /// </summary>
-        public FileAsyncCancelCallback FileUserAsyncCancel
+        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel
         {
-            get => fileUserAsyncCancel;
-            set
-            {
-                FmodHelpers.UpdateCallback(value, out fileUserAsyncCancel, out Struct.FileUserAsyncCancel);
-            }
+            get => Struct.FileUserAsyncCancel;
+            set => Struct.FileUserAsyncCancel = value;
         }
         
         /// <summary>
@@ -334,14 +372,10 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Specify a sound group if required, to put sound in as it is created.
         /// </summary>
-        public SoundGroup InitialSoundGroup
+        public SoundGroupHandle InitialSoundGroup
         {
-            get => initSoundGroup;
-            set
-            {
-                initSoundGroup = value;
-                Struct.InitialSoundGroup = value?.Handle ?? IntPtr.Zero;
-            }
+            get => Struct.InitialSoundGroup;
+            set => Struct.InitialSoundGroup = value;
         }
 
         /// <summary>
@@ -359,7 +393,7 @@ namespace FmodAudio
         /// Ignores setFileSystem callbacks and also FMOD_CREATESOUNEXINFO file callbacks.
         /// Useful for specific cases where you don't want to use your own file system but want to use fmod's file system (ie net streaming).
         /// </summary>
-        public bool IgnoreSetFileSystem { get => Struct.IgnoreSetFilesystem > 0; set => Struct.IgnoreSetFilesystem = value ? 1 : 0; }
+        public bool IgnoreSetFileSystem { get => Struct.IgnoreSetFilesystem; set => Struct.IgnoreSetFilesystem = value; }
 
         /// <summary>
         /// [w] Optional. Specify 0 or FMOD_AUDIOQUEUE_CODECPOLICY_DEFAULT to ignore.
@@ -386,7 +420,7 @@ namespace FmodAudio
             {
                 if ((uint)value >= 5)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "NonBlocking Thread ID cannot be >= 5");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "NonBlocking Thread ID cannot be >= 5 or < 0");
                 }
 
                 Struct.Nonblockthreadid = value;
@@ -397,7 +431,7 @@ namespace FmodAudio
         /// [r/w] Optional. Specify 0 to ignore. Allows you to provide the GUID lookup for cached FSB header info.
         /// Once loaded the GUID will be written back to the pointer. This is to avoid seeking and reading the FSB header.
         /// </summary>
-        public IntPtr FSBGuid { get => Struct.FSBGUID; set => Struct.FSBGUID = value; }
+        public Guid* FSBGuid { get => Struct.FSBGUID; set => Struct.FSBGUID = value; }
 
         /// <summary>
         /// Optimized for changing both the value and encoding of the FSB Encryption key at once.
@@ -425,91 +459,12 @@ namespace FmodAudio
                 return;
             }
 
-            bool tmp = FmodHelpers.StringToPointer(encryptionKey, encoding, ref encryptionKeyMemory);
-
-            if (tmp)
+            if (FmodHelpers.FixedDataForString(encryptionKey, encoding, ref encryptionKeyMemory))
             {
-                Struct.EncryptionKey = encryptionKeyMemory;
+                Struct.EncryptionKey = (byte*)Unsafe.AsPointer(ref encryptionKeyMemory[0]);
             }
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Structure
-        {
-            /// <summary>
-            /// Size of this structure.  This is used so the structure can be expanded in the future and still work on older versions of FMOD Ex.
-            /// </summary>
-            public int cbsize;
-            
-            public uint Length;
-            
-            public uint FileOffset;
 
-            public int ChannelCount;
-
-            public int DefaultFrequency;
-            
-            public SoundFormat Format;
-            
-            public uint DecodeBufferSize;
-
-            public int InitialSubsound;
-            
-            public int SubsoundCount;
-
-            public IntPtr InclusionList;
-
-            public int InclusionListCount;
-            
-            public IntPtr PCMReadCallback;
-
-            public IntPtr PCMSetPosCallback;
-
-            public IntPtr NonBlockCallback;
-
-            public IntPtr DLSName;
-
-            public IntPtr EncryptionKey;
-
-            public int MaxPolyphony;
-
-            public IntPtr UserData;
-
-            public SoundType SuggestedSoundType;
-            
-            public IntPtr FileUserOpen;
-            
-            public IntPtr FileUserClose;
-            
-            public IntPtr FileUserRead;
-            
-            public IntPtr FileUserSeek;
-            
-            public IntPtr FileUserAsyncRead;
-
-            public IntPtr FileUserAsyncCancel;
-
-            public IntPtr FileUserData;
-
-            public int FileBufferSize;
-
-            public ChannelOrder ChannelOrder;
-
-            public IntPtr InitialSoundGroup;
-
-            public uint InitialSeekPosition;
-
-            public TimeUnit InitialSeekPosType;
-
-            public int IgnoreSetFilesystem;
-
-            public uint AudioQueuePolicy;
-
-            public uint MinMidiGranularity;
-
-            public int Nonblockthreadid;
-            
-            public IntPtr FSBGUID;
-        }
     }
 }

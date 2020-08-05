@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using System.Numerics;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
 
-namespace FmodAudio.Dsp
+namespace FmodAudio.DigitalSignalProcessing
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Fmod_Complex

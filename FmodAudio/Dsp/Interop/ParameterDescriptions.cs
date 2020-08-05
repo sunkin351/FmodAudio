@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace FmodAudio.Dsp.Interop
+namespace FmodAudio.DigitalSignalProcessing.Interop
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct FloatDescription

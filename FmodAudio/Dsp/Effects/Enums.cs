@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FmodAudio.Dsp.Effects
+namespace FmodAudio.DigitalSignalProcessing.Effects
 {
     public enum Pan3DRolloffType
     {

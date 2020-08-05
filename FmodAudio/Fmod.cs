@@ -1,18 +1,13 @@
 ﻿#pragma warning disable IDE0052, CA1034
 using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-
-using AdvancedDLSupport;
 
 namespace FmodAudio
 {
-    using Interop;
+    using Base;
 
-    public static class Fmod
+    public static unsafe class Fmod
     {
         public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
 
@@ -20,14 +15,17 @@ namespace FmodAudio
 
         public const int MaxAllowedSystemObjects = 8;
 
+        internal const int MaxInteropNameStringLength = 200;
+
+        /// <summary>
+        /// Affects string interop marshalling. If the buffer turns out to be too small, this will decide whether to throw an exception, or continue with the truncated string.
+        /// </summary>
+        public static bool AllowStringTruncation { get; set; }
+
         #region Pre-Native Setup
 
         private static string defaultLibName;
         private static string location;
-
-        public static NativeLibrary Library => nativeLibrary.Value;
-
-        internal static UserDataMethods UserDataMethods => userDataMethods.Value;
 
         // <summary>
         // Subscribe to this to log when fatal errors occur.String passed is the error message.
@@ -103,41 +101,62 @@ namespace FmodAudio
 
         #region Native loading and System instantiation
 
-        private const ImplementationOptions BuilderOptions =
-                    ImplementationOptions.EnableOptimizations |
-                    ImplementationOptions.EnableDllMapSupport |
-                    ImplementationOptions.UseIndirectCalls |
-                    ImplementationOptions.UseLazyBinding;
+        private static readonly Lazy<IntPtr> LibraryHandleLazy = new Lazy<IntPtr>(() => NativeLibrary.Load(location ?? DefaultLibraryName));
 
-        private static readonly NativeLibraryBuilder builder = new NativeLibraryBuilder(BuilderOptions);
+        private static readonly Lazy<FmodLibrary> nativeLibrary = new Lazy<FmodLibrary>(() => new FmodLibrary(LibraryHandleLazy.Value));
 
-        private static readonly Lazy<NativeLibrary> nativeLibrary = new Lazy<NativeLibrary>(delegate ()
-        {
-            return builder.ActivateClass<NativeLibrary, INativeLibrary>(location ?? DefaultLibraryName);
-        }, LazyThreadSafetyMode.ExecutionAndPublication);
-
-        private static readonly Lazy<UserDataMethods> userDataMethods = new Lazy<UserDataMethods>(delegate ()
-        {
-            return builder.ActivateClass<UserDataMethods, IUserDataMethods>(location ?? DefaultLibraryName);
-        }, LazyThreadSafetyMode.ExecutionAndPublication);
+        public static FmodLibrary Library => nativeLibrary.Value;
 
         internal static readonly object CreationSyncObject = new object();
 
         private static DebugCallback DebugCallbackReference;
 
-        public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
+        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        private static Result DebugCallbackMarshaller(DebugFlags flags, byte* file, int line, byte* func, byte* message)
+        {
+            try
+            {
+                var fileString = FmodHelpers.PtrToStringUnknownSize(file);
+                var funcString = FmodHelpers.PtrToStringUnknownSize(func);
+                var messageString = FmodHelpers.PtrToStringUnknownSize(message);
+
+                return DebugCallbackReference.Invoke(flags, fileString, line, funcString, messageString);
+            }
+            catch(FmodException fe)
+            {
+                return fe.Result ?? Result.Err_Internal;
+            }
+            catch
+            {
+                return Result.Err_Internal;
+            }
+        }
+
+        //public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
+        //{
+        //    DebugCallbackReference = callback;
+
+        //    delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callbackPointer = &DebugCallbackMarshaller;
+
+        //    fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
+        //    {
+        //        Library.Debug_Initialize(flags, mode, callbackPointer, pFilename).CheckResult();
+        //    }
+        //}
+
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
         {
             Library.Debug_Initialize(flags, mode, callback, filename).CheckResult();
-            DebugCallbackReference = callback;
         }
 
         public static unsafe bool DiskBusy
         {
             get
             {
-                Library.File_GetDiskBusy(out bool res).CheckResult();
+                FmodBool value;
+                Library.File_GetDiskBusy(&value).CheckResult();
 
-                return res;
+                return value;
             }
 
             set
@@ -148,7 +167,7 @@ namespace FmodAudio
 
         public unsafe static FmodSystem CreateSystem()
         {
-            IntPtr handle;
+            SystemHandle handle;
 
             lock (CreationSyncObject)
             {
@@ -164,14 +183,22 @@ namespace FmodAudio
             private static MemoryReallocCallback userRealloc;
             private static MemoryFreeCallback userFree;
 
-            public static void Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags)
-            {
-                Library.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
+            //public static void Initialize(IntPtr poolmem,
+            //                              int poollen,
+            //                              MemoryAllocCallback useralloc,
+            //                              MemoryReallocCallback userrealloc,
+            //                              MemoryFreeCallback userfree,
+            //                              MemoryType memtypeflags)
+            //{
+            //    if (useralloc is null || userrealloc is null || userfree is null)
+            //        throw new ArgumentNullException();
 
-                userAlloc = useralloc;
-                userRealloc = userrealloc;
-                userFree = userfree;
-            }
+            //    Library.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
+
+            //    userAlloc = useralloc;
+            //    userRealloc = userrealloc;
+            //    userFree = userfree;
+            //}
 
             public static void GetStats(out int currentlyAllocated, out int maxAllocated, bool blocking)
             {

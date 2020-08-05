@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FmodAudio.Dsp
+namespace FmodAudio.DigitalSignalProcessing
 {
     public unsafe delegate Result DspStateCallback(DspState* state);
     public unsafe delegate Result DspReadCallback(DspState* state, float* inbuffer, float* outbuffer, uint length, int inchannels, ref int outchannels);

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace FmodAudio.Codec
 {
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public unsafe delegate Result CodecOpenCallback(CodecState* state, Mode usermode, CreateSoundInfo.Structure* createSoundInfo);
+    public unsafe delegate Result CodecOpenCallback(CodecState* state, Mode usermode, CreateSoundInfoStruct* createSoundInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public unsafe delegate Result CodecCloseCallback(CodecState* state);

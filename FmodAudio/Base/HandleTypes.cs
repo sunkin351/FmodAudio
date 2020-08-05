@@ -1,6 +1,5 @@
 ﻿#pragma warning disable CS0660, CS0661
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace FmodAudio.Base
 {
@@ -29,6 +28,11 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator SystemHandle(IntPtr rawHandle)
+        {
+            return new SystemHandle(rawHandle);
+        }
     }
 
     [WrapperType]
@@ -50,6 +54,11 @@ namespace FmodAudio.Base
         public static bool operator ==(SoundHandle left, SoundHandle right) => left.Handle == right.Handle;
 
         public static bool operator !=(SoundHandle left, SoundHandle right) => left.Handle != right.Handle;
+
+        public static explicit operator SoundHandle(IntPtr handle)
+        {
+            return new SoundHandle(handle);
+        }
     }
 
     [WrapperType]
@@ -77,6 +86,11 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator SoundGroupHandle(IntPtr rawHandle)
+        {
+            return new SoundGroupHandle(rawHandle);
+        }
     }
 
     [WrapperType]
@@ -95,12 +109,6 @@ namespace FmodAudio.Base
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
-
-        public static implicit operator ChannelControlHandle(ChannelHandle handle)
-        {
-            return new ChannelControlHandle(handle.Handle);
-        }
-
         public static bool operator ==(ChannelHandle left, ChannelHandle right)
         {
             return left.Handle == right.Handle;
@@ -110,10 +118,15 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator ChannelHandle(IntPtr rawHandle)
+        {
+            return new ChannelHandle(rawHandle);
+        }
     }
 
     [WrapperType]
-    public struct ChannelGroupHandle : IHandleType<IntPtr>
+    public struct ChannelGroupHandle : IHandleType<IntPtr>, IEquatable<ChannelGroupHandle>
     {
         public IntPtr Handle { get; }
 
@@ -122,10 +135,11 @@ namespace FmodAudio.Base
             Handle = handle;
         }
 
-        public static implicit operator ChannelControlHandle(ChannelGroupHandle handle)
-        {
-            return new ChannelControlHandle(handle.Handle);
-        }
+        public bool Equals(ChannelGroupHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is ChannelGroupHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
 
         public static bool operator ==(ChannelGroupHandle left, ChannelGroupHandle right)
         {
@@ -136,41 +150,79 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator ChannelGroupHandle(IntPtr rawHandle)
+        {
+            return new ChannelGroupHandle(rawHandle);
+        }
     }
 
     [WrapperType]
-    public struct ChannelControlHandle : IHandleType<IntPtr>
+    public struct DspHandle : IHandleType<IntPtr>, IEquatable<DspHandle>
     {
         public IntPtr Handle { get; }
 
-        internal ChannelControlHandle(IntPtr handle)
+        internal DspHandle(IntPtr handle)
         {
             Handle = handle;
         }
 
-        public static explicit operator ChannelHandle(ChannelControlHandle handle)
-        {
-            return new ChannelHandle(handle.Handle);
-        }
+        public bool Equals(DspHandle other) => Handle == other.Handle;
 
-        public static explicit operator ChannelGroupHandle(ChannelControlHandle handle)
-        {
-            return new ChannelGroupHandle(handle.Handle);
-        }
+        public override bool Equals(object obj) => obj is DspHandle other && this.Equals(other);
 
-        public static bool operator ==(ChannelControlHandle left, ChannelControlHandle right)
+        public override int GetHashCode() => HashCode.Combine(Handle);
+
+        public static bool operator ==(DspHandle left, DspHandle right)
         {
             return left.Handle == right.Handle;
         }
 
-        public static bool operator !=(ChannelControlHandle left, ChannelControlHandle right)
+        public static bool operator !=(DspHandle left, DspHandle right)
         {
             return left.Handle != right.Handle;
+        }
+
+        public static explicit operator DspHandle(IntPtr rawHandle)
+        {
+            return new DspHandle(rawHandle);
         }
     }
 
     [WrapperType]
-    public struct GeometryHandle : IHandleType<IntPtr>
+    public struct DspConnectionHandle : IHandleType<IntPtr>, IEquatable<DspConnectionHandle>
+    {
+        public IntPtr Handle { get; }
+
+        internal DspConnectionHandle(IntPtr handle)
+        {
+            Handle = handle;
+        }
+
+        public bool Equals(DspConnectionHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is DspConnectionHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
+
+        public static bool operator ==(DspConnectionHandle left, DspConnectionHandle right)
+        {
+            return left.Handle == right.Handle;
+        }
+
+        public static bool operator !=(DspConnectionHandle left, DspConnectionHandle right)
+        {
+            return left.Handle != right.Handle;
+        }
+
+        public static explicit operator DspConnectionHandle(IntPtr rawHandle)
+        {
+            return new DspConnectionHandle(rawHandle);
+        }
+    }
+
+    [WrapperType]
+    public struct GeometryHandle : IHandleType<IntPtr>, IEquatable<GeometryHandle>
     {
         public IntPtr Handle { get; }
 
@@ -178,6 +230,12 @@ namespace FmodAudio.Base
         {
             Handle = handle;
         }
+
+        public bool Equals(GeometryHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is GeometryHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
 
         public static bool operator ==(GeometryHandle left, GeometryHandle right)
         {
@@ -188,10 +246,15 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator GeometryHandle(IntPtr rawHandle)
+        {
+            return new GeometryHandle(rawHandle);
+        }
     }
 
     [WrapperType]
-    public struct Reverb3DHandle : IHandleType<IntPtr>
+    public struct Reverb3DHandle : IHandleType<IntPtr>, IEquatable<Reverb3DHandle>
     {
         public IntPtr Handle { get; }
 
@@ -199,6 +262,12 @@ namespace FmodAudio.Base
         {
             Handle = handle;
         }
+
+        public bool Equals(Reverb3DHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is Reverb3DHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
 
         public static bool operator ==(Reverb3DHandle left, Reverb3DHandle right)
         {
@@ -209,10 +278,15 @@ namespace FmodAudio.Base
         {
             return left.Handle != right.Handle;
         }
+
+        public static explicit operator Reverb3DHandle(IntPtr rawHandle)
+        {
+            return new Reverb3DHandle(rawHandle);
+        }
     }
 
     [WrapperType]
-    public struct PluginHandle : IHandleType<uint>
+    public struct PluginHandle : IHandleType<uint>, IEquatable<PluginHandle>
     {
         public uint Handle { get; }
 
@@ -221,12 +295,45 @@ namespace FmodAudio.Base
             Handle = handle;
         }
 
+        public bool Equals(PluginHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is PluginHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
+
         public static bool operator ==(PluginHandle left, PluginHandle right)
         {
             return left.Handle == right.Handle;
         }
 
         public static bool operator !=(PluginHandle left, PluginHandle right)
+        {
+            return left.Handle != right.Handle;
+        }
+    }
+
+    [WrapperType]
+    public struct SyncPointHandle : IHandleType<IntPtr>, IEquatable<SyncPointHandle>
+    {
+        public IntPtr Handle { get; }
+
+        internal SyncPointHandle(IntPtr handle)
+        {
+            Handle = handle;
+        }
+
+        public bool Equals(SyncPointHandle other) => Handle == other.Handle;
+
+        public override bool Equals(object obj) => obj is SyncPointHandle other && this.Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Handle);
+
+        public static bool operator ==(SyncPointHandle left, SyncPointHandle right)
+        {
+            return left.Handle == right.Handle;
+        }
+
+        public static bool operator !=(SyncPointHandle left, SyncPointHandle right)
         {
             return left.Handle != right.Handle;
         }

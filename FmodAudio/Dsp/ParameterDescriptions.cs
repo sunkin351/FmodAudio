@@ -1,18 +1,17 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Text.Unicode;
 
-namespace FmodAudio.Dsp
+namespace FmodAudio.DigitalSignalProcessing
 {
-    using Dsp.Interop;
+    using Interop;
     public abstract class ParameterDescription
     {
         internal ParameterDescriptionStruct internalDescription;
 
-        internal static unsafe ParameterDescription CreateFromPointer(ParameterDescriptionStruct* ptr)
+        internal static unsafe ParameterDescription CreateFromPointer(ParameterDescriptionStruct* structPtr)
         {
-            ParameterDescriptionStruct* structPtr = (ParameterDescriptionStruct*)ptr;
-
             return structPtr->Type switch
             {
                 DSPParameterType.Float => new FloatParameterDescription(structPtr),
@@ -39,27 +38,28 @@ namespace FmodAudio.Dsp
         {
             internalDescription = *ptr;
 
-            Name = FmodHelpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
-            Label = FmodHelpers.MemoryToString(MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
+            Name = FmodHelpers.BufferToString(MemoryMarshal.CreateSpan(ref internalDescription.NameBuffer[0], 15));
+            Label = FmodHelpers.BufferToString(MemoryMarshal.CreateSpan(ref internalDescription.LabelBuffer[0], 15));
         }
 
         public string Name { get; }
         public string Label { get; }
 
-        private static void StringToBuffer(string value, Span<byte> buffer)
+        private static void StringToBuffer(string? value, Span<byte> buffer)
         {
             if (string.IsNullOrEmpty(value))
             {
                 buffer[0] = 0;
+                return;
             }
-            else
-            {
-                int count = Encoding.UTF8.GetBytes(value.AsSpan(), buffer);
 
-                if (count < buffer.Length)
-                {
-                    buffer[count] = 0;
-                }
+            var res = Utf8.FromUtf16(value, buffer, out _, out var written);
+
+            Debug.Assert(res == System.Buffers.OperationStatus.Done);
+
+            if (written < buffer.Length)
+            {
+                buffer[written] = 0;
             }
         }
     }

@@ -1,9 +1,8 @@
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 using FmodAudio.Codec;
-using FmodAudio.Dsp;
+using FmodAudio.DigitalSignalProcessing;
 using FmodAudio.Output;
 
 namespace FmodAudio.Base
@@ -11,44 +10,26 @@ namespace FmodAudio.Base
     [VTable]
     public unsafe partial class FmodLibrary
     {
+        #region Global Functions
         [InteropMethod]
         public partial Result Memory_Initialize(IntPtr poolmem, int poollen, delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> useralloc, delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc, delegate* stdcall<IntPtr, MemoryType, IntPtr, void> userfree, MemoryType memtypeflags);
 
-        private MemoryAllocCallback? memory_useralloc;
-        private MemoryReallocCallback? memory_userrealloc;
-        private MemoryFreeCallback? memory_userfree;
-
-        public Result Memory_Initialize(IntPtr poolmem, int poollen, MemoryAllocCallback useralloc, MemoryReallocCallback userrealloc, MemoryFreeCallback userfree, MemoryType memtypeflags)
-        {
-            delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> allocPtr            = (delegate* stdcall<uint, MemoryType, IntPtr, IntPtr>)Marshal.GetFunctionPointerForDelegate(useralloc);
-            delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> reallocPtr  = (delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr>)Marshal.GetFunctionPointerForDelegate(userrealloc);
-            delegate* stdcall<IntPtr, MemoryType, IntPtr, void> freePtr             = (delegate* stdcall<IntPtr, MemoryType, IntPtr, void>)Marshal.GetFunctionPointerForDelegate(userfree);
-
-            var res = Memory_Initialize(poolmem, poollen, allocPtr, reallocPtr, freePtr, memtypeflags);
-
-            if (res == Result.Ok)
-            {
-                memory_useralloc = useralloc;
-                memory_userrealloc = userrealloc;
-                memory_userfree = userfree;
-            }
-
-            return res;
-        }
-
+        /// <summary>
+        /// Returns information on the memory usage of FMOD.
+        /// </summary>
+        /// <param name="currentalloced">Currently allocated memory at time of call.</param>
+        /// <param name="maxalloced">Maximum allocated memory since System</param>
+        /// <param name="blocking">Boolean indicating whether to favour speed or accuracy. Specifying true for this parameter will flush the DSP network to make sure all queued allocations happen immediately, which can be costly.</param>
+        /// <returns></returns>
         [InteropMethod]
-        private partial Result Memory_GetStats(int* currentalloced, int* maxalloced, int blocking);
+        public partial Result Memory_GetStats(int* currentAlloced, int* maxAlloced, FmodBool blocking);
 
-        public Result Memory_GetStats(int* currentalloced, int* maxalloced, FmodBool blocking)
-        {
-            return Memory_GetStats(currentalloced, maxalloced, blocking.value);
-        }
-
+        /// <inheritdoc cref="Memory_GetStats(int*, int*, FmodBool)"/>
         public Result Memory_GetStats(out int currentAlloced, out int maxAlloced, FmodBool blocking)
         {
             fixed (int* pCurrent = &currentAlloced, pMax = &maxAlloced)
             {
-                return Memory_GetStats(pCurrent, pMax, blocking.value);
+                return Memory_GetStats(pCurrent, pMax, blocking);
             }
         }
 
@@ -64,12 +45,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result File_SetDiskBusy(int busy);
-
-        public Result File_SetDiskBusy(FmodBool busy)
-        {
-            return File_SetDiskBusy(busy.value);
-        }
+        public partial Result File_SetDiskBusy(FmodBool busy);
 
         [InteropMethod]
         public partial Result File_GetDiskBusy(FmodBool* busy);
@@ -81,7 +57,9 @@ namespace FmodAudio.Base
                 return File_GetDiskBusy(pBusy);
             }
         }
+        #endregion
 
+        #region System Functions
         [InteropMethod]
         public partial Result System_Create(SystemHandle* System);
 
@@ -320,11 +298,11 @@ namespace FmodAudio.Base
         public partial Result System_GetPluginInfo(SystemHandle system, PluginHandle handle, PluginType* plugintype, byte* name, int namelen, FmodVersion* version);
 
         [InteropMethod]
-        public partial Result System_CreateDSPByPlugin(SystemHandle system, PluginHandle handle, IntPtr* dsp);
+        public partial Result System_CreateDSPByPlugin(SystemHandle system, PluginHandle handle, DspHandle* dsp);
 
-        public Result System_CreateDSPByPlugin(SystemHandle system, PluginHandle handle, out IntPtr dsp)
+        public Result System_CreateDSPByPlugin(SystemHandle system, PluginHandle handle, out DspHandle dsp)
         {
-            fixed (IntPtr* pDsp = &dsp)
+            fixed (DspHandle* pDsp = &dsp)
             {
                 return System_CreateDSPByPlugin(system, handle, pDsp);
             }
@@ -345,44 +323,34 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_GetDSPInfoByPlugin(SystemHandle system, PluginHandle handle, IntPtr* description);
+        public partial Result System_GetDSPInfoByPlugin(SystemHandle system, PluginHandle handle, DspDescriptionStruct** description);
 
-        public Result System_GetDSPInfoByPlugin(SystemHandle system, PluginHandle handle, out IntPtr description)
+        public Result System_GetDSPInfoByPlugin(SystemHandle system, PluginHandle handle, out DspDescriptionStruct* description)
         {
-            fixed (IntPtr* pDescription = &description)
+            fixed (DspDescriptionStruct** pDescription = &description)
             {
                 return System_GetDSPInfoByPlugin(system, handle, pDescription);
             }
         }
 
         [InteropMethod]
-        public partial Result System_RegisterCodec(SystemHandle system, CodecDescription.Structure* description, PluginHandle* handle, uint priority);
+        public partial Result System_RegisterCodec(SystemHandle system, CodecDescriptionStruct* description, PluginHandle* handle, uint priority);
 
-        public Result System_RegisterCodec(SystemHandle system, ref CodecDescription.Structure description, PluginHandle* handle, uint priority)
+        public Result System_RegisterCodec(SystemHandle system, ref CodecDescriptionStruct description, PluginHandle* handle, uint priority)
         {
-            fixed (CodecDescription.Structure* pDescription = &description)
+            fixed (CodecDescriptionStruct* pDescription = &description)
             {
                 return System_RegisterCodec(system, pDescription, handle, priority);
             }
         }
 
-        public Result System_RegisterCodec(SystemHandle system, ref CodecDescription.Structure description, out PluginHandle handle, uint priority)
+        public Result System_RegisterCodec(SystemHandle system, ref CodecDescriptionStruct description, out PluginHandle handle, uint priority)
         {
-            fixed (CodecDescription.Structure* pDescription = &description)
+            fixed (CodecDescriptionStruct* pDescription = &description)
             fixed (PluginHandle* pHandle = &handle)
             {
                 return System_RegisterCodec(system, pDescription, pHandle, priority);
             }
-        }
-
-        public Result System_RegisterCodec(SystemHandle system, CodecDescription description, PluginHandle* handle, uint priority)
-        {
-            return System_RegisterCodec(system, ref description.Struct, handle, priority);
-        }
-
-        public Result System_RegisterCodec(SystemHandle system, CodecDescription description, out PluginHandle handle, uint priority)
-        {
-            return System_RegisterCodec(system, ref description.Struct, out handle, priority);
         }
 
         [InteropMethod]
@@ -597,9 +565,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo.Structure* info, SoundHandle* sound);
+        public partial Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfoStruct* info, SoundHandle* sound);
 
-        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo.Structure* info, out SoundHandle sound)
+        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfoStruct* info, out SoundHandle sound)
         { 
             fixed (SoundHandle* pSound = &sound)
             {
@@ -607,17 +575,17 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfo.Structure info, SoundHandle* sound)
+        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, SoundHandle* sound)
         {
-            fixed (CreateSoundInfo.Structure* pInfo = &info)
+            fixed (CreateSoundInfoStruct* pInfo = &info)
             {
                 return System_CreateSound(system, nameOrData, mode, pInfo, sound);
             }
         }
 
-        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfo.Structure info, out SoundHandle sound)
+        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, out SoundHandle sound)
         {
-            fixed (CreateSoundInfo.Structure* pInfo = &info)
+            fixed (CreateSoundInfoStruct* pInfo = &info)
             fixed (SoundHandle* pSound = &sound)
             {
                 return System_CreateSound(system, nameOrData, mode, pInfo, pSound);
@@ -628,7 +596,7 @@ namespace FmodAudio.Base
         {
             if (info is null)
             {
-                return System_CreateSound(system, nameOrData, mode, (CreateSoundInfo.Structure*)null, sound);
+                return System_CreateSound(system, nameOrData, mode, (CreateSoundInfoStruct*)null, sound);
             }
 
             return System_CreateSound(system, nameOrData, mode, ref info.Struct, sound);
@@ -638,16 +606,16 @@ namespace FmodAudio.Base
         {
             if (info is null)
             {
-                return System_CreateSound(system, nameOrData, mode, (CreateSoundInfo.Structure*)null, out sound);
+                return System_CreateSound(system, nameOrData, mode, (CreateSoundInfoStruct*)null, out sound);
             }
 
             return System_CreateSound(system, nameOrData, mode, ref info.Struct, out sound);
         }
 
         [InteropMethod]
-        public partial Result System_CreateStream(SystemHandle system, byte* name_or_data, Mode mode, CreateSoundInfo.Structure* exinfo, SoundHandle* sound);
+        public partial Result System_CreateStream(SystemHandle system, byte* name_or_data, Mode mode, CreateSoundInfoStruct* exinfo, SoundHandle* sound);
 
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo.Structure* info, out SoundHandle sound)
+        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfoStruct* info, out SoundHandle sound)
         {
             fixed (SoundHandle* pSound = &sound)
             {
@@ -655,17 +623,17 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfo.Structure info, SoundHandle* sound)
+        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, SoundHandle* sound)
         {
-            fixed (CreateSoundInfo.Structure* pInfo = &info)
+            fixed (CreateSoundInfoStruct* pInfo = &info)
             {
                 return System_CreateStream(system, nameOrData, mode, pInfo, sound);
             }
         }
 
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfo.Structure info, out SoundHandle sound)
+        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, out SoundHandle sound)
         {
-            fixed (CreateSoundInfo.Structure* pInfo = &info)
+            fixed (CreateSoundInfoStruct* pInfo = &info)
             fixed (SoundHandle* pSound = &sound)
             {
                 return System_CreateStream(system, nameOrData, mode, pInfo, pSound);
@@ -676,7 +644,7 @@ namespace FmodAudio.Base
         {
             if (info is null)
             {
-                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfo.Structure*)null, sound);
+                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfoStruct*)null, sound);
             }
 
             return System_CreateStream(system, nameOrData, mode, ref info.Struct, sound);
@@ -686,16 +654,16 @@ namespace FmodAudio.Base
         {
             if (info is null)
             {
-                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfo.Structure*)null, out sound);
+                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfoStruct*)null, out sound);
             }
 
             return System_CreateStream(system, nameOrData, mode, ref info.Struct, out sound);
         }
 
         [InteropMethod]
-        public partial Result System_CreateDSP(SystemHandle system, DspDescriptionStruct* description, IntPtr* dsp);
+        public partial Result System_CreateDSP(SystemHandle system, DspDescriptionStruct* description, DspHandle* dsp);
 
-        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, IntPtr* dsp)
+        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, DspHandle* dsp)
         {
             fixed (DspDescriptionStruct* pDescription = &description)
             {
@@ -703,38 +671,38 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, out IntPtr dsp)
+        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, out DspHandle dsp)
         {
             fixed (DspDescriptionStruct* pDescription = &description)
-            fixed (IntPtr* pDsp = &dsp)
+            fixed (DspHandle* pDsp = &dsp)
             {
                 return System_CreateDSP(system, pDescription, pDsp);
             }
         }
 
         [InteropMethod]
-        public partial Result System_CreateDSPByType(SystemHandle system, DSPType type, IntPtr* dsp);
+        public partial Result System_CreateDSPByType(SystemHandle system, DSPType type, DspHandle* dsp);
 
-        public Result System_CreateDSPByType(SystemHandle system, DSPType type, out IntPtr dsp)
+        public Result System_CreateDSPByType(SystemHandle system, DSPType type, out DspHandle dsp)
         {
-            fixed (IntPtr* pDsp = &dsp)
+            fixed (DspHandle* pDsp = &dsp)
             {
                 return System_CreateDSPByType(system, type, pDsp);
             }
         }
 
         [InteropMethod]
-        public partial Result System_CreateChannelGroup(SystemHandle system, byte* name, IntPtr* channelGroup);
+        public partial Result System_CreateChannelGroup(SystemHandle system, byte* name, ChannelGroupHandle* channelGroup);
 
-        public Result System_CreateChannelGroup(SystemHandle system, byte* name, out IntPtr channelGroup)
+        public Result System_CreateChannelGroup(SystemHandle system, byte* name, out ChannelGroupHandle channelGroup)
         {
-            fixed (IntPtr* pChannelGroup = &channelGroup)
+            fixed (ChannelGroupHandle* pChannelGroup = &channelGroup)
             {
                 return System_CreateChannelGroup(system, name, pChannelGroup);
             }
         }
 
-        public Result System_CreateChannelGroup(SystemHandle system, string name, IntPtr* channelGroup)
+        public Result System_CreateChannelGroup(SystemHandle system, string name, ChannelGroupHandle* channelGroup)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
@@ -742,10 +710,10 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateChannelGroup(SystemHandle system, string name, out IntPtr channelGroup)
+        public Result System_CreateChannelGroup(SystemHandle system, string name, out ChannelGroupHandle channelGroup)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
-            fixed (IntPtr* pChannelGroup = &channelGroup)
+            fixed (ChannelGroupHandle* pChannelGroup = &channelGroup)
             {
                 return System_CreateChannelGroup(system, pName, pChannelGroup);
             }
@@ -754,102 +722,102 @@ namespace FmodAudio.Base
         [InteropMethod]
         public partial Result System_CreateSoundGroup(SystemHandle system, byte* name, SoundGroupHandle* soundGroup);
 
-        public Result System_CreateSoundGroup(SystemHandle system, byte* name, out SoundGroupHandle channelGroup)
+        public Result System_CreateSoundGroup(SystemHandle system, byte* name, out SoundGroupHandle soundGroup)
         {
-            fixed (SoundGroupHandle* pChannelGroup = &channelGroup)
+            fixed (SoundGroupHandle* pSoundGroup = &soundGroup)
             {
-                return System_CreateSoundGroup(system, name, pChannelGroup);
+                return System_CreateSoundGroup(system, name, pSoundGroup);
             }
         }
 
-        public Result System_CreateSoundGroup(SystemHandle system, string name, SoundGroupHandle* channelGroup)
+        public Result System_CreateSoundGroup(SystemHandle system, string name, SoundGroupHandle* soundGroup)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
-                return System_CreateSoundGroup(system, pName, channelGroup);
+                return System_CreateSoundGroup(system, pName, soundGroup);
             }
         }
 
-        public Result System_CreateSoundGroup(SystemHandle system, string name, out SoundGroupHandle channelGroup)
+        public Result System_CreateSoundGroup(SystemHandle system, string name, out SoundGroupHandle soundGroup)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
-            fixed (SoundGroupHandle* pChannelGroup = &channelGroup)
+            fixed (SoundGroupHandle* pSoundGroup = &soundGroup)
             {
-                return System_CreateSoundGroup(system, pName, pChannelGroup);
+                return System_CreateSoundGroup(system, pName, pSoundGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result System_CreateReverb3D(SystemHandle system, IntPtr* reverb);
+        public partial Result System_CreateReverb3D(SystemHandle system, Reverb3DHandle* reverb);
 
-        public Result System_CreateReverb3D(SystemHandle system, out IntPtr reverb)
+        public Result System_CreateReverb3D(SystemHandle system, out Reverb3DHandle reverb)
         {
-            fixed (IntPtr* pReverb = &reverb)
+            fixed (Reverb3DHandle* pReverb = &reverb)
             {
                 return System_CreateReverb3D(system, pReverb);
             }
         }
 
         [InteropMethod]
-        public partial Result System_PlaySound(SystemHandle system, IntPtr sound, IntPtr channelGroup, bool paused, IntPtr* channel);
+        public partial Result System_PlaySound(SystemHandle system, SoundHandle sound, ChannelGroupHandle channelGroup, FmodBool paused, ChannelHandle* channel);
 
-        public Result System_PlaySound(SystemHandle system, IntPtr sound, IntPtr channelGroup, bool paused, out IntPtr channel)
+        public Result System_PlaySound(SystemHandle system, SoundHandle sound, ChannelGroupHandle channelGroup, FmodBool paused, out ChannelHandle channel)
         {
-            fixed (IntPtr* pChannel = &channel)
+            fixed (ChannelHandle* pChannel = &channel)
             {
                 return System_PlaySound(system, sound, channelGroup, paused, pChannel);
             }
         }
 
         [InteropMethod]
-        public partial Result System_PlayDSP(SystemHandle system, IntPtr dsp, IntPtr channelGroup, bool paused, IntPtr* channel);
+        public partial Result System_PlayDSP(SystemHandle system, DspHandle dsp, ChannelGroupHandle channelGroup, FmodBool paused, ChannelHandle* channel);
 
-        public Result System_PlayDSP(SystemHandle system, IntPtr dsp, IntPtr channelGroup, bool paused, out IntPtr channel)
+        public Result System_PlayDSP(SystemHandle system, DspHandle dsp, ChannelGroupHandle channelGroup, FmodBool paused, out ChannelHandle channel)
         {
-            fixed (IntPtr* pChannel = &channel)
+            fixed (ChannelHandle* pChannel = &channel)
             {
                 return System_PlayDSP(system, dsp, channelGroup, paused, pChannel);
             }
         }
 
         [InteropMethod]
-        public partial Result System_GetChannel(SystemHandle system, int channelid, IntPtr* channel);
+        public partial Result System_GetChannel(SystemHandle system, int channelid, ChannelHandle* channel);
 
-        public Result System_GetChannel(SystemHandle system, int channelid, out IntPtr channel)
+        public Result System_GetChannel(SystemHandle system, int channelid, out ChannelHandle channel)
         {
-            fixed (IntPtr* pChannel = &channel)
+            fixed (ChannelHandle* pChannel = &channel)
             {
                 return System_GetChannel(system, channelid, pChannel);
             }
         }
 
         [InteropMethod]
-        public partial Result System_GetMasterChannelGroup(SystemHandle system, IntPtr* channelGroup);
+        public partial Result System_GetMasterChannelGroup(SystemHandle system, ChannelGroupHandle* channelGroup);
 
-        public Result System_GetMasterChannelGroup(SystemHandle system, out IntPtr channelGroup)
+        public Result System_GetMasterChannelGroup(SystemHandle system, out ChannelGroupHandle channelGroup)
         {
-            fixed (IntPtr* pChannelGroup = &channelGroup)
+            fixed (ChannelGroupHandle* pChannelGroup = &channelGroup)
             {
                 return System_GetMasterChannelGroup(system, pChannelGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result System_GetMasterSoundGroup(SystemHandle system, IntPtr* soundGroup);
+        public partial Result System_GetMasterSoundGroup(SystemHandle system, SoundGroupHandle* soundGroup);
 
-        public Result System_GetMasterSoundGroup(SystemHandle system, out IntPtr soundGroup)
+        public Result System_GetMasterSoundGroup(SystemHandle system, out SoundGroupHandle soundGroup)
         {
-            fixed (IntPtr* pSoundGroup = &soundGroup)
+            fixed (SoundGroupHandle* pSoundGroup = &soundGroup)
             {
                 return System_GetMasterSoundGroup(system, pSoundGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result System_AttachChannelGroupToPort(SystemHandle system, uint portType, ulong portIndex, IntPtr channelGroup, bool passThru);
+        public partial Result System_AttachChannelGroupToPort(SystemHandle system, uint portType, ulong portIndex, ChannelGroupHandle channelGroup, bool passThru);
 
         [InteropMethod]
-        public partial Result System_DetachChannelGroupFromPort(SystemHandle system, IntPtr channelGroup);
+        public partial Result System_DetachChannelGroupFromPort(SystemHandle system, ChannelGroupHandle channelGroup);
 
         [InteropMethod]
         public partial Result System_SetReverbProperties(SystemHandle system, int instance, ReverbProperties* prop);
@@ -922,11 +890,11 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_CreateGeometry(SystemHandle system, int maxpolygons, int maxvertices, IntPtr* geometry);
+        public partial Result System_CreateGeometry(SystemHandle system, int maxpolygons, int maxvertices, GeometryHandle* geometry);
 
-        public Result System_CreateGeometry(SystemHandle system, int maxpolygons, int maxvertices, out IntPtr geometry)
+        public Result System_CreateGeometry(SystemHandle system, int maxpolygons, int maxvertices, out GeometryHandle geometry)
         {
-            fixed (IntPtr* pGeometry = &geometry)
+            fixed (GeometryHandle* pGeometry = &geometry)
             {
                 return System_CreateGeometry(system, maxpolygons, maxvertices, pGeometry);
             }
@@ -1019,14 +987,16 @@ namespace FmodAudio.Base
 
         [InteropMethod]
         internal partial Result System_GetUserData(SystemHandle system, IntPtr* userdata);
+        #endregion
+
+        #region Sound Functions
+        [InteropMethod]
+        public partial Result Sound_Release(SoundHandle sound);
 
         [InteropMethod]
-        public partial Result Sound_Release(IntPtr sound);
+        public partial Result Sound_GetSystemObject(SoundHandle sound, SystemHandle* system);
 
-        [InteropMethod]
-        public partial Result Sound_GetSystemObject(IntPtr sound, SystemHandle* system);
-
-        public Result Sound_GetSystemObject(IntPtr sound, out SystemHandle system)
+        public Result Sound_GetSystemObject(SoundHandle sound, out SystemHandle system)
         {
             fixed (SystemHandle* pSystem = &system)
             {
@@ -1035,9 +1005,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Lock(IntPtr sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
+        public partial Result Sound_Lock(SoundHandle sound, uint offset, uint length, IntPtr* ptr1, IntPtr* ptr2, uint* len1, uint* len2);
 
-        public Result Sound_Lock(IntPtr sound, uint offset, uint length, out IntPtr ptr1, out IntPtr ptr2, out uint len1, out uint len2)
+        public Result Sound_Lock(SoundHandle sound, uint offset, uint length, out IntPtr ptr1, out IntPtr ptr2, out uint len1, out uint len2)
         {
             fixed (IntPtr* p1 = &ptr1, p2 = &ptr2)
             fixed (uint* l1 = &len1, l2 = &len2)
@@ -1047,15 +1017,15 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Unlock(IntPtr sound, IntPtr ptr1, IntPtr ptr2, uint len1, uint len2);
+        public partial Result Sound_Unlock(SoundHandle sound, IntPtr ptr1, IntPtr ptr2, uint len1, uint len2);
 
         [InteropMethod]
-        public partial Result Sound_SetDefaults(IntPtr sound, float frequency, int priority);
+        public partial Result Sound_SetDefaults(SoundHandle sound, float frequency, int priority);
 
         [InteropMethod]
-        public partial Result Sound_GetDefaults(IntPtr sound, float* frequency, int* priority);
+        public partial Result Sound_GetDefaults(SoundHandle sound, float* frequency, int* priority);
 
-        public Result Sound_GetDefaults(IntPtr sound, out float frequency, out int priority)
+        public Result Sound_GetDefaults(SoundHandle sound, out float frequency, out int priority)
         {
             fixed (float* pFrequency = &frequency)
             fixed (int* pPriority = &priority)
@@ -1065,12 +1035,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Set3DMinMaxDistance(IntPtr sound, float min, float max);
+        public partial Result Sound_Set3DMinMaxDistance(SoundHandle sound, float min, float max);
 
         [InteropMethod]
-        public partial Result Sound_Get3DMinMaxDistance(IntPtr sound, float* min, float* max);
+        public partial Result Sound_Get3DMinMaxDistance(SoundHandle sound, float* min, float* max);
 
-        public Result Sound_Get3DMinMaxDistance(IntPtr sound, out float min, out float max)
+        public Result Sound_Get3DMinMaxDistance(SoundHandle sound, out float min, out float max)
         {
             fixed (float* pMin = &min, pMax = &max)
             {
@@ -1079,12 +1049,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Set3DConeSettings(IntPtr sound, float insideconeangle, float outsideconeangle, float outsidevolume);
+        public partial Result Sound_Set3DConeSettings(SoundHandle sound, float insideconeangle, float outsideconeangle, float outsidevolume);
 
         [InteropMethod]
-        public partial Result Sound_Get3DConeSettings(IntPtr sound, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
+        public partial Result Sound_Get3DConeSettings(SoundHandle sound, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
 
-        public Result Sound_Get3DConeSettings(IntPtr sound, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
+        public Result Sound_Get3DConeSettings(SoundHandle sound, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
         {
             fixed (float* pInsideConeAngle = &insideconeangle, pOutsideConeAngle = &outsideconeangle, pOutsideVolume = &outsidevolume)
             {
@@ -1093,12 +1063,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Set3DCustomRolloff(IntPtr sound, Vector3* points, int pointCount);
+        public partial Result Sound_Set3DCustomRolloff(SoundHandle sound, Vector3* points, int pointCount);
 
         [InteropMethod]
-        public partial Result Sound_Get3DCustomRolloff(IntPtr sound, Vector3** points, int* pointCount);
+        public partial Result Sound_Get3DCustomRolloff(SoundHandle sound, Vector3** points, int* pointCount);
 
-        public Result Sound_Get3DCustomRolloff(IntPtr sound, out Vector3* points, out int pointCount)
+        public Result Sound_Get3DCustomRolloff(SoundHandle sound, out Vector3* points, out int pointCount)
         {
             fixed (Vector3** pPoints = &points)
             fixed (int* pPointCount = &pointCount)
@@ -1108,34 +1078,34 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetSubSound(IntPtr sound, int index, IntPtr* subsound);
+        public partial Result Sound_GetSubSound(SoundHandle sound, int index, SoundHandle* subsound);
 
-        public Result Sound_GetSubSound(IntPtr sound, int index, out IntPtr subsound)
+        public Result Sound_GetSubSound(SoundHandle sound, int index, out SoundHandle subsound)
         {
-            fixed (IntPtr* pSubsound = &subsound)
+            fixed (SoundHandle* pSubsound = &subsound)
             {
                 return Sound_GetSubSound(sound, index, pSubsound);
             }
         }
 
         [InteropMethod]
-        public partial Result Sound_GetSubSoundParent(IntPtr sound, IntPtr* parentsound);
+        public partial Result Sound_GetSubSoundParent(SoundHandle sound, SoundHandle* parentsound);
 
-        public Result Sound_GetSubSoundParent(IntPtr sound, out IntPtr parentsound)
+        public Result Sound_GetSubSoundParent(SoundHandle sound, out SoundHandle parentsound)
         {
-            fixed (IntPtr* pParent = &parentsound)
+            fixed (SoundHandle* pParent = &parentsound)
             {
                 return Sound_GetSubSoundParent(sound, pParent);
             }
         }
 
         [InteropMethod]
-        public partial Result Sound_GetName(IntPtr sound, byte* name, int namelen);
+        public partial Result Sound_GetName(SoundHandle sound, byte* name, int namelen);
 
         [InteropMethod]
-        public partial Result Sound_GetLength(IntPtr sound, uint* length, TimeUnit lengthtype);
+        public partial Result Sound_GetLength(SoundHandle sound, uint* length, TimeUnit lengthtype);
 
-        public Result Sound_GetLength(IntPtr sound, out uint length, TimeUnit lengthtype)
+        public Result Sound_GetLength(SoundHandle sound, out uint length, TimeUnit lengthtype)
         {
             fixed (uint* pLength = &length)
             {
@@ -1144,9 +1114,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetFormat(IntPtr sound, SoundType* type, SoundFormat* format, int* channels, int* bits);
+        public partial Result Sound_GetFormat(SoundHandle sound, SoundType* type, SoundFormat* format, int* channels, int* bits);
 
-        public Result Sound_GetFormat(IntPtr sound, out SoundType type, out SoundFormat format, out int channels, out int bits)
+        public Result Sound_GetFormat(SoundHandle sound, out SoundType type, out SoundFormat format, out int channels, out int bits)
         {
             fixed (SoundType* pType = &type)
             fixed (SoundFormat* pFormat = &format)
@@ -1157,9 +1127,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetNumSubSounds(IntPtr sound, int* numsubsounds);
+        public partial Result Sound_GetNumSubSounds(SoundHandle sound, int* numsubsounds);
 
-        public Result Sound_GetNumSubSounds(IntPtr sound, out int numsubsounds)
+        public Result Sound_GetNumSubSounds(SoundHandle sound, out int numsubsounds)
         {
             fixed (int* psubsoundCount = &numsubsounds)
             {
@@ -1168,9 +1138,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetNumTags(IntPtr sound, int* tagCount, int* updatedTagCount);
+        public partial Result Sound_GetNumTags(SoundHandle sound, int* tagCount, int* updatedTagCount);
 
-        public Result Sound_GetNumTags(IntPtr sound, out int tagCount, out int updatedTagCount)
+        public Result Sound_GetNumTags(SoundHandle sound, out int tagCount, out int updatedTagCount)
         {
             fixed (int* pTagCount = &tagCount, pUpdatedTagCount = &updatedTagCount)
             {
@@ -1179,9 +1149,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetTag(IntPtr sound, byte* name, int index, Tag* tag);
+        public partial Result Sound_GetTag(SoundHandle sound, byte* name, int index, Tag* tag);
 
-        public Result Sound_GetTag(IntPtr sound, string name, int index, Tag* tag)
+        public Result Sound_GetTag(SoundHandle sound, string name, int index, Tag* tag)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
@@ -1189,7 +1159,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_GetTag(IntPtr sound, string name, int index, out Tag tag)
+        public Result Sound_GetTag(SoundHandle sound, string name, int index, out Tag tag)
         {
             fixed (Tag* pTag = &tag)
             {
@@ -1199,9 +1169,9 @@ namespace FmodAudio.Base
 
 
         [InteropMethod]
-        public partial Result Sound_GetOpenState(IntPtr sound, OpenState* openstate, uint* percentbuffered, FmodBool* starving, FmodBool* diskbusy);
+        public partial Result Sound_GetOpenState(SoundHandle sound, OpenState* openstate, uint* percentbuffered, FmodBool* starving, FmodBool* diskbusy);
 
-        public Result Sound_GetOpenState(IntPtr sound, out OpenState openstate, out uint percentBuffered, out FmodBool starving, out FmodBool diskbusy)
+        public Result Sound_GetOpenState(SoundHandle sound, out OpenState openstate, out uint percentBuffered, out FmodBool starving, out FmodBool diskbusy)
         {
             fixed (OpenState* pOpenState = &openstate)
             fixed (uint* pPercentBuffered = &percentBuffered)
@@ -1212,9 +1182,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_ReadData(IntPtr sound, void* buffer, uint length, uint* read);
+        public partial Result Sound_ReadData(SoundHandle sound, void* buffer, uint length, uint* read);
 
-        public Result Sound_ReadData(IntPtr sound, void* buffer, uint length, out uint read)
+        public Result Sound_ReadData(SoundHandle sound, void* buffer, uint length, out uint read)
         {
             fixed (uint* pRead = &read)
             {
@@ -1222,7 +1192,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_ReadData(IntPtr sound, Span<byte> buffer, uint* read)
+        public Result Sound_ReadData(SoundHandle sound, Span<byte> buffer, uint* read)
         {
             fixed (byte* pBuffer = buffer)
             {
@@ -1230,7 +1200,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_ReadData(IntPtr sound, Span<byte> buffer, out uint read)
+        public Result Sound_ReadData(SoundHandle sound, Span<byte> buffer, out uint read)
         {
             fixed (byte* pBuffer = buffer)
             fixed (uint* pRead = &read)
@@ -1240,26 +1210,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_SeekData(IntPtr sound, uint pcm);
+        public partial Result Sound_SeekData(SoundHandle sound, uint pcm);
 
         [InteropMethod]
-        public partial Result Sound_SetSoundGroup(IntPtr sound, IntPtr soundGroup);
+        public partial Result Sound_SetSoundGroup(SoundHandle sound, SoundGroupHandle soundGroup);
 
         [InteropMethod]
-        public partial Result Sound_GetSoundGroup(IntPtr sound, IntPtr* soundGroup);
+        public partial Result Sound_GetSoundGroup(SoundHandle sound, SoundGroupHandle* soundGroup);
 
-        public Result Sound_GetSoundGroup(IntPtr sound, out IntPtr soundGroup)
+        public Result Sound_GetSoundGroup(SoundHandle sound, out SoundGroupHandle soundGroup)
         {
-            fixed (IntPtr* pSoundGroup = &soundGroup)
+            fixed (SoundGroupHandle* pSoundGroup = &soundGroup)
             {
                 return Sound_GetSoundGroup(sound, pSoundGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result Sound_GetNumSyncPoints(IntPtr sound, int* syncPointCount);
+        public partial Result Sound_GetNumSyncPoints(SoundHandle sound, int* syncPointCount);
 
-        public Result Sound_GetNumSyncPoints(IntPtr sound, out int syncPointCount)
+        public Result Sound_GetNumSyncPoints(SoundHandle sound, out int syncPointCount)
         {
             fixed (int* pSyncPointCount = &syncPointCount)
             {
@@ -1268,20 +1238,20 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetSyncPoint(IntPtr sound, int index, IntPtr* point);
+        public partial Result Sound_GetSyncPoint(SoundHandle sound, int index, SyncPointHandle* point);
 
-        public Result Sound_GetSyncPoint(IntPtr sound, int index, out IntPtr point)
+        public Result Sound_GetSyncPoint(SoundHandle sound, int index, out SyncPointHandle point)
         {
-            fixed (IntPtr* pPoint = &point)
+            fixed (SyncPointHandle* pPoint = &point)
             {
                 return Sound_GetSyncPoint(sound, index, pPoint);
             }
         }
 
         [InteropMethod]
-        public partial Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, uint* offset, TimeUnit offsetType);
+        public partial Result Sound_GetSyncPointInfo(SoundHandle sound, SyncPointHandle point, byte* name, int namelen, uint* offset, TimeUnit offsetType);
 
-        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, byte* name, int namelen, out uint offset, TimeUnit offsetType)
+        public Result Sound_GetSyncPointInfo(SoundHandle sound, SyncPointHandle point, byte* name, int namelen, out uint offset, TimeUnit offsetType)
         {
             fixed (uint* pOffset = &offset)
             {
@@ -1289,7 +1259,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, Span<byte> nameBuffer, uint* offset, TimeUnit offsetType)
+        public Result Sound_GetSyncPointInfo(SoundHandle sound, SyncPointHandle point, Span<byte> nameBuffer, uint* offset, TimeUnit offsetType)
         {
             fixed (byte* pName = nameBuffer)
             {
@@ -1297,7 +1267,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_GetSyncPointInfo(IntPtr sound, IntPtr point, Span<byte> nameBuffer, out uint offset, TimeUnit offsetType)
+        public Result Sound_GetSyncPointInfo(SoundHandle sound, SyncPointHandle point, Span<byte> nameBuffer, out uint offset, TimeUnit offsetType)
         {
             fixed (byte* pName = nameBuffer)
             {
@@ -1306,9 +1276,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, byte* name, IntPtr* point);
+        public partial Result Sound_AddSyncPoint(SoundHandle sound, uint offset, TimeUnit offsetType, byte* name, SyncPointHandle* point);
 
-        public Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, string name, IntPtr* point)
+        public Result Sound_AddSyncPoint(SoundHandle sound, uint offset, TimeUnit offsetType, string name, SyncPointHandle* point)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
@@ -1316,25 +1286,25 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Sound_AddSyncPoint(IntPtr sound, uint offset, TimeUnit offsetType, string name, out IntPtr point)
+        public Result Sound_AddSyncPoint(SoundHandle sound, uint offset, TimeUnit offsetType, string name, out SyncPointHandle point)
         {
             fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
-            fixed (IntPtr* pPoint = &point)
+            fixed (SyncPointHandle* pPoint = &point)
             {
                 return Sound_AddSyncPoint(sound, offset, offsetType, pName, pPoint);
             }
         }
 
         [InteropMethod]
-        public partial Result Sound_DeleteSyncPoint(IntPtr sound, IntPtr point);
+        public partial Result Sound_DeleteSyncPoint(SoundHandle sound, SyncPointHandle point);
 
         [InteropMethod]
-        public partial Result Sound_SetMode(IntPtr sound, Mode mode);
+        public partial Result Sound_SetMode(SoundHandle sound, Mode mode);
 
         [InteropMethod]
-        public partial Result Sound_GetMode(IntPtr sound, Mode* mode);
+        public partial Result Sound_GetMode(SoundHandle sound, Mode* mode);
 
-        public Result Sound_GetMode(IntPtr sound, out Mode mode)
+        public Result Sound_GetMode(SoundHandle sound, out Mode mode)
         {
             fixed (Mode* pMode = &mode)
             {
@@ -1343,12 +1313,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_SetLoopCount(IntPtr sound, int loopcount);
+        public partial Result Sound_SetLoopCount(SoundHandle sound, int loopcount);
 
         [InteropMethod]
-        public partial Result Sound_GetLoopCount(IntPtr sound, int* loopcount);
+        public partial Result Sound_GetLoopCount(SoundHandle sound, int* loopcount);
 
-        public Result Sound_GetLoopCount(IntPtr sound, out int loopCount)
+        public Result Sound_GetLoopCount(SoundHandle sound, out int loopCount)
         {
             fixed (int* pLoopCount = &loopCount)
             {
@@ -1357,12 +1327,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_SetLoopPoints(IntPtr sound, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
+        public partial Result Sound_SetLoopPoints(SoundHandle sound, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
 
         [InteropMethod]
-        public partial Result Sound_GetLoopPoints(IntPtr sound, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
+        public partial Result Sound_GetLoopPoints(SoundHandle sound, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
 
-        public Result Sound_GetLoopPoints(IntPtr sound, out uint loopStart, TimeUnit loopStartType, out uint loopEnd, TimeUnit loopEndType)
+        public Result Sound_GetLoopPoints(SoundHandle sound, out uint loopStart, TimeUnit loopStartType, out uint loopEnd, TimeUnit loopEndType)
         {
             fixed (uint* pLoopStart = &loopStart, pLoopEnd = &loopEnd)
             {
@@ -1371,9 +1341,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_GetMusicNumChannels(IntPtr sound, int* numchannels);
+        public partial Result Sound_GetMusicNumChannels(SoundHandle sound, int* numchannels);
 
-        public Result Sound_GetMusicNumChannels(IntPtr sound, out int channelCount)
+        public Result Sound_GetMusicNumChannels(SoundHandle sound, out int channelCount)
         {
             fixed (int* pChannelCount = &channelCount)
             {
@@ -1382,12 +1352,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_SetMusicChannelVolume(IntPtr sound, int channel, float volume);
+        public partial Result Sound_SetMusicChannelVolume(SoundHandle sound, int channel, float volume);
 
         [InteropMethod]
-        public partial Result Sound_GetMusicChannelVolume(IntPtr sound, int channel, float* volume);
+        public partial Result Sound_GetMusicChannelVolume(SoundHandle sound, int channel, float* volume);
 
-        public Result Sound_GetMusicChannelVolume(IntPtr sound, int channel, out float volume)
+        public Result Sound_GetMusicChannelVolume(SoundHandle sound, int channel, out float volume)
         {
             fixed (float* pVolume = &volume)
             {
@@ -1396,12 +1366,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_SetMusicSpeed(IntPtr sound, float speed);
+        public partial Result Sound_SetMusicSpeed(SoundHandle sound, float speed);
 
         [InteropMethod]
-        public partial Result Sound_GetMusicSpeed(IntPtr sound, float* speed);
+        public partial Result Sound_GetMusicSpeed(SoundHandle sound, float* speed);
 
-        public Result Sound_GetMusicSpeed(IntPtr sound, out float speed)
+        public Result Sound_GetMusicSpeed(SoundHandle sound, out float speed)
         {
             fixed (float* pSpeed = &speed)
             {
@@ -1410,12 +1380,21 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_Release(IntPtr soundGroup);
+        public partial Result Sound_GetUserData(SoundHandle sound, IntPtr* userdata);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetSystemObject(IntPtr soundGroup, SystemHandle* system);
+        public partial Result Sound_SetUserData(SoundHandle sound, IntPtr userdata);
 
-        public Result SoundGroup_GetSystemObject(IntPtr soundGroup, out SystemHandle system)
+        #endregion
+
+        #region Sound Group Functions
+        [InteropMethod]
+        public partial Result SoundGroup_Release(SoundGroupHandle soundGroup);
+
+        [InteropMethod]
+        public partial Result SoundGroup_GetSystemObject(SoundGroupHandle soundGroup, SystemHandle* system);
+
+        public Result SoundGroup_GetSystemObject(SoundGroupHandle soundGroup, out SystemHandle system)
         {
             fixed (SystemHandle* pSystem = &system)
             {
@@ -1424,13 +1403,13 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_SetMaxAudible(IntPtr soundGroup, int maxaudible);
+        public partial Result SoundGroup_SetMaxAudible(SoundGroupHandle soundGroup, int maxaudible);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetMaxAudible(IntPtr soundGroup, int* maxaudible);
+        public partial Result SoundGroup_GetMaxAudible(SoundGroupHandle soundGroup, int* maxaudible);
 
         [InteropMethod]
-        public Result SoundGroup_GetMaxAudible(IntPtr soundGroup, out int maxAudible)
+        public Result SoundGroup_GetMaxAudible(SoundGroupHandle soundGroup, out int maxAudible)
         {
             fixed (int* pMaxAudible = &maxAudible)
             {
@@ -1439,12 +1418,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_SetMaxAudibleBehavior(IntPtr soundGroup, SoundGroupBehavior behavior);
+        public partial Result SoundGroup_SetMaxAudibleBehavior(SoundGroupHandle soundGroup, SoundGroupBehavior behavior);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundGroup, SoundGroupBehavior* behavior);
+        public partial Result SoundGroup_GetMaxAudibleBehavior(SoundGroupHandle soundGroup, SoundGroupBehavior* behavior);
 
-        public Result SoundGroup_GetMaxAudibleBehavior(IntPtr soundGroup, out SoundGroupBehavior behavior)
+        public Result SoundGroup_GetMaxAudibleBehavior(SoundGroupHandle soundGroup, out SoundGroupBehavior behavior)
         {
             fixed (SoundGroupBehavior* pBehavior = &behavior)
             {
@@ -1453,12 +1432,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_SetMuteFadeSpeed(IntPtr soundGroup, float speed);
+        public partial Result SoundGroup_SetMuteFadeSpeed(SoundGroupHandle soundGroup, float speed);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetMuteFadeSpeed(IntPtr soundGroup, float* speed);
+        public partial Result SoundGroup_GetMuteFadeSpeed(SoundGroupHandle soundGroup, float* speed);
 
-        public Result SoundGroup_GetMuteFadeSpeed(IntPtr soundGroup, out float speed)
+        public Result SoundGroup_GetMuteFadeSpeed(SoundGroupHandle soundGroup, out float speed)
         {
             fixed (float* pSpeed = &speed)
             {
@@ -1467,12 +1446,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_SetVolume(IntPtr soundGroup, float volume);
+        public partial Result SoundGroup_SetVolume(SoundGroupHandle soundGroup, float volume);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetVolume(IntPtr soundGroup, float* volume);
+        public partial Result SoundGroup_GetVolume(SoundGroupHandle soundGroup, float* volume);
 
-        public Result SoundGroup_GetVolume(IntPtr soundGroup, out float volume)
+        public Result SoundGroup_GetVolume(SoundGroupHandle soundGroup, out float volume)
         {
             fixed (float* pVolume = &volume)
             {
@@ -1481,15 +1460,23 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_Stop(IntPtr soundGroup);
+        public partial Result SoundGroup_Stop(SoundGroupHandle soundGroup);
 
         [InteropMethod]
-        public partial Result SoundGroup_GetName(IntPtr soundGroup, byte* name, int namelen);
+        public partial Result SoundGroup_GetName(SoundGroupHandle soundGroup, byte* name, int namelen);
+
+        public Result SoundGroup_GetName(SoundGroupHandle soundGroup, Span<byte> nameBuffer)
+        {
+            fixed (byte* pName = nameBuffer)
+            {
+                return SoundGroup_GetName(soundGroup, pName, nameBuffer.Length);
+            }
+        }
 
         [InteropMethod]
-        public partial Result SoundGroup_GetNumSounds(IntPtr soundGroup, int* numsounds);
+        public partial Result SoundGroup_GetNumSounds(SoundGroupHandle soundGroup, int* numsounds);
 
-        public Result SoundGroup_GetNumSounds(IntPtr soundGroup, out int soundCount)
+        public Result SoundGroup_GetNumSounds(SoundGroupHandle soundGroup, out int soundCount)
         {
             fixed (int* pSoundCount = &soundCount)
             {
@@ -1498,20 +1485,20 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_GetSound(IntPtr soundGroup, int index, IntPtr* sound);
+        public partial Result SoundGroup_GetSound(SoundGroupHandle soundGroup, int index, SoundHandle* sound);
 
-        public Result SoundGroup_GetSound(IntPtr soundGroup, int index, out IntPtr sound)
+        public Result SoundGroup_GetSound(SoundGroupHandle soundGroup, int index, out SoundHandle sound)
         {
-            fixed (IntPtr* pSound = &sound)
+            fixed (SoundHandle* pSound = &sound)
             {
                 return SoundGroup_GetSound(soundGroup, index, pSound);
             }
         }
 
         [InteropMethod]
-        public partial Result SoundGroup_GetNumPlaying(IntPtr soundGroup, int* soundsPlaying);
+        public partial Result SoundGroup_GetNumPlaying(SoundGroupHandle soundGroup, int* soundsPlaying);
 
-        public Result SoundGroup_GetNumPlaying(IntPtr soundGroup, out int soundsPlaying)
+        public Result SoundGroup_GetNumPlaying(SoundGroupHandle soundGroup, out int soundsPlaying)
         {
             fixed (int* pSoundsPlaying = &soundsPlaying)
             {
@@ -1520,281 +1507,18 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        internal partial Result SoundGroup_SetUserData(IntPtr soundgroup, IntPtr userdata);
+        internal partial Result SoundGroup_SetUserData(SoundGroupHandle soundgroup, IntPtr userdata);
 
         [InteropMethod]
-        internal partial Result SoundGroup_GetUserData(IntPtr soundgroup, IntPtr* userdata);
+        internal partial Result SoundGroup_GetUserData(SoundGroupHandle soundgroup, IntPtr* userdata);
+        #endregion
+
+        #region Channel Control Functions
 
         [InteropMethod]
-        public partial Result Channel_SetFrequency(IntPtr channel, float frequency);
+        public partial Result ChannelGroup_IsPlaying(ChannelGroupHandle channelGroup, FmodBool* isplaying);
 
-        [InteropMethod]
-        public partial Result Channel_GetFrequency(IntPtr channel, float* frequency);
-
-        public Result Channel_GetFrequency(IntPtr channel, out float frequency)
-        {
-            fixed (float* pFrequency = &frequency)
-            {
-                return Channel_GetFrequency(channel, pFrequency);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetPriority(IntPtr channel, int priority);
-
-        [InteropMethod]
-        public partial Result Channel_GetPriority(IntPtr channel, int* priority);
-
-        public Result Channel_GetPriority(IntPtr channel, out int priority)
-        {
-            fixed (int* pPriority = &priority)
-            {
-                return Channel_GetPriority(channel, pPriority);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetChannelGroup(IntPtr channel, IntPtr channelGroup);
-
-        [InteropMethod]
-        public partial Result Channel_GetChannelGroup(IntPtr channel, IntPtr* channelGroup);
-
-        public Result Channel_GetChannelGroup(IntPtr channel, out IntPtr channelGroup)
-        {
-            fixed (IntPtr* pChannelGroup = &channelGroup)
-            {
-                return Channel_GetChannelGroup(channel, pChannelGroup);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_IsVirtual(IntPtr channel, FmodBool* isvirtual);
-
-        public Result Channel_IsVirtual(IntPtr channel, out FmodBool isvirtual)
-        {
-            fixed (FmodBool* pIsVirtual = &isvirtual)
-                return Channel_IsVirtual(channel, pIsVirtual);
-        }
-
-        [InteropMethod]
-        public partial Result Channel_GetCurrentSound(IntPtr channel, IntPtr* sound);
-
-        public Result Channel_GetCurrentSound(IntPtr channel, out IntPtr sound)
-        {
-            fixed (IntPtr* pSound = &sound)
-            {
-                return Channel_GetCurrentSound(channel, pSound);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_GetIndex(IntPtr channel, int* index);
-
-        public Result Channel_GetIndex(IntPtr channel, out int index)
-        {
-            fixed (int* pIndex = &index)
-            {
-                return Channel_GetIndex(channel, pIndex);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetPosition(IntPtr channel, uint position, TimeUnit posType);
-
-        [InteropMethod]
-        public partial Result Channel_GetPosition(IntPtr channel, uint* position, TimeUnit posType);
-
-        public Result Channel_GetPosition(IntPtr channel, out uint position, TimeUnit posType)
-        {
-            fixed (uint* pPos = &position)
-            {
-                return Channel_GetPosition(channel, pPos, posType);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetMode(IntPtr channel, Mode mode);
-
-        [InteropMethod]
-        public partial Result Channel_GetMode(IntPtr channel, Mode* mode);
-
-        public Result Channel_GetMode(IntPtr channel, out Mode mode)
-        {
-            fixed (Mode* pMode = &mode)
-            {
-                return Channel_GetMode(channel, pMode);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetLoopCount(IntPtr channel, int loopcount);
-
-        [InteropMethod]
-        public partial Result Channel_GetLoopCount(IntPtr channel, int* loopcount);
-
-        public Result Channel_GetLoopCount(IntPtr channel, out int loopcount)
-        {
-            fixed (int* pLoopCount = &loopcount)
-            {
-                return Channel_GetLoopCount(channel, pLoopCount);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result Channel_SetLoopPoints(IntPtr channel, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
-
-        [InteropMethod]
-        public partial Result Channel_GetLoopPoints(IntPtr channel, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
-
-        public Result Channel_GetLoopPoints(IntPtr channel, out uint loopstart, TimeUnit loopstarttype, out uint loopend, TimeUnit loopendtype)
-        {
-            fixed (uint* pLoopStart = &loopstart, pLoopEnd = &loopend)
-            {
-                return Channel_GetLoopPoints(channel, pLoopStart, loopstarttype, pLoopEnd, loopendtype);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_Stop(IntPtr channelGroup);
-
-        [InteropMethod]
-        private partial Result ChannelGroup_SetPaused(IntPtr channelGroup, int paused);
-
-        public Result ChannelGroup_SetPaused(IntPtr channelGroup, FmodBool paused)
-        {
-            return ChannelGroup_SetPaused(channelGroup, paused.value);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetPaused(IntPtr channelGroup, FmodBool* paused);
-
-        public Result ChannelGroup_GetPaused(IntPtr channelGroup, out FmodBool paused)
-        {
-            fixed (FmodBool* pPaused = &paused)
-                return ChannelGroup_GetPaused(channelGroup, pPaused);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetVolume(IntPtr channelGroup, float* volume);
-
-        public Result ChannelGroup_GetVolume(IntPtr channelGroup, out float volume)
-        {
-            fixed (float* pVolume = &volume)
-            {
-                return ChannelGroup_GetVolume(channelGroup, pVolume);
-            }
-        }
-
-        [InteropMethod]
-        private partial Result ChannelGroup_SetVolumeRamp(IntPtr channelGroup, int ramp);
-
-        public Result ChannelGroup_SetVolumeRamp(IntPtr channelGroup, FmodBool ramp)
-        {
-            return ChannelGroup_SetVolumeRamp(channelGroup, ramp.value);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, FmodBool* ramp);
-
-        public Result ChannelGroup_GetVolumeRamp(IntPtr channelGroup, out FmodBool ramp)
-        {
-            fixed (FmodBool* pRamp = &ramp)
-                return ChannelGroup_GetVolumeRamp(channelGroup, pRamp);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetAudibility(IntPtr channelGroup, float* audibility);
-
-        public Result ChannelGroup_GetAudibility(IntPtr channelGroup, out float audibility)
-        {
-            fixed (float* pAudibility = &audibility)
-            {
-                return ChannelGroup_GetAudibility(channelGroup, pAudibility);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_SetPitch(IntPtr channelGroup, float pitch);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetPitch(IntPtr channelGroup, float* pitch);
-
-        public Result ChannelGroup_GetPitch(IntPtr channelGroup, out float pitch)
-        {
-            fixed (float* pPitch = &pitch)
-            {
-                return ChannelGroup_GetPitch(channelGroup, pPitch);
-            }
-        }
-
-        [InteropMethod]
-        private partial Result ChannelGroup_SetMute(IntPtr channelGroup, int mute);
-
-        public Result ChannelGroup_SetMute(IntPtr channelGroup, FmodBool mute)
-        {
-            return ChannelGroup_SetMute(channelGroup, mute.value);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetMute(IntPtr channelGroup, FmodBool* mute);
-
-        public Result ChannelGroup_GetMute(IntPtr channelGroup, out FmodBool mute)
-        {
-            fixed (FmodBool* pMute = &mute)
-            {
-                return ChannelGroup_GetMute(channelGroup, pMute);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_SetReverbProperties(IntPtr channelGroup, int instance, float wet);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetReverbProperties(IntPtr channelGroup, int instance, float* wet);
-
-        public Result ChannelGroup_GetReverbProperties(IntPtr channelGroup, int instance, out float wet)
-        {
-            fixed (float* pWet = &wet)
-            {
-                return ChannelGroup_GetReverbProperties(channelGroup, instance, pWet);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_SetLowPassGain(IntPtr channelGroup, float gain);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetLowPassGain(IntPtr channelGroup, float* gain);
-
-        public Result ChannelGroup_GetLowPassGain(IntPtr channelGroup, out float gain)
-        {
-            fixed (float* pGain = &gain)
-            {
-                return ChannelGroup_GetLowPassGain(channelGroup, pGain);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_SetMode(IntPtr channelGroup, Mode mode);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetMode(IntPtr channelGroup, Mode* mode);
-
-        public Result ChannelGroup_GetMode(IntPtr channelGroup, out Mode mode)
-        {
-            fixed (Mode* pMode = &mode)
-            {
-                return ChannelGroup_GetMode(channelGroup, pMode);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_SetCallback(IntPtr channelGroup, delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_IsPlaying(IntPtr channelGroup, FmodBool* isplaying);
-
-        public Result ChannelGroup_IsPlaying(IntPtr channelGroup, out FmodBool isplaying)
+        public Result ChannelGroup_IsPlaying(ChannelGroupHandle channelGroup, out FmodBool isplaying)
         {
             fixed (FmodBool* pValue = &isplaying)
             {
@@ -1803,15 +1527,289 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetPan(IntPtr channelGroup, float pan);
+        public partial Result Channel_IsPlaying(ChannelHandle channel, FmodBool* isplaying);
+
+        public Result Channel_IsPlaying(ChannelHandle channel, out FmodBool isplaying)
+        {
+            fixed (FmodBool* pValue = &isplaying)
+            {
+                return Channel_IsPlaying(channel, pValue);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetMixLevelsOutput(IntPtr channelGroup, float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
+        public partial Result ChannelGroup_Stop(ChannelGroupHandle channelGroup);
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetMixLevelsInput(IntPtr channelGroup, float* levels, int levelCount);
+        public partial Result Channel_Stop(ChannelHandle channel);
 
-        public Result ChannelGroup_SetMixLevelsInput(IntPtr channelGroup, Span<float> levels)
+        [InteropMethod]
+        public partial Result ChannelGroup_SetPaused(ChannelGroupHandle channelGroup, FmodBool paused);
+
+        [InteropMethod]
+        public partial Result Channel_SetPaused(ChannelHandle channel, FmodBool paused);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetPaused(ChannelGroupHandle channelGroup, FmodBool* paused);
+
+        public Result ChannelGroup_GetPaused(ChannelGroupHandle channelGroup, out FmodBool paused)
+        {
+            fixed (FmodBool* pPaused = &paused)
+                return ChannelGroup_GetPaused(channelGroup, pPaused);
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetPaused(ChannelHandle channel, FmodBool* paused);
+
+        public Result Channel_GetPaused(ChannelHandle channel, out FmodBool paused)
+        {
+            fixed (FmodBool* pPaused = &paused)
+                return Channel_GetPaused(channel, pPaused);
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetVolume(ChannelGroupHandle channelGroup, float* volume);
+
+        public Result ChannelGroup_GetVolume(ChannelGroupHandle channelGroup, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return ChannelGroup_GetVolume(channelGroup, pVolume);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetVolume(ChannelHandle channel, float* volume);
+
+        public Result Channel_GetVolume(ChannelHandle channel, out float volume)
+        {
+            fixed (float* pVolume = &volume)
+            {
+                return Channel_GetVolume(channel, pVolume);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetVolume(ChannelGroupHandle channelGroup, float volume);
+
+        [InteropMethod]
+        public partial Result Channel_SetVolume(ChannelHandle channelGroup, float volume);
+
+        [InteropMethod]
+        private partial Result ChannelGroup_SetVolumeRamp(ChannelGroupHandle channelGroup, FmodBool ramp);
+
+        [InteropMethod]
+        private partial Result Channel_SetVolumeRamp(ChannelHandle channelGroup, FmodBool ramp);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetVolumeRamp(ChannelGroupHandle channelGroup, FmodBool* ramp);
+
+        public Result ChannelGroup_GetVolumeRamp(ChannelGroupHandle channelGroup, out FmodBool ramp)
+        {
+            fixed (FmodBool* pRamp = &ramp)
+                return ChannelGroup_GetVolumeRamp(channelGroup, pRamp);
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetVolumeRamp(ChannelHandle channelGroup, FmodBool* ramp);
+
+        public Result Channel_GetVolumeRamp(ChannelHandle channelGroup, out FmodBool ramp)
+        {
+            fixed (FmodBool* pRamp = &ramp)
+                return Channel_GetVolumeRamp(channelGroup, pRamp);
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetAudibility(ChannelGroupHandle channelGroup, float* audibility);
+
+        public Result ChannelGroup_GetAudibility(ChannelGroupHandle channelGroup, out float audibility)
+        {
+            fixed (float* pAudibility = &audibility)
+            {
+                return ChannelGroup_GetAudibility(channelGroup, pAudibility);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetAudibility(ChannelHandle channelGroup, float* audibility);
+
+        public Result Channel_GetAudibility(ChannelHandle channelGroup, out float audibility)
+        {
+            fixed (float* pAudibility = &audibility)
+            {
+                return Channel_GetAudibility(channelGroup, pAudibility);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetPitch(ChannelGroupHandle channelGroup, float pitch);
+
+        [InteropMethod]
+        public partial Result Channel_SetPitch(ChannelHandle channelGroup, float pitch);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetPitch(ChannelGroupHandle channelGroup, float* pitch);
+
+        public Result ChannelGroup_GetPitch(ChannelGroupHandle channelGroup, out float pitch)
+        {
+            fixed (float* pPitch = &pitch)
+            {
+                return ChannelGroup_GetPitch(channelGroup, pPitch);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetPitch(ChannelHandle channelGroup, float* pitch);
+
+        public Result Channel_GetPitch(ChannelHandle channel, out float pitch)
+        {
+            fixed (float* pPitch = &pitch)
+            {
+                return Channel_GetPitch(channel, pPitch);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetMute(ChannelGroupHandle channelGroup, FmodBool mute);
+
+        [InteropMethod]
+        public partial Result Channel_SetMute(ChannelHandle channel, FmodBool mute);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetMute(ChannelGroupHandle channelGroup, FmodBool* mute);
+
+        public Result ChannelGroup_GetMute(ChannelGroupHandle channelGroup, out FmodBool mute)
+        {
+            fixed (FmodBool* pMute = &mute)
+            {
+                return ChannelGroup_GetMute(channelGroup, pMute);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetMute(ChannelHandle channelGroup, FmodBool* mute);
+
+        public Result Channel_GetMute(ChannelHandle channelGroup, out FmodBool mute)
+        {
+            fixed (FmodBool* pMute = &mute)
+            {
+                return Channel_GetMute(channelGroup, pMute);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetReverbProperties(ChannelGroupHandle channelGroup, int instance, float wet);
+
+        [InteropMethod]
+        public partial Result Channel_SetReverbProperties(ChannelHandle channel, int instance, float wet);
+
+        /// <summary>
+        /// Retrieves the wet level (or send level) for a particular reverb instance.
+        /// </summary>
+        /// <param name="instance">Reverb instance index.</param>
+        /// <param name="wet">Send level for the signal to the reverb.</param>
+        [InteropMethod]
+        public partial Result ChannelGroup_GetReverbProperties(ChannelGroupHandle channelGroup, int instance, float* wet);
+
+        /// <inheritdoc cref="ChannelGroup_GetReverbProperties(ChannelGroupHandle, int, float*)"/>
+        public Result ChannelGroup_GetReverbProperties(ChannelGroupHandle channelGroup, int instance, out float wet)
+        {
+            fixed (float* pWet = &wet)
+            {
+                return ChannelGroup_GetReverbProperties(channelGroup, instance, pWet);
+            }
+        }
+
+
+        [InteropMethod]
+        public partial Result Channel_GetReverbProperties(ChannelHandle channel, int instance, float* wet);
+
+        public Result Channel_GetReverbProperties(ChannelHandle channel, int instance, out float wet)
+        {
+            fixed (float* pWet = &wet)
+            {
+                return Channel_GetReverbProperties(channel, instance, pWet);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetLowPassGain(ChannelGroupHandle channelGroup, float gain);
+
+        [InteropMethod]
+        public partial Result Channel_SetLowPassGain(ChannelHandle channel, float gain);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetLowPassGain(ChannelGroupHandle channelGroup, float* gain);
+
+        public Result ChannelGroup_GetLowPassGain(ChannelGroupHandle channelGroup, out float gain)
+        {
+            fixed (float* pGain = &gain)
+            {
+                return ChannelGroup_GetLowPassGain(channelGroup, pGain);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetLowPassGain(ChannelHandle channel, float* gain);
+
+        public Result Channel_GetLowPassGain(ChannelHandle channel, out float gain)
+        {
+            fixed (float* pGain = &gain)
+            {
+                return Channel_GetLowPassGain(channel, pGain);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetMode(ChannelGroupHandle channelGroup, Mode mode);
+
+        [InteropMethod]
+        public partial Result Channel_SetMode(ChannelHandle channel, Mode mode);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetMode(ChannelGroupHandle channelGroup, Mode* mode);
+
+        public Result ChannelGroup_GetMode(ChannelGroupHandle channelGroup, out Mode mode)
+        {
+            fixed (Mode* pMode = &mode)
+            {
+                return ChannelGroup_GetMode(channelGroup, pMode);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetMode(ChannelHandle channel, Mode* mode);
+
+        public Result Channel_GetMode(ChannelHandle channel, out Mode mode)
+        {
+            fixed (Mode* pMode = &mode)
+            {
+                return Channel_GetMode(channel, pMode);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetCallback(ChannelGroupHandle channelGroup, delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+
+        [InteropMethod]
+        public partial Result Channel_SetCallback(ChannelHandle channel, delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetPan(ChannelGroupHandle channelGroup, float pan);
+
+        [InteropMethod]
+        public partial Result Channel_SetPan(ChannelHandle channel, float pan);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetMixLevelsOutput(ChannelGroupHandle channelGroup, float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
+
+        [InteropMethod]
+        public partial Result Channel_SetMixLevelsOutput(ChannelHandle channelGroup, float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetMixLevelsInput(ChannelGroupHandle channelGroup, float* levels, int levelCount);
+
+        public Result ChannelGroup_SetMixLevelsInput(ChannelGroupHandle channelGroup, ReadOnlySpan<float> levels)
         {
             fixed (float* pLevels = levels)
             {
@@ -1820,15 +1818,32 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetMixMatrix(IntPtr channelGroup, float* matrix, int outchannels, int inchannels, int inchannel_hop);
+        public partial Result Channel_SetMixLevelsInput(ChannelHandle channelGroup, float* levels, int levelCount);
+
+        public Result Channel_SetMixLevelsInput(ChannelHandle channelGroup, ReadOnlySpan<float> levels)
+        {
+            fixed (float* pLevels = levels)
+            {
+                return Channel_SetMixLevelsInput(channelGroup, pLevels, levels.Length);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetMixMatrix(IntPtr channelGroup, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+        public partial Result ChannelGroup_SetMixMatrix(ChannelGroupHandle channelGroup, float* matrix, int outchannels, int inchannels, int inchannel_hop);
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetDSPClock(IntPtr channelGroup, ulong* dspclock, ulong* parentclock);
+        public partial Result Channel_SetMixMatrix(ChannelHandle channel, float* matrix, int outchannels, int inchannels, int inchannel_hop);
 
-        public Result ChannelGroup_GetDSPClock(IntPtr channelGroup, out ulong dspclock, out ulong parentclock)
+        [InteropMethod]
+        public partial Result ChannelGroup_GetMixMatrix(ChannelGroupHandle channelGroup, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+
+        [InteropMethod]
+        public partial Result Channel_GetMixMatrix(ChannelHandle channel, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetDSPClock(ChannelGroupHandle channelGroup, ulong* dspclock, ulong* parentclock);
+
+        public Result ChannelGroup_GetDSPClock(ChannelGroupHandle channelGroup, out ulong dspclock, out ulong parentclock)
         {
             fixed (ulong* pDspClock = &dspclock, pParentClock = &parentclock)
             {
@@ -1837,25 +1852,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result ChannelGroup_SetDelay(IntPtr channelGroup, ulong dspclock_start, ulong dspclock_end, int stopchannels);
+        public partial Result Channel_GetDSPClock(ChannelHandle channelGroup, ulong* dspclock, ulong* parentclock);
 
-        public Result ChannelGroup_SetDelay(IntPtr channelGroup, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels)
+        public Result Channel_GetDSPClock(ChannelHandle channelGroup, out ulong dspclock, out ulong parentclock)
         {
-            return ChannelGroup_SetDelay(channelGroup, dspclock_start, dspclock_end, stopchannels.value);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetDelay(IntPtr channelGroup, ulong* dspclock_start, ulong* dspclock_end, FmodBool* stopchannels);
-
-        public Result ChannelGroup_GetDelay(IntPtr channelGroup, ulong* dspclock_start, ulong* dspclock_end, out FmodBool stopchannels)
-        {
-            fixed (FmodBool* pValue = &stopchannels)
+            fixed (ulong* pDspClock = &dspclock, pParentClock = &parentclock)
             {
-                return ChannelGroup_GetDelay(channelGroup, dspclock_start, dspclock_end, pValue);
+                return Channel_GetDSPClock(channelGroup, pDspClock, pParentClock);
             }
         }
 
-        public Result ChannelGroup_GetDelay(IntPtr channelGroup, out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels)
+        [InteropMethod]
+        private partial Result ChannelGroup_SetDelay(ChannelGroupHandle channelGroup, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
+
+        [InteropMethod]
+        private partial Result Channel_SetDelay(ChannelHandle channel, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetDelay(ChannelGroupHandle channel, ulong* dspclock_start, ulong* dspclock_end, FmodBool* stopchannels);
+
+        public Result ChannelGroup_GetDelay(ChannelGroupHandle channelGroup, out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels)
         {
             fixed (ulong* pDspclock_start = &dspclock_start, pDspclock_end = &dspclock_end)
             fixed (FmodBool* pStopChannels = &stopchannels)
@@ -1865,49 +1881,117 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_AddFadePoint(IntPtr channelGroup, ulong dspclock, float volume);
+        public partial Result Channel_GetDelay(ChannelHandle channel, ulong* dspclock_start, ulong* dspclock_end, FmodBool* stopchannels);
 
-        [InteropMethod]
-        public partial Result ChannelGroup_SetFadePointRamp(IntPtr channelGroup, ulong dspclock, float volume);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_RemoveFadePoints(IntPtr channelGroup, ulong dspclock_start, ulong dspclock_end);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetFadePoints(IntPtr channelGroup, uint* numpoints, ulong* point_dspclock, float* point_volume);
-
-        public Result ChannelGroup_GetFadePoints(IntPtr channelGroup, out ulong[] pointDspClocks, out float[] pointVolumes)
+        public Result Channel_GetDelay(ChannelHandle channel, out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels)
         {
-            uint count = 0;
-
-            Result res = ChannelGroup_GetFadePoints(channelGroup, &count, null, null);
-
-            if (res != Result.Ok || count == 0)
+            fixed (ulong* pDspclock_start = &dspclock_start, pDspclock_end = &dspclock_end)
+            fixed (FmodBool* pStopChannels = &stopchannels)
             {
-                pointDspClocks = Array.Empty<ulong>();
-                pointVolumes = Array.Empty<float>();
-                return res;
+                return Channel_GetDelay(channel, pDspclock_start, pDspclock_end, pStopChannels);
             }
-
-            var clocks = new ulong[count];
-            var volumes = new float[count];
-
-            fixed (ulong* pClocks = clocks)
-            fixed (float* pVolumes = volumes)
-            {
-                res = ChannelGroup_GetFadePoints(channelGroup, &count, pClocks, pVolumes);
-            }
-
-            pointDspClocks = clocks;
-            pointVolumes = volumes;
-
-            return res;
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DAttributes(IntPtr channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+        public partial Result ChannelGroup_AddFadePoint(ChannelGroupHandle channelGroup, ulong dspclock, float volume);
 
-        public Result ChannelGroup_Set3DAttributes(IntPtr channelGroup, in Vector3 pos, in Vector3 vel, in Vector3 alt_pan_pos)
+        [InteropMethod]
+        public partial Result Channel_AddFadePoint(ChannelHandle channel, ulong dspclock, float volume);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetFadePointRamp(ChannelGroupHandle channelGroup, ulong dspclock, float volume);
+
+        [InteropMethod]
+        public partial Result Channel_SetFadePointRamp(ChannelHandle channel, ulong dspclock, float volume);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_RemoveFadePoints(ChannelGroupHandle channelGroup, ulong dspclock_start, ulong dspclock_end);
+
+        [InteropMethod]
+        public partial Result Channel_RemoveFadePoints(ChannelHandle channel, ulong dspclock_start, ulong dspclock_end);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetFadePoints(ChannelGroupHandle channelGroup, uint* numpoints, ulong* point_dspclock, float* point_volume);
+
+        [InteropMethod]
+        public partial Result Channel_GetFadePoints(ChannelHandle channel, uint* numpoints, ulong* point_dspclock, float* point_volume);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetDSP(ChannelGroupHandle channelGroup, int index, DspHandle* dsp);
+
+        public Result ChannelGroup_GetDSP(ChannelGroupHandle channelGroup, int index, out DspHandle dsp)
+        {
+            fixed (DspHandle* pDsp = &dsp)
+            {
+                return ChannelGroup_GetDSP(channelGroup, index, pDsp);
+            }
+        }
+
+        public Result ChannelGroup_GetDSP(ChannelGroupHandle channelGroup, ChannelControlDSPIndex index, DspHandle* dsp)
+        {
+            return ChannelGroup_GetDSP(channelGroup, (int)index, dsp);
+        }
+
+        public Result ChannelGroup_GetDSP(ChannelGroupHandle channelGroup, ChannelControlDSPIndex index, out DspHandle dsp)
+        {
+            return ChannelGroup_GetDSP(channelGroup, (int)index, out dsp);
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetDSP(ChannelHandle channel, int index, DspHandle* dsp);
+
+        public Result Channel_GetDSP(ChannelHandle channel, int index, out DspHandle dsp)
+        {
+            fixed (DspHandle* pDsp = &dsp)
+            {
+                return Channel_GetDSP(channel, index, pDsp);
+            }
+        }
+
+        public Result Channel_GetDSP(ChannelHandle channelGroup, ChannelControlDSPIndex index, DspHandle* dsp)
+        {
+            return Channel_GetDSP(channelGroup, (int)index, dsp);
+        }
+
+        public Result Channel_GetDSP(ChannelHandle channelGroup, ChannelControlDSPIndex index, out DspHandle dsp)
+        {
+            return Channel_GetDSP(channelGroup, (int)index, out dsp);
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_AddDSP(ChannelGroupHandle channelGroup, int index, DspHandle dsp);
+
+        [InteropMethod]
+        public partial Result Channel_AddDSP(ChannelHandle channel, int index, DspHandle dsp);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_RemoveDSP(ChannelGroupHandle channelGroup, DspHandle dsp);
+
+        [InteropMethod]
+        public partial Result Channel_RemoveDSP(ChannelHandle channel, DspHandle dsp);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetNumDSPs(ChannelGroupHandle channelGroup, int* count);
+
+        [InteropMethod]
+        public partial Result Channel_GetNumDSPs(ChannelHandle channelGroup, int* count);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_SetDSPIndex(ChannelGroupHandle channelGroup, DspHandle dsp, int index);
+
+        [InteropMethod]
+        public partial Result Channel_SetDSPIndex(ChannelHandle channelGroup, DspHandle dsp, int index);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetDSPIndex(ChannelGroupHandle channelGroup, DspHandle dsp, int* index);
+
+        [InteropMethod]
+        public partial Result Channel_GetDSPIndex(ChannelHandle channelGroup, DspHandle dsp, int* index);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Set3DAttributes(ChannelGroupHandle channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+
+        public Result ChannelGroup_Set3DAttributes(ChannelGroupHandle channelGroup, in Vector3 pos, in Vector3 vel, in Vector3 alt_pan_pos)
         {
             fixed (Vector3* pPos = &pos, pVel = &vel, pAltpanpos = &alt_pan_pos)
             {
@@ -1916,9 +2000,20 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DAttributes(IntPtr channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+        public partial Result Channel_Set3DAttributes(ChannelHandle channel, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
 
-        public Result ChannelGroup_Get3DAttributes(IntPtr channelGroup, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos)
+        public Result Channel_Set3DAttributes(ChannelHandle channel, in Vector3 pos, in Vector3 vel, in Vector3 alt_pan_pos)
+        {
+            fixed (Vector3* pPos = &pos, pVel = &vel, pAltpanpos = &alt_pan_pos)
+            {
+                return Channel_Set3DAttributes(channel, pPos, pVel, pAltpanpos);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DAttributes(ChannelGroupHandle channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+
+        public Result ChannelGroup_Get3DAttributes(ChannelGroupHandle channelGroup, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos)
         {
             fixed (Vector3* pPos = &pos, pVel = &vel, pAltPanPos = &alt_pan_pos)
             {
@@ -1927,12 +2022,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DMinMaxDistance(IntPtr channelGroup, float mindistance, float maxdistance);
+        public partial Result Channel_Get3DAttributes(ChannelHandle channel, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
+
+        public Result Channel_Get3DAttributes(ChannelHandle channel, out Vector3 pos, out Vector3 vel, out Vector3 alt_pan_pos)
+        {
+            fixed (Vector3* pPos = &pos, pVel = &vel, pAltPanPos = &alt_pan_pos)
+            {
+                return Channel_Get3DAttributes(channel, pPos, pVel, pAltPanPos);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelGroup, float* mindistance, float* maxdistance);
+        public partial Result ChannelGroup_Set3DMinMaxDistance(ChannelGroupHandle channelGroup, float mindistance, float maxdistance);
 
-        public Result ChannelGroup_Get3DMinMaxDistance(IntPtr channelGroup, out float minDistance, out float maxDistance)
+        [InteropMethod]
+        public partial Result Channel_Set3DMinMaxDistance(ChannelHandle channel, float mindistance, float maxdistance);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DMinMaxDistance(ChannelGroupHandle channelGroup, float* mindistance, float* maxdistance);
+
+        public Result ChannelGroup_Get3DMinMaxDistance(ChannelGroupHandle channelGroup, out float minDistance, out float maxDistance)
         {
             fixed (float* pMinDistance = &minDistance, pMaxdistance = &maxDistance)
             {
@@ -1941,12 +2050,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DConeSettings(IntPtr channelGroup, float insideconeangle, float outsideconeangle, float outsidevolume);
+        public partial Result Channel_Get3DMinMaxDistance(ChannelHandle channel, float* mindistance, float* maxdistance);
+
+        public Result Channel_Get3DMinMaxDistance(ChannelHandle channel, out float minDistance, out float maxDistance)
+        {
+            fixed (float* pMinDistance = &minDistance, pMaxdistance = &maxDistance)
+            {
+                return Channel_Get3DMinMaxDistance(channel, pMinDistance, pMaxdistance);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DConeSettings(IntPtr channelGroup, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
+        public partial Result ChannelGroup_Set3DConeSettings(ChannelGroupHandle channelGroup, float insideconeangle, float outsideconeangle, float outsidevolume);
 
-        public Result ChannelGroup_Get3DConeSettings(IntPtr channelGroup, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
+        [InteropMethod]
+        public partial Result Channel_Set3DConeSettings(ChannelHandle channel, float insideconeangle, float outsideconeangle, float outsidevolume);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DConeSettings(ChannelGroupHandle channelGroup, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
+
+        public Result ChannelGroup_Get3DConeSettings(ChannelGroupHandle channelGroup, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
         {
             fixed (float* pInsideAngle = &insideconeangle, pOutsideAngle = &outsideconeangle, pOutsideVolume = &outsidevolume)
             {
@@ -1955,9 +2078,20 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DConeOrientation(IntPtr channelGroup, Vector3* orientation);
+        public partial Result Channel_Get3DConeSettings(ChannelHandle channel, float* insideconeangle, float* outsideconeangle, float* outsidevolume);
 
-        public Result ChannelGroup_Set3DConeOrientation(IntPtr channelGroup, in Vector3 orientation)
+        public Result Channel_Get3DConeSettings(ChannelHandle channel, out float insideconeangle, out float outsideconeangle, out float outsidevolume)
+        {
+            fixed (float* pInsideAngle = &insideconeangle, pOutsideAngle = &outsideconeangle, pOutsideVolume = &outsidevolume)
+            {
+                return Channel_Get3DConeSettings(channel, pInsideAngle, pOutsideAngle, pOutsideVolume);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Set3DConeOrientation(ChannelGroupHandle channelGroup, Vector3* orientation);
+
+        public Result ChannelGroup_Set3DConeOrientation(ChannelGroupHandle channelGroup, in Vector3 orientation)
         {
             fixed (Vector3* pOrientation = &orientation)
             {
@@ -1966,9 +2100,20 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DConeOrientation(IntPtr channelGroup, Vector3* orientation);
+        public partial Result Channel_Set3DConeOrientation(ChannelHandle channel, Vector3* orientation);
 
-        public Result ChannelGroup_Get3DConeOrientation(IntPtr channelGroup, out Vector3 orientation)
+        public Result Channel_Set3DConeOrientation(ChannelHandle channel, in Vector3 orientation)
+        {
+            fixed (Vector3* pOrientation = &orientation)
+            {
+                return Channel_Set3DConeOrientation(channel, pOrientation);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DConeOrientation(ChannelGroupHandle channelGroup, Vector3* orientation);
+
+        public Result ChannelGroup_Get3DConeOrientation(ChannelGroupHandle channelGroup, out Vector3 orientation)
         {
             orientation = default;
             fixed (Vector3* pOrientation = &orientation)
@@ -1978,12 +2123,27 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DCustomRolloff(IntPtr channelGroup, Vector3* points, int numpoints);
+        public partial Result Channel_Get3DConeOrientation(ChannelHandle channel, Vector3* orientation);
+
+        public Result Channel_Get3DConeOrientation(ChannelHandle channel, out Vector3 orientation)
+        {
+            orientation = default;
+            fixed (Vector3* pOrientation = &orientation)
+            {
+                return Channel_Get3DConeOrientation(channel, pOrientation);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DCustomRolloff(IntPtr channelGroup, Vector3** points, int* numpoints);
+        public partial Result ChannelGroup_Set3DCustomRolloff(ChannelGroupHandle channelGroup, Vector3* points, int numpoints);
 
-        public Result ChannelGroup_Get3DCustomRolloff(IntPtr channelGroup, out Vector3* points, out int pointCount)
+        [InteropMethod]
+        public partial Result Channel_Set3DCustomRolloff(ChannelHandle channel, Vector3* points, int numpoints);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, Vector3** points, int* numpoints);
+
+        public Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, out Vector3* points, out int pointCount)
         {
             fixed (Vector3** pPoints = &points)
             fixed (int* pPointCount = &pointCount)
@@ -1993,12 +2153,27 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DOcclusion(IntPtr channelGroup, float directocclusion, float reverbocclusion);
+        public partial Result Channel_Get3DCustomRolloff(ChannelHandle channel, Vector3** points, int* numpoints);
+
+        public Result Channel_Get3DCustomRolloff(ChannelHandle channel, out Vector3* points, out int pointCount)
+        {
+            fixed (Vector3** pPoints = &points)
+            fixed (int* pPointCount = &pointCount)
+            {
+                return Channel_Get3DCustomRolloff(channel, pPoints, pPointCount);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DOcclusion(IntPtr channelGroup, float* directocclusion, float* reverbocclusion);
+        public partial Result ChannelGroup_Set3DOcclusion(ChannelGroupHandle channelGroup, float directocclusion, float reverbocclusion);
 
-        public Result ChannelGroup_Get3DOcclusion(IntPtr channelGroup, out float directOcclusion, out float reverbOcclusion)
+        [InteropMethod]
+        public partial Result Channel_Set3DOcclusion(ChannelHandle channel, float directocclusion, float reverbocclusion);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DOcclusion(ChannelGroupHandle channelGroup, float* directocclusion, float* reverbocclusion);
+
+        public Result ChannelGroup_Get3DOcclusion(ChannelGroupHandle channelGroup, out float directOcclusion, out float reverbOcclusion)
         {
             fixed (float* pDirectOcclusion = &directOcclusion, pReverbOcclusion = &reverbOcclusion)
             {
@@ -2007,12 +2182,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DSpread(IntPtr channelGroup, float angle);
+        public partial Result Channel_Get3DOcclusion(ChannelHandle channel, float* directocclusion, float* reverbocclusion);
+
+        public Result Channel_Get3DOcclusion(ChannelHandle channel, out float directOcclusion, out float reverbOcclusion)
+        {
+            fixed (float* pDirectOcclusion = &directOcclusion, pReverbOcclusion = &reverbOcclusion)
+            {
+                return Channel_Get3DOcclusion(channel, pDirectOcclusion, pReverbOcclusion);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DSpread(IntPtr channelGroup, float* angle);
+        public partial Result ChannelGroup_Set3DSpread(ChannelGroupHandle channelGroup, float angle);
 
-        public Result ChannelGroup_Get3DSpread(IntPtr channelGroup, out float angle)
+        [InteropMethod]
+        public partial Result Channel_Set3DSpread(ChannelHandle channel, float angle);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DSpread(ChannelGroupHandle channelGroup, float* angle);
+
+        public Result ChannelGroup_Get3DSpread(ChannelGroupHandle channelGroup, out float angle)
         {
             fixed (float* pAngle = &angle)
             {
@@ -2021,12 +2210,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DLevel(IntPtr channelGroup, float level);
+        public partial Result Channel_Get3DSpread(ChannelHandle channel, float* angle);
+
+        public Result Channel_Get3DSpread(ChannelHandle channel, out float angle)
+        {
+            fixed (float* pAngle = &angle)
+            {
+                return Channel_Get3DSpread(channel, pAngle);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DLevel(IntPtr channelGroup, float* level);
+        public partial Result ChannelGroup_Set3DLevel(ChannelGroupHandle channelGroup, float level);
 
-        public Result ChannelGroup_Get3DLevel(IntPtr channelGroup, out float level)
+        [InteropMethod]
+        public partial Result Channel_Set3DLevel(ChannelHandle channel, float level);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DLevel(ChannelGroupHandle channelGroup, float* level);
+
+        public Result ChannelGroup_Get3DLevel(ChannelGroupHandle channelGroup, out float level)
         {
             fixed (float* pLevel = &level)
             {
@@ -2035,12 +2238,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DDopplerLevel(IntPtr channelGroup, float level);
+        public partial Result Channel_Get3DLevel(ChannelHandle channel, float* level);
+
+        public Result Channel_Get3DLevel(ChannelHandle channel, out float level)
+        {
+            fixed (float* pLevel = &level)
+            {
+                return Channel_Get3DLevel(channel, pLevel);
+            }
+        }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DDopplerLevel(IntPtr channelGroup, float* level);
+        public partial Result ChannelGroup_Set3DDopplerLevel(ChannelGroupHandle channelGroup, float level);
 
-        public Result ChannelGroup_Get3DDopplerLevel(IntPtr channelGroup, out float level)
+        [InteropMethod]
+        public partial Result Channel_Set3DDopplerLevel(ChannelHandle channel, float level);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DDopplerLevel(ChannelGroupHandle channelGroup, float* level);
+
+        public Result ChannelGroup_Get3DDopplerLevel(ChannelGroupHandle channelGroup, out float level)
         {
             fixed (float* pLevel = &level)
             {
@@ -2049,17 +2266,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result ChannelGroup_Set3DDistanceFilter(IntPtr channelGroup, int custom, float customLevel, float centerFreq);
+        public partial Result Channel_Get3DDopplerLevel(ChannelHandle channel, float* level);
 
-        public Result ChannelGroup_Set3DDistanceFilter(IntPtr channelGroup, FmodBool custom, float customLevel, float centerFreq)
+        public Result Channel_Get3DDopplerLevel(ChannelHandle channel, out float level)
         {
-            return ChannelGroup_Set3DDistanceFilter(channelGroup, custom.value, customLevel, centerFreq);
+            fixed (float* pLevel = &level)
+            {
+                return Channel_Get3DDopplerLevel(channel, pLevel);
+            }
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, FmodBool* custom, float* customLevel, float* centerFreq);
+        public partial Result ChannelGroup_Set3DDistanceFilter(ChannelGroupHandle channelGroup, FmodBool custom, float customLevel, float centerFreq);
 
-        public Result ChannelGroup_Get3DDistanceFilter(IntPtr channelGroup, out FmodBool custom, out float customLevel, out float centerFreq)
+        [InteropMethod]
+        public partial Result Channel_Set3DDistanceFilter(ChannelHandle channel, FmodBool custom, float customLevel, float centerFreq);
+
+        [InteropMethod]
+        public partial Result ChannelGroup_Get3DDistanceFilter(ChannelGroupHandle channelGroup, FmodBool* custom, float* customLevel, float* centerFreq);
+
+        public Result ChannelGroup_Get3DDistanceFilter(ChannelGroupHandle channelGroup, out FmodBool custom, out float customLevel, out float centerFreq)
         {
             fixed (FmodBool* pCustom = &custom)
             fixed (float* pCustomlevel = &customLevel, pCenterFreq = &centerFreq)
@@ -2069,9 +2295,145 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetSystemObject(IntPtr channelGroup, SystemHandle* system);
+        public partial Result Channel_Get3DDistanceFilter(ChannelHandle channel, FmodBool* custom, float* customLevel, float* centerFreq);
 
-        public Result ChannelGroup_GetSystemObject(IntPtr channelGroup, out SystemHandle system)
+        public Result Channel_Get3DDistanceFilter(ChannelHandle channel, out FmodBool custom, out float customLevel, out float centerFreq)
+        {
+            fixed (FmodBool* pCustom = &custom)
+            fixed (float* pCustomlevel = &customLevel, pCenterFreq = &centerFreq)
+            {
+                return Channel_Get3DDistanceFilter(channel, pCustom, pCustomlevel, pCenterFreq);
+            }
+        }
+
+        #endregion
+
+        #region Channel Functions
+
+        [InteropMethod]
+        public partial Result Channel_SetFrequency(ChannelHandle channel, float frequency);
+
+        [InteropMethod]
+        public partial Result Channel_GetFrequency(ChannelHandle channel, float* frequency);
+
+        public Result Channel_GetFrequency(ChannelHandle channel, out float frequency)
+        {
+            fixed (float* pFrequency = &frequency)
+            {
+                return Channel_GetFrequency(channel, pFrequency);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_SetPriority(ChannelHandle channel, int priority);
+
+        [InteropMethod]
+        public partial Result Channel_GetPriority(ChannelHandle channel, int* priority);
+
+        public Result Channel_GetPriority(ChannelHandle channel, out int priority)
+        {
+            fixed (int* pPriority = &priority)
+            {
+                return Channel_GetPriority(channel, pPriority);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_SetChannelGroup(ChannelHandle channel, ChannelGroupHandle channelGroup);
+
+        [InteropMethod]
+        public partial Result Channel_GetChannelGroup(ChannelHandle channel, ChannelGroupHandle* channelGroup);
+
+        public Result Channel_GetChannelGroup(ChannelHandle channel, out ChannelGroupHandle channelGroup)
+        {
+            fixed (ChannelGroupHandle* pChannelGroup = &channelGroup)
+            {
+                return Channel_GetChannelGroup(channel, pChannelGroup);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_IsVirtual(ChannelHandle channel, FmodBool* isvirtual);
+
+        public Result Channel_IsVirtual(ChannelHandle channel, out FmodBool isvirtual)
+        {
+            fixed (FmodBool* pIsVirtual = &isvirtual)
+                return Channel_IsVirtual(channel, pIsVirtual);
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetCurrentSound(ChannelHandle channel, SoundHandle* sound);
+
+        public Result Channel_GetCurrentSound(ChannelHandle channel, out SoundHandle sound)
+        {
+            fixed (SoundHandle* pSound = &sound)
+            {
+                return Channel_GetCurrentSound(channel, pSound);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_GetIndex(ChannelHandle channel, int* index);
+
+        public Result Channel_GetIndex(ChannelHandle channel, out int index)
+        {
+            fixed (int* pIndex = &index)
+            {
+                return Channel_GetIndex(channel, pIndex);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_SetPosition(ChannelHandle channel, uint position, TimeUnit posType);
+
+        [InteropMethod]
+        public partial Result Channel_GetPosition(ChannelHandle channel, uint* position, TimeUnit posType);
+
+        public Result Channel_GetPosition(ChannelHandle channel, out uint position, TimeUnit posType)
+        {
+            fixed (uint* pPos = &position)
+            {
+                return Channel_GetPosition(channel, pPos, posType);
+            }
+        }
+
+
+        [InteropMethod]
+        public partial Result Channel_SetLoopCount(ChannelHandle channel, int loopcount);
+
+        [InteropMethod]
+        public partial Result Channel_GetLoopCount(ChannelHandle channel, int* loopcount);
+
+        public Result Channel_GetLoopCount(ChannelHandle channel, out int loopcount)
+        {
+            fixed (int* pLoopCount = &loopcount)
+            {
+                return Channel_GetLoopCount(channel, pLoopCount);
+            }
+        }
+
+        [InteropMethod]
+        public partial Result Channel_SetLoopPoints(ChannelHandle channel, uint loopstart, TimeUnit loopstarttype, uint loopend, TimeUnit loopendtype);
+
+        [InteropMethod]
+        public partial Result Channel_GetLoopPoints(ChannelHandle channel, uint* loopstart, TimeUnit loopstarttype, uint* loopend, TimeUnit loopendtype);
+
+        public Result Channel_GetLoopPoints(ChannelHandle channel, out uint loopstart, TimeUnit loopstarttype, out uint loopend, TimeUnit loopendtype)
+        {
+            fixed (uint* pLoopStart = &loopstart, pLoopEnd = &loopend)
+            {
+                return Channel_GetLoopPoints(channel, pLoopStart, loopstarttype, pLoopEnd, loopendtype);
+            }
+        }
+
+        #endregion
+
+        #region Channel Group Specific Functions
+
+        [InteropMethod]
+        public partial Result ChannelGroup_GetSystemObject(ChannelGroupHandle channelGroup, SystemHandle* system);
+
+        public Result ChannelGroup_GetSystemObject(ChannelGroupHandle channelGroup, out SystemHandle system)
         {
             fixed (SystemHandle* pSystem = &system)
             {
@@ -2080,86 +2442,23 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetVolume(IntPtr channelGroup, float volume);
+        public partial Result ChannelGroup_Release(ChannelGroupHandle Handle);
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetDSP(IntPtr channelGroup, int index, IntPtr* dsp);
+        public partial Result ChannelGroup_AddGroup(ChannelGroupHandle channelGroup, ChannelGroupHandle group, FmodBool propagatedspclock, DspConnectionHandle* connection);
 
-        public Result ChannelGroup_GetDSP(IntPtr channelGroup, int index, out IntPtr dsp)
+        public Result ChannelGroup_AddGroup(ChannelGroupHandle channelGroup, ChannelGroupHandle group, FmodBool propagatedspclock, out DspConnectionHandle connection)
         {
-            fixed (IntPtr* pDsp = &dsp)
+            fixed (DspConnectionHandle* connectionRes = &connection)
             {
-                return ChannelGroup_GetDSP(channelGroup, index, pDsp);
-            }
-        }
-
-        public Result ChannelGroup_GetDSP(IntPtr channelGroup, ChannelControlDSPIndex index, IntPtr* dsp)
-        {
-            return ChannelGroup_GetDSP(channelGroup, (int)index, dsp);
-        }
-
-        public Result ChannelGroup_GetDSP(IntPtr channelGroup, ChannelControlDSPIndex index, out IntPtr dsp)
-        {
-            return ChannelGroup_GetDSP(channelGroup, (int)index, out dsp);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_AddDSP(IntPtr channelGroup, int index, IntPtr dsp);
-
-        public Result ChannelGroup_AddDSP(IntPtr channelGroup, ChannelControlDSPIndex index, IntPtr dsp)
-        {
-            return ChannelGroup_AddDSP(channelGroup, (int)index, dsp);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_RemoveDSP(IntPtr channelGroup, IntPtr dsp);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetNumDSPs(IntPtr channelGroup, int* dspCount);
-
-        public Result ChannelGroup_GetNumDSPs(IntPtr channelGroup, out int dspCount)
-        {
-            fixed (int* pDspCount = &dspCount)
-            {
-                return ChannelGroup_GetNumDSPs(channelGroup, pDspCount);
+                return ChannelGroup_AddGroup(channelGroup, group, propagatedspclock, connectionRes);
             }
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetDSPIndex(IntPtr channelGroup, IntPtr dsp, int index);
+        public partial Result ChannelGroup_GetNumGroups(ChannelGroupHandle channelGroup, int* groupCount);
 
-        [InteropMethod]
-        public partial Result ChannelGroup_GetDSPIndex(IntPtr channelGroup, IntPtr dsp, int* index);
-
-        public Result ChannelGroup_GetDSPIndex(IntPtr channelGroup, IntPtr dsp, out int index)
-        {
-            fixed (int* pIndex = &index)
-            {
-                return ChannelGroup_GetDSPIndex(channelGroup, dsp, pIndex);
-            }
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_Release(IntPtr Handle);
-
-        [InteropMethod]
-        public partial Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, int propagatedspclock, IntPtr* connection);
-
-        public Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, bool propagatedspclock, IntPtr* connection)
-        {
-            return ChannelGroup_AddGroup(channelGroup, group, propagatedspclock ? 1 : 0, connection);
-        }
-
-        public Result ChannelGroup_AddGroup(IntPtr channelGroup, IntPtr group, bool propagatedspclock, out IntPtr connection)
-        {
-            fixed (IntPtr* connectionRes = &connection)
-                return ChannelGroup_AddGroup(channelGroup, group, propagatedspclock ? 1 : 0, connectionRes);
-        }
-
-        [InteropMethod]
-        public partial Result ChannelGroup_GetNumGroups(IntPtr channelGroup, int* groupCount);
-
-        public Result ChannelGroup_GetNumGroups(IntPtr channelGroup, out int groupCount)
+        public Result ChannelGroup_GetNumGroups(ChannelGroupHandle channelGroup, out int groupCount)
         {
             fixed (int* pGroupCount = &groupCount)
             {
@@ -2168,34 +2467,34 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetGroup(IntPtr channelGroup, int index, IntPtr* group);
+        public partial Result ChannelGroup_GetGroup(ChannelGroupHandle channelGroup, int index, ChannelGroupHandle* group);
 
-        public Result ChannelGroup_GetGroup(IntPtr channelGroup, int index, out IntPtr group)
+        public Result ChannelGroup_GetGroup(ChannelGroupHandle channelGroup, int index, out ChannelGroupHandle group)
         {
-            fixed (IntPtr* pGroup = &group)
+            fixed (ChannelGroupHandle* pGroup = &group)
             {
                 return ChannelGroup_GetGroup(channelGroup, index, pGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetParentGroup(IntPtr channelGroup, IntPtr* group);
+        public partial Result ChannelGroup_GetParentGroup(ChannelGroupHandle channelGroup, ChannelGroupHandle* group);
 
-        public Result ChannelGroup_GetParentGroup(IntPtr channelGroup, out IntPtr group)
+        public Result ChannelGroup_GetParentGroup(ChannelGroupHandle channelGroup, out ChannelGroupHandle group)
         {
-            fixed (IntPtr* pGroup = &group)
+            fixed (ChannelGroupHandle* pGroup = &group)
             {
                 return ChannelGroup_GetParentGroup(channelGroup, pGroup);
             }
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetName(IntPtr channelGroup, byte* name, int namelen);
+        public partial Result ChannelGroup_GetName(ChannelGroupHandle channelGroup, byte* name, int namelen);
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetNumChannels(IntPtr channelGroup, int* channelCount);
+        public partial Result ChannelGroup_GetNumChannels(ChannelGroupHandle channelGroup, int* channelCount);
         
-        public Result ChannelGroup_GetNumChannels(IntPtr channelGroup, out int channelCount)
+        public Result ChannelGroup_GetNumChannels(ChannelGroupHandle channelGroup, out int channelCount)
         {
             fixed (int* pChannelCount = &channelCount)
             {
@@ -2204,29 +2503,33 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_GetChannel(IntPtr channelGroup, int index, IntPtr* channel);
+        public partial Result ChannelGroup_GetChannel(ChannelGroupHandle channelGroup, int index, ChannelHandle* channel);
 
-        public Result ChannelGroup_GetChannel(IntPtr channelGroup, int index, out IntPtr channel)
+        public Result ChannelGroup_GetChannel(ChannelGroupHandle channelGroup, int index, out ChannelHandle channel)
         {
-            fixed (IntPtr* pChannel = &channel)
+            fixed (ChannelHandle* pChannel = &channel)
             {
                 return ChannelGroup_GetChannel(channelGroup, index, pChannel);
             }
         }
 
         [InteropMethod]
-        internal partial Result ChannelGroup_SetUserData(IntPtr channelgroup, IntPtr userdata);
+        internal partial Result ChannelGroup_SetUserData(ChannelGroupHandle channelgroup, IntPtr userdata);
 
         [InteropMethod]
-        internal partial Result ChannelGroup_GetUserData(IntPtr channelgroup, IntPtr* userdata);
+        internal partial Result ChannelGroup_GetUserData(ChannelGroupHandle channelgroup, IntPtr* userdata);
+
+        #endregion
+
+        #region DSP Functions
 
         [InteropMethod]
-        public partial Result DSP_Release(IntPtr dsp);
+        public partial Result DSP_Release(DspHandle dsp);
 
         [InteropMethod]
-        public partial Result DSP_GetSystemObject(IntPtr dsp, SystemHandle* system);
+        public partial Result DSP_GetSystemObject(DspHandle dsp, SystemHandle* system);
 
-        public Result DSP_GetSystemObject(IntPtr dsp, out SystemHandle system)
+        public Result DSP_GetSystemObject(DspHandle dsp, out SystemHandle system)
         {
             fixed (SystemHandle* pSystem = &system)
             {
@@ -2235,26 +2538,26 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_AddInput(IntPtr dsp, IntPtr target, IntPtr* connection, DSPConnectionType type);
+        public partial Result DSP_AddInput(DspHandle dsp, DspHandle target, DspConnectionHandle* connection, DSPConnectionType type);
 
-        public Result DSP_AddInput(IntPtr dsp, IntPtr target, out IntPtr connection, DSPConnectionType type)
+        public Result DSP_AddInput(DspHandle dsp, DspHandle target, out DspConnectionHandle connection, DSPConnectionType type)
         {
-            fixed (IntPtr* pConnection = &connection)
+            fixed (DspConnectionHandle* pConnection = &connection)
             {
                 return DSP_AddInput(dsp, target, pConnection, type);
             }
         }
 
         [InteropMethod]
-        public partial Result DSP_DisconnectFrom(IntPtr dsp, IntPtr target, IntPtr connection);
+        public partial Result DSP_DisconnectFrom(DspHandle dsp, DspHandle target, DspConnectionHandle connection);
 
         [InteropMethod]
-        public partial Result DSP_DisconnectAll(IntPtr dsp, bool inputs, bool outputs);
+        public partial Result DSP_DisconnectAll(DspHandle dsp, bool inputs, bool outputs);
 
         [InteropMethod]
-        public partial Result DSP_GetNumInputs(IntPtr dsp, int* inputCount);
+        public partial Result DSP_GetNumInputs(DspHandle dsp, int* inputCount);
 
-        public Result DSP_GetNumInputs(IntPtr dsp, out int inputCount)
+        public Result DSP_GetNumInputs(DspHandle dsp, out int inputCount)
         {
             fixed (int* pInputCount = &inputCount)
             {
@@ -2263,9 +2566,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetNumOutputs(IntPtr dsp, int* outputCount);
+        public partial Result DSP_GetNumOutputs(DspHandle dsp, int* outputCount);
 
-        public Result DSP_GetNumOutputs(IntPtr dsp, out int outputCount)
+        public Result DSP_GetNumOutputs(DspHandle dsp, out int outputCount)
         {
             fixed (int* pOutputCount = &outputCount)
             {
@@ -2274,50 +2577,52 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetInput(IntPtr dsp, int index, IntPtr* input, IntPtr* inputconnection);
+        public partial Result DSP_GetInput(DspHandle dsp, int index, DspHandle* input, DspConnectionHandle* inputconnection);
 
-        public Result DSP_GetInput(IntPtr dsp, int index, out IntPtr input)
+        public Result DSP_GetInput(DspHandle dsp, int index, out DspHandle input)
         {
-            fixed (IntPtr* pInput = &input)
+            fixed (DspHandle* pInput = &input)
             {
                 return DSP_GetInput(dsp, index, pInput, null);
             }
         }
 
-        public Result DSP_GetInput(IntPtr dsp, int index, out IntPtr input, out IntPtr inputconnection)
+        public Result DSP_GetInput(DspHandle dsp, int index, out DspHandle input, out DspConnectionHandle inputconnection)
         {
-            fixed (IntPtr* pInput = &input, pInputConnection = &inputconnection)
+            fixed (DspHandle* pInput = &input)
+            fixed (DspConnectionHandle* pInputConnection = &inputconnection)
             {
                 return DSP_GetInput(dsp, index, pInput, pInputConnection);
             }
         }
 
         [InteropMethod]
-        public partial Result DSP_GetOutput(IntPtr dsp, int index, IntPtr* output, IntPtr* outputconnection);
+        public partial Result DSP_GetOutput(DspHandle dsp, int index, DspHandle* output, DspConnectionHandle* outputconnection);
 
-        public Result DSP_GetOutput(IntPtr dsp, int index, out IntPtr output)
+        public Result DSP_GetOutput(DspHandle dsp, int index, out DspHandle output)
         {
-            fixed (IntPtr* pOutput = &output)
+            fixed (DspHandle* pOutput = &output)
             {
                 return DSP_GetOutput(dsp, index, pOutput, null);
             }
         }
 
-        public Result DSP_GetOutput(IntPtr dsp, int index, out IntPtr output, out IntPtr outputconnection)
+        public Result DSP_GetOutput(DspHandle dsp, int index, out DspHandle output, out DspConnectionHandle outputconnection)
         {
-            fixed (IntPtr* pOutput = &output, pOutputConnection = &outputconnection)
+            fixed (DspHandle* pOutput = &output)
+            fixed (DspConnectionHandle* pOutputConnection = &outputconnection)
             {
                 return DSP_GetOutput(dsp, index, pOutput, pOutputConnection);
             }
         }
 
         [InteropMethod]
-        private partial Result DSP_SetActive(IntPtr dsp, FmodBool active);
+        public partial Result DSP_SetActive(DspHandle dsp, FmodBool active);
 
         [InteropMethod]
-        public partial Result DSP_GetActive(IntPtr dsp, FmodBool* active);
+        public partial Result DSP_GetActive(DspHandle dsp, FmodBool* active);
 
-        public Result DSP_GetActive(IntPtr dsp, out FmodBool active)
+        public Result DSP_GetActive(DspHandle dsp, out FmodBool active)
         {
             fixed (FmodBool* pActive = &active)
             {
@@ -2326,17 +2631,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result DSP_SetBypass(IntPtr dsp, int bypass);
-
-        public Result DSP_SetBypass(IntPtr dsp, FmodBool bypass)
-        {
-            return DSP_SetBypass(dsp, (int)bypass.value);
-        }
+        public partial Result DSP_SetBypass(DspHandle dsp, FmodBool bypass);
 
         [InteropMethod]
-        public partial Result DSP_GetBypass(IntPtr dsp, FmodBool* bypass);
+        public partial Result DSP_GetBypass(DspHandle dsp, FmodBool* bypass);
 
-        public Result DSP_GetBypass(IntPtr dsp, out FmodBool bypass)
+        public Result DSP_GetBypass(DspHandle dsp, out FmodBool bypass)
         {
             fixed (FmodBool* pBypass = &bypass)
             {
@@ -2345,12 +2645,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_SetWetDryMix(IntPtr dsp, float prewet, float postwet, float dry);
+        public partial Result DSP_SetWetDryMix(DspHandle dsp, float prewet, float postwet, float dry);
 
         [InteropMethod]
-        public partial Result DSP_GetWetDryMix(IntPtr dsp, float* prewet, float* postwet, float* dry);
+        public partial Result DSP_GetWetDryMix(DspHandle dsp, float* prewet, float* postwet, float* dry);
 
-        public Result DSP_GetWetDryMix(IntPtr dsp, out float prewet, out float postwet, out float dry)
+        public Result DSP_GetWetDryMix(DspHandle dsp, out float prewet, out float postwet, out float dry)
         {
             fixed (float* pPrewet = &prewet, pPostwet = &postwet, pDry = &dry)
             {
@@ -2359,12 +2659,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_SetChannelFormat(IntPtr dsp, ChannelMask channelmask, int channelCount, SpeakerMode source_speakermode);
+        public partial Result DSP_SetChannelFormat(DspHandle dsp, ChannelMask channelmask, int channelCount, SpeakerMode source_speakermode);
 
         [InteropMethod]
-        public partial Result DSP_GetChannelFormat(IntPtr dsp, ChannelMask* channelmask, int* channelCount, SpeakerMode* source_speakermode);
+        public partial Result DSP_GetChannelFormat(DspHandle dsp, ChannelMask* channelmask, int* channelCount, SpeakerMode* source_speakermode);
 
-        public Result DSP_GetChannelFormat(IntPtr dsp, out ChannelMask channelmask, out int channelCount, out SpeakerMode source_speakermode)
+        public Result DSP_GetChannelFormat(DspHandle dsp, out ChannelMask channelmask, out int channelCount, out SpeakerMode source_speakermode)
         {
             fixed (ChannelMask* pChannelMask = &channelmask)
             fixed (int* pChannelCount = &channelCount)
@@ -2375,9 +2675,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, ChannelMask* outmask, int* outchannels, SpeakerMode* outspeakermode);
+        public partial Result DSP_GetOutputChannelFormat(DspHandle dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, ChannelMask* outmask, int* outchannels, SpeakerMode* outspeakermode);
         
-        public Result DSP_GetOutputChannelFormat(IntPtr dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, out int outchannels, out SpeakerMode outspeakermode)
+        public Result DSP_GetOutputChannelFormat(DspHandle dsp, ChannelMask inmask, int inchannels, SpeakerMode inspeakermode, out ChannelMask outmask, out int outchannels, out SpeakerMode outspeakermode)
         {
             fixed (ChannelMask* pOutMask = &outmask)
             fixed (int* pOutChannels = &outchannels)
@@ -2388,29 +2688,29 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_Reset(IntPtr dsp);
+        public partial Result DSP_Reset(DspHandle dsp);
 
         [InteropMethod]
-        public partial Result DSP_SetParameterFloat(IntPtr dsp, int index, float value);
+        public partial Result DSP_SetParameterFloat(DspHandle dsp, int index, float value);
 
         [InteropMethod]
-        private partial Result DSP_SetParameterBool(IntPtr dsp, int index, int value);
+        private partial Result DSP_SetParameterBool(DspHandle dsp, int index, int value);
 
-        public Result DSP_SetParameterBool(IntPtr dsp, int index, bool value)
+        public Result DSP_SetParameterBool(DspHandle dsp, int index, bool value)
         {
             return DSP_SetParameterBool(dsp, index, value ? 1 : 0);
         }
 
         [InteropMethod]
-        public partial Result DSP_SetParameterInt(IntPtr dsp, int index, int value);
+        public partial Result DSP_SetParameterInt(DspHandle dsp, int index, int value);
 
         [InteropMethod]
-        public partial Result DSP_SetParameterData(IntPtr dsp, int index, IntPtr data, uint length);
+        public partial Result DSP_SetParameterData(DspHandle dsp, int index, void* data, uint length);
 
         [InteropMethod]
-        public partial Result DSP_GetParameterFloat(IntPtr dsp, int index, float* value, byte* valuestr, int valuestrlen);
+        public partial Result DSP_GetParameterFloat(DspHandle dsp, int index, float* value, byte* valuestr, int valuestrlen);
 
-        public Result DSP_GetParameterFloat(IntPtr dsp, int index, out float value, byte* valuestr, int valuestrlen)
+        public Result DSP_GetParameterFloat(DspHandle dsp, int index, out float value, byte* valuestr, int valuestrlen)
         {
             fixed (float* pValue = &value)
             {
@@ -2418,12 +2718,12 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result DSP_GetParameterFloat(IntPtr dsp, int index, float* value)
+        public Result DSP_GetParameterFloat(DspHandle dsp, int index, float* value)
         {
             return DSP_GetParameterFloat(dsp, index, value, null, 0);
         }
 
-        public Result DSP_GetParameterFloat(IntPtr dsp, int index, out float value)
+        public Result DSP_GetParameterFloat(DspHandle dsp, int index, out float value)
         {
             fixed (float* pValue = &value)
             {
@@ -2432,9 +2732,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterBool(IntPtr dsp, int index, FmodBool* value, byte* valuestr, int valuestrlen);
+        public partial Result DSP_GetParameterBool(DspHandle dsp, int index, FmodBool* value, byte* valuestr, int valuestrlen);
 
-        public Result DSP_GetParameterBool(IntPtr dsp, int index, out FmodBool value, byte* valuestr, int valuestrlen)
+        public Result DSP_GetParameterBool(DspHandle dsp, int index, out FmodBool value, byte* valuestr, int valuestrlen)
         {
             fixed (FmodBool* pValue = &value)
             {
@@ -2442,15 +2742,15 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result DSP_GetParameterBool(IntPtr dsp, int index, out FmodBool value)
+        public Result DSP_GetParameterBool(DspHandle dsp, int index, out FmodBool value)
         {
             return DSP_GetParameterBool(dsp, index, out value, null, 0);
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterint(IntPtr dsp, int index, int* value, byte* valuestr, int valuestrlen);
+        public partial Result DSP_GetParameterint(DspHandle dsp, int index, int* value, byte* valuestr, int valuestrlen);
 
-        public Result DSP_GetParameterint(IntPtr dsp, int index, out int value, byte* valuestr, int valuestrlen)
+        public Result DSP_GetParameterint(DspHandle dsp, int index, out int value, byte* valuestr, int valuestrlen)
         {
             fixed (int* pValue = &value)
             {
@@ -2458,42 +2758,42 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result DSP_GetParameterint(IntPtr dsp, int index, int* value)
+        public Result DSP_GetParameterint(DspHandle dsp, int index, int* value)
         {
             return DSP_GetParameterint(dsp, index, value, null, 0);
         }
 
-        public Result DSP_GetParameterint(IntPtr dsp, int index, out int value)
+        public Result DSP_GetParameterint(DspHandle dsp, int index, out int value)
         {
             return DSP_GetParameterint(dsp, index, out value, null, 0);
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length, byte* valuestr, int valuestrlen);
+        public partial Result DSP_GetParameterData(DspHandle dsp, int index, void** data, uint* length, byte* valuestr, int valuestrlen);
 
-        public Result DSP_GetParameterData(IntPtr dsp, int index, out IntPtr data, out uint length, byte* valuestr, int valuestrlen)
+        public Result DSP_GetParameterData(DspHandle dsp, int index, out void* data, out uint length, byte* valuestr, int valuestrlen)
         {
-            fixed (IntPtr* pData = &data)
+            fixed (void** pData = &data)
             fixed (uint* pLength = &length)
             {
                 return DSP_GetParameterData(dsp, index, pData, pLength, valuestr, valuestrlen);
             }
         }
 
-        public Result DSP_GetParameterData(IntPtr dsp, int index, IntPtr* data, uint* length)
+        public Result DSP_GetParameterData(DspHandle dsp, int index, void** data, uint* length)
         {
             return DSP_GetParameterData(dsp, index, data, length, null, 0);
         }
 
-        public Result DSP_GetParameterData(IntPtr dsp, int index, out IntPtr data, out uint length)
+        public Result DSP_GetParameterData(DspHandle dsp, int index, out void* data, out uint length)
         {
             return DSP_GetParameterData(dsp, index, out data, out length, null, 0);
         }
 
         [InteropMethod]
-        public partial Result DSP_GetNumParameters(IntPtr dsp, int* paramCount);
+        public partial Result DSP_GetNumParameters(DspHandle dsp, int* paramCount);
 
-        public Result DSP_GetNumParameters(IntPtr dsp, out int paramCount)
+        public Result DSP_GetNumParameters(DspHandle dsp, out int paramCount)
         {
             fixed (int* pParamCount = &paramCount)
             {
@@ -2502,12 +2802,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterInfo(IntPtr dsp, int index, Dsp.Base.ParameterDescriptionStruct** desc);
+        public partial Result DSP_GetParameterInfo(DspHandle dsp, int index, DigitalSignalProcessing.Interop.ParameterDescriptionStruct** desc);
 
         [InteropMethod]
-        public partial Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, int* index);
+        public partial Result DSP_GetDataParameterIndex(DspHandle dsp, int datatype, int* index);
 
-        public Result DSP_GetDataParameterIndex(IntPtr dsp, int datatype, out int index)
+        public Result DSP_GetDataParameterIndex(DspHandle dsp, int datatype, out int index)
         {
             fixed (int* pIndex = &index)
             {
@@ -2515,34 +2815,34 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result DSP_GetDataParameterIndex(IntPtr dsp, ParameterDataType datatype, int* index)
+        public Result DSP_GetDataParameterIndex(DspHandle dsp, ParameterDataType datatype, int* index)
         {
             return DSP_GetDataParameterIndex(dsp, (int)datatype, index);
         }
 
-        public Result DSP_GetDataParameterIndex(IntPtr dsp, ParameterDataType datatype, out int index)
+        public Result DSP_GetDataParameterIndex(DspHandle dsp, ParameterDataType datatype, out int index)
         {
             return DSP_GetDataParameterIndex(dsp, (int)datatype, out index);
         }
 
         [InteropMethod]
-        public partial Result DSP_ShowConfigDialog(IntPtr dsp, IntPtr hwnd, bool show);
+        public partial Result DSP_ShowConfigDialog(DspHandle dsp, IntPtr hwnd, bool show);
 
         [InteropMethod]
-        public partial Result DSP_GetInfo(IntPtr dsp, byte* name, FmodVersion* version, int* channels, int* configwidth, int* configheight);
+        public partial Result DSP_GetInfo(DspHandle dsp, byte* name, FmodVersion* version, int* channels, int* configwidth, int* configheight);
 
-        public Result DSP_GetInfo(IntPtr dsp, out string name, FmodVersion* version, int* channels, int* configwidth, int* configheight)
+        public Result DSP_GetInfo(DspHandle dsp, out string name, FmodVersion* version, int* channels, int* configwidth, int* configheight)
         {
             byte* buffer = stackalloc byte[32];
 
             var res = DSP_GetInfo(dsp, buffer, version, channels, configwidth, configheight);
 
-            name = FmodHelpers.PtrToString(buffer, 32);
+            name = FmodHelpers.BufferToString(buffer, 32);
 
             return res;
         }
 
-        public Result DSP_GetInfo(IntPtr dsp, out string name, out FmodVersion version, out int channels, out int configwidth, out int configheight)
+        public Result DSP_GetInfo(DspHandle dsp, out string name, out FmodVersion version, out int channels, out int configwidth, out int configheight)
         {
             fixed (FmodVersion* pVersion = &version)
             fixed (int* pChannels = &channels, pConfigWidth = &configwidth, pConfigHeight = &configheight)
@@ -2552,9 +2852,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetType(IntPtr dsp, DSPType* type);
+        public partial Result DSP_GetType(DspHandle dsp, DSPType* type);
 
-        public Result DSP_GetType(IntPtr dsp, out DSPType type)
+        public Result DSP_GetType(DspHandle dsp, out DSPType type)
         {
             fixed (DSPType* pType = &type)
             {
@@ -2563,9 +2863,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetIdle(IntPtr dsp, FmodBool* idle);
+        public partial Result DSP_GetIdle(DspHandle dsp, FmodBool* idle);
 
-        public Result DSP_GetIdle(IntPtr dsp, out FmodBool idle)
+        public Result DSP_GetIdle(DspHandle dsp, out FmodBool idle)
         {
             fixed (FmodBool* pIdle = &idle)
             {
@@ -2574,12 +2874,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_SetMeteringEnabled(IntPtr dsp, FmodBool inputEnabled, FmodBool outputEnabled);
+        public partial Result DSP_SetMeteringEnabled(DspHandle dsp, FmodBool inputEnabled, FmodBool outputEnabled);
 
         [InteropMethod]
-        public partial Result DSP_GetMeteringEnabled(IntPtr dsp, FmodBool* inputEnabled, FmodBool* outputEnabled);
+        public partial Result DSP_GetMeteringEnabled(DspHandle dsp, FmodBool* inputEnabled, FmodBool* outputEnabled);
 
-        public Result DSP_GetMeteringEnabled(IntPtr dsp, out FmodBool inputEnabled, out FmodBool outputEnabled)
+        public Result DSP_GetMeteringEnabled(DspHandle dsp, out FmodBool inputEnabled, out FmodBool outputEnabled)
         {
             fixed (FmodBool* pInputEnabled = &inputEnabled, pOutputEnabled = &outputEnabled)
             {
@@ -2588,9 +2888,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetMeteringInfo(IntPtr dsp, DSPMeteringInfo* inputInfo, DSPMeteringInfo* outputInfo);
+        public partial Result DSP_GetMeteringInfo(DspHandle dsp, DSPMeteringInfo* inputInfo, DSPMeteringInfo* outputInfo);
 
-        public Result DSP_GetMeteringInfo(IntPtr dsp, out DSPMeteringInfo inputInfo, out DSPMeteringInfo outputInfo)
+        public Result DSP_GetMeteringInfo(DspHandle dsp, out DSPMeteringInfo inputInfo, out DSPMeteringInfo outputInfo)
         {
             fixed (DSPMeteringInfo* pInputInfo = &inputInfo, pOutputInfo = &outputInfo)
             {
@@ -2599,34 +2899,44 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSPConnection_GetInput(IntPtr dspconnection, IntPtr* input);
+        internal partial Result DSP_SetUserData(DspHandle dsp, IntPtr userdata);
 
-        public Result DSPConnection_GetInput(IntPtr dspconnection, out IntPtr input)
+        [InteropMethod]
+        internal partial Result DSP_GetUserData(DspHandle dsp, IntPtr* userdata);
+
+        #endregion
+
+        #region Dsp Connection Functions
+
+        [InteropMethod]
+        public partial Result DSPConnection_GetInput(DspConnectionHandle dspconnection, DspHandle* input);
+
+        public Result DSPConnection_GetInput(DspConnectionHandle dspconnection, out DspHandle input)
         {
-            fixed (IntPtr* pInput = &input)
+            fixed (DspHandle* pInput = &input)
             {
                 return DSPConnection_GetInput(dspconnection, pInput);
             }
         }
 
         [InteropMethod]
-        public partial Result DSPConnection_GetOutput(IntPtr dspconnection, IntPtr* output);
+        public partial Result DSPConnection_GetOutput(DspConnectionHandle dspconnection, DspHandle* output);
 
-        public Result DSPConnection_GetOutput(IntPtr dspconnection, out IntPtr output)
+        public Result DSPConnection_GetOutput(DspConnectionHandle dspconnection, out DspHandle output)
         {
-            fixed (IntPtr* pOutput = &output)
+            fixed (DspHandle* pOutput = &output)
             {
                 return DSPConnection_GetOutput(dspconnection, pOutput);
             }
         }
 
         [InteropMethod]
-        public partial Result DSPConnection_SetMix(IntPtr dspconnection, float volume);
+        public partial Result DSPConnection_SetMix(DspConnectionHandle dspconnection, float volume);
 
         [InteropMethod]
-        public partial Result DSPConnection_GetMix(IntPtr dspconnection, float* volume);
+        public partial Result DSPConnection_GetMix(DspConnectionHandle dspconnection, float* volume);
 
-        public Result DSPConnection_GetMix(IntPtr dspconnection, out float volume)
+        public Result DSPConnection_GetMix(DspConnectionHandle dspconnection, out float volume)
         {
             fixed (float* pVolume = &volume)
             {
@@ -2635,12 +2945,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSPConnection_SetMixMatrix(IntPtr dspconnection, float* matrix, int outchannels, int inchannels, int inchannel_hop);
+        public partial Result DSPConnection_SetMixMatrix(DspConnectionHandle dspconnection, float* matrix, int outchannels, int inchannels, int inchannel_hop);
 
         [InteropMethod]
-        public partial Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
+        public partial Result DSPConnection_GetMixMatrix(DspConnectionHandle dspconnection, float* matrix, int* outchannels, int* inchannels, int inchannel_hop);
 
-        public Result DSPConnection_GetMixMatrix(IntPtr dspconnection, float* matrix, out int outchannels, out int inchannels, int inchannel_hop)
+        public Result DSPConnection_GetMixMatrix(DspConnectionHandle dspconnection, float* matrix, out int outchannels, out int inchannels, int inchannel_hop)
         {
             fixed (int* pOutChannels = &outchannels, pInChannels = &inchannels)
             {
@@ -2649,9 +2959,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSPConnection_GetType(IntPtr dspconnection, DSPConnectionType* type);
+        public partial Result DSPConnection_GetType(DspConnectionHandle dspconnection, DSPConnectionType* type);
 
-        public Result DSPConnection_GetType(IntPtr dspconnection, out DSPConnectionType type)
+        public Result DSPConnection_GetType(DspConnectionHandle dspconnection, out DSPConnectionType type)
         {
             fixed (DSPConnectionType* pType = &type)
             {
@@ -2660,24 +2970,22 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        internal partial Result DSPConnection_SetUserData(IntPtr dspconnection, IntPtr userdata);
+        internal partial Result DSPConnection_SetUserData(DspConnectionHandle dspconnection, IntPtr userdata);
 
         [InteropMethod]
-        internal partial Result DSPConnection_GetUserData(IntPtr dspconnection, IntPtr* userdata);
+        internal partial Result DSPConnection_GetUserData(DspConnectionHandle dspconnection, IntPtr* userdata);
+
+        #endregion
+
+        #region Geometry Functions
 
         [InteropMethod]
-        internal partial Result DSP_SetUserData(IntPtr dsp, IntPtr userdata);
+        public partial Result Geometry_Release(GeometryHandle geometry);
 
         [InteropMethod]
-        internal partial Result DSP_GetUserData(IntPtr dsp, IntPtr* userdata);
+        public partial Result Geometry_AddPolygon(GeometryHandle geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, int* polygonindex);
 
-        [InteropMethod]
-        public partial Result Geometry_Release(IntPtr geometry);
-
-        [InteropMethod]
-        public partial Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, int numvertices, Vector3* vertices, int* polygonindex);
-
-        public Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, int* polygonindex)
+        public Result Geometry_AddPolygon(GeometryHandle geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, int* polygonindex)
         {
             fixed (Vector3* pVertices = vertices)
             {
@@ -2685,7 +2993,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Geometry_AddPolygon(IntPtr geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, out int polygonindex)
+        public Result Geometry_AddPolygon(GeometryHandle geometry, float directocclusion, float reverbocclusion, bool doublesided, ReadOnlySpan<Vector3> vertices, out int polygonindex)
         {
             fixed (int* pPolygonIndex = &polygonindex)
             {
@@ -2694,9 +3002,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetNumPolygons(IntPtr geometry, int* polygonCount);
+        public partial Result Geometry_GetNumPolygons(GeometryHandle geometry, int* polygonCount);
 
-        public Result Geometry_GetNumPolygons(IntPtr geometry, out int polygonCount)
+        public Result Geometry_GetNumPolygons(GeometryHandle geometry, out int polygonCount)
         {
             fixed (int* pPolygonCount = &polygonCount)
             {
@@ -2705,9 +3013,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetMaxPolygons(IntPtr geometry, int* maxpolygons, int* maxvertices);
+        public partial Result Geometry_GetMaxPolygons(GeometryHandle geometry, int* maxpolygons, int* maxvertices);
 
-        public Result Geometry_GetMaxPolygons(IntPtr geometry, out int maxpolygons, out int maxvertices)
+        public Result Geometry_GetMaxPolygons(GeometryHandle geometry, out int maxpolygons, out int maxvertices)
         {
             fixed (int* pMaxPolygons = &maxpolygons, pMaxVertices = &maxvertices)
             {
@@ -2716,9 +3024,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, int* vertexCount);
+        public partial Result Geometry_GetPolygonNumVertices(GeometryHandle geometry, int index, int* vertexCount);
 
-        public Result Geometry_GetPolygonNumVertices(IntPtr geometry, int index, out int vertexCount)
+        public Result Geometry_GetPolygonNumVertices(GeometryHandle geometry, int index, out int vertexCount)
         {
             fixed (int* pVertexCount = &vertexCount)
             {
@@ -2727,9 +3035,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
+        public partial Result Geometry_SetPolygonVertex(GeometryHandle geometry, int index, int vertexindex, Vector3* vertex);
 
-        public Result Geometry_SetPolygonVertex(IntPtr geometry, int index, int vertexindex, in Vector3 vertex)
+        public Result Geometry_SetPolygonVertex(GeometryHandle geometry, int index, int vertexindex, in Vector3 vertex)
         {
             fixed (Vector3* pVertex = &vertex)
             {
@@ -2738,9 +3046,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, Vector3* vertex);
+        public partial Result Geometry_GetPolygonVertex(GeometryHandle geometry, int index, int vertexindex, Vector3* vertex);
 
-        public Result Geometry_GetPolygonVertex(IntPtr geometry, int index, int vertexindex, out Vector3 vertex)
+        public Result Geometry_GetPolygonVertex(GeometryHandle geometry, int index, int vertexindex, out Vector3 vertex)
         {
             fixed (Vector3* pVertex = &vertex)
             {
@@ -2749,12 +3057,12 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_SetPolygonAttributes(IntPtr geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
+        public partial Result Geometry_SetPolygonAttributes(GeometryHandle geometry, int index, float directocclusion, float reverbocclusion, bool doublesided);
 
         [InteropMethod]
-        public partial Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, FmodBool* doublesided);
+        public partial Result Geometry_GetPolygonAttributes(GeometryHandle geometry, int index, float* directocclusion, float* reverbocclusion, FmodBool* doublesided);
 
-        public Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, float* directocclusion, float* reverbocclusion, out FmodBool doublesided)
+        public Result Geometry_GetPolygonAttributes(GeometryHandle geometry, int index, float* directocclusion, float* reverbocclusion, out FmodBool doublesided)
         {
             fixed (FmodBool* pDoubleSided = &doublesided)
             {
@@ -2762,7 +3070,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result Geometry_GetPolygonAttributes(IntPtr geometry, int index, out float directocclusion, out float reverbocclusion, out FmodBool doublesided)
+        public Result Geometry_GetPolygonAttributes(GeometryHandle geometry, int index, out float directocclusion, out float reverbocclusion, out FmodBool doublesided)
         {
             fixed (float* pDirectOcclusion = &directocclusion, pReverbOcclusion = &reverbocclusion)
             {
@@ -2771,17 +3079,17 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result Geometry_SetActive(IntPtr geometry, int active);
+        private partial Result Geometry_SetActive(GeometryHandle geometry, int active);
 
-        public Result Geometry_SetActive(IntPtr geometry, FmodBool active)
+        public Result Geometry_SetActive(GeometryHandle geometry, FmodBool active)
         {
             return Geometry_SetActive(geometry, active.value);
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetActive(IntPtr geometry, FmodBool* active);
+        public partial Result Geometry_GetActive(GeometryHandle geometry, FmodBool* active);
 
-        public Result Geometry_GetActive(IntPtr geometry, out FmodBool active)
+        public Result Geometry_GetActive(GeometryHandle geometry, out FmodBool active)
         {
             fixed (FmodBool* pActive = &active)
             {
@@ -2790,9 +3098,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_SetRotation(IntPtr geometry, Vector3* forward, Vector3* up);
+        public partial Result Geometry_SetRotation(GeometryHandle geometry, Vector3* forward, Vector3* up);
 
-        public Result Geometry_SetRotation(IntPtr geometry, in Vector3 forward, in Vector3 up)
+        public Result Geometry_SetRotation(GeometryHandle geometry, in Vector3 forward, in Vector3 up)
         {
             fixed (Vector3* pForward = &forward, pUp = &up)
             {
@@ -2801,9 +3109,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetRotation(IntPtr geometry, Vector3* forward, Vector3* up);
+        public partial Result Geometry_GetRotation(GeometryHandle geometry, Vector3* forward, Vector3* up);
 
-        public Result Geometry_GetRotation(IntPtr geometry, out Vector3 forward, out Vector3 up)
+        public Result Geometry_GetRotation(GeometryHandle geometry, out Vector3 forward, out Vector3 up)
         {
             fixed (Vector3* pForward = &forward, pUp = &up)
             {
@@ -2812,9 +3120,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_SetPosition(IntPtr geometry, Vector3* position);
+        public partial Result Geometry_SetPosition(GeometryHandle geometry, Vector3* position);
 
-        public Result Geometry_SetPosition(IntPtr geometry, in Vector3 position)
+        public Result Geometry_SetPosition(GeometryHandle geometry, in Vector3 position)
         {
             fixed (Vector3* pPosition = &position)
             {
@@ -2823,9 +3131,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetPosition(IntPtr geometry, Vector3* position);
+        public partial Result Geometry_GetPosition(GeometryHandle geometry, Vector3* position);
 
-        public Result Geometry_GetPosition(IntPtr geometry, out Vector3 position)
+        public Result Geometry_GetPosition(GeometryHandle geometry, out Vector3 position)
         {
             fixed (Vector3* pPosition = &position)
             {
@@ -2834,9 +3142,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_SetScale(IntPtr geometry, Vector3* scale);
+        public partial Result Geometry_SetScale(GeometryHandle geometry, Vector3* scale);
 
-        public Result Geometry_SetScale(IntPtr geometry, in Vector3 scale)
+        public Result Geometry_SetScale(GeometryHandle geometry, in Vector3 scale)
         {
             fixed (Vector3* pScale = &scale)
             {
@@ -2845,9 +3153,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_GetScale(IntPtr geometry, Vector3* scale);
+        public partial Result Geometry_GetScale(GeometryHandle geometry, Vector3* scale);
 
-        public Result Geometry_GetScale(IntPtr geometry, out Vector3 scale)
+        public Result Geometry_GetScale(GeometryHandle geometry, out Vector3 scale)
         {
             fixed (Vector3* pScale = &scale)
             {
@@ -2856,21 +3164,25 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Geometry_Save(IntPtr geometry, void* data, int* datasize);
+        public partial Result Geometry_Save(GeometryHandle geometry, void* data, int* datasize);
 
         [InteropMethod]
-        internal partial Result Geometry_SetUserData(IntPtr geometry, IntPtr userdata);
+        internal partial Result Geometry_SetUserData(GeometryHandle geometry, IntPtr userdata);
 
         [InteropMethod]
-        internal partial Result Geometry_GetUserData(IntPtr geometry, IntPtr* userdata);
+        internal partial Result Geometry_GetUserData(GeometryHandle geometry, IntPtr* userdata);
+
+        #endregion
+
+        #region Reverb 3D Functions
 
         [InteropMethod]
-        public partial Result Reverb3D_Release(IntPtr reverb3D);
+        public partial Result Reverb3D_Release(Reverb3DHandle reverb3D);
 
         [InteropMethod]
-        public partial Result Reverb3D_Set3DAttributes(IntPtr reverb3D, Vector3* position, float minDistance, float maxDistance);
+        public partial Result Reverb3D_Set3DAttributes(Reverb3DHandle reverb3D, Vector3* position, float minDistance, float maxDistance);
 
-        public Result Reverb3D_Set3DAttributes(IntPtr reverb3D, in Vector3 position, float minDistance, float maxDistance)
+        public Result Reverb3D_Set3DAttributes(Reverb3DHandle reverb3D, in Vector3 position, float minDistance, float maxDistance)
         {
             fixed (Vector3* pPosition = &position)
             {
@@ -2879,9 +3191,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Reverb3D_Get3DAttributes(IntPtr reverb3D, Vector3* position, float* minDistance, float* maxDistance);
+        public partial Result Reverb3D_Get3DAttributes(Reverb3DHandle reverb3D, Vector3* position, float* minDistance, float* maxDistance);
 
-        public Result Reverb3D_Get3DAttributes(IntPtr reverb3D, out Vector3 position, out float minDistance, out float maxDistance)
+        public Result Reverb3D_Get3DAttributes(Reverb3DHandle reverb3D, out Vector3 position, out float minDistance, out float maxDistance)
         {
             fixed (Vector3* pPosition = &position)
             fixed (float* pMin = &minDistance, pMax = &maxDistance)
@@ -2891,9 +3203,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Reverb3D_SetProperties(IntPtr reverb3D, ReverbProperties* properties);
+        public partial Result Reverb3D_SetProperties(Reverb3DHandle reverb3D, ReverbProperties* properties);
 
-        public Result Reverb3D_SetProperties(IntPtr reverb3D, in ReverbProperties properties)
+        public Result Reverb3D_SetProperties(Reverb3DHandle reverb3D, in ReverbProperties properties)
         {
             fixed (ReverbProperties* pProps = &properties)
             {
@@ -2902,9 +3214,9 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Reverb3D_GetProperties(IntPtr reverb3D, ReverbProperties* properties);
+        public partial Result Reverb3D_GetProperties(Reverb3DHandle reverb3D, ReverbProperties* properties);
 
-        public Result Reverb3D_GetProperties(IntPtr reverb3D, out ReverbProperties properties)
+        public Result Reverb3D_GetProperties(Reverb3DHandle reverb3D, out ReverbProperties properties)
         {
             fixed (ReverbProperties* pProps = &properties)
             {
@@ -2913,26 +3225,23 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result Reverb3D_SetActive(IntPtr reverb3D, int active);
-
-        public Result Reverb3D_SetActive(IntPtr reverb3D, FmodBool active)
-        {
-            return Reverb3D_SetActive(reverb3D, active.value);
-        }
+        public partial Result Reverb3D_SetActive(Reverb3DHandle reverb3D, FmodBool active);
 
         [InteropMethod]
-        public partial Result Reverb3D_GetActive(IntPtr reverb3D, FmodBool* active);
+        public partial Result Reverb3D_GetActive(Reverb3DHandle reverb3D, FmodBool* active);
 
-        public Result Reverb3D_GetActive(IntPtr reverb3D, out FmodBool active)
+        public Result Reverb3D_GetActive(Reverb3DHandle reverb3D, out FmodBool active)
         {
             fixed (FmodBool* pActive = &active)
                 return Reverb3D_GetActive(reverb3D, pActive);
         }
 
         [InteropMethod]
-        internal partial Result Reverb3D_SetUserData(IntPtr reverb3D, IntPtr userdata);
+        internal partial Result Reverb3D_SetUserData(Reverb3DHandle reverb3D, IntPtr userdata);
 
         [InteropMethod]
-        internal partial Result Reverb3D_GetUserData(IntPtr reverb3D, IntPtr* userdata);
+        internal partial Result Reverb3D_GetUserData(Reverb3DHandle reverb3D, IntPtr* userdata);
+
+        #endregion
     }
 }

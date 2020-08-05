@@ -1,9 +1,8 @@
 ﻿#pragma warning disable CA1815
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace FmodAudio.Dsp
+namespace FmodAudio.DigitalSignalProcessing
 {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct DSPMeteringInfo

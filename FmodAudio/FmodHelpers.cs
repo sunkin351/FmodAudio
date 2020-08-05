@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Unicode;
 
 namespace FmodAudio
 {
@@ -107,7 +108,7 @@ namespace FmodAudio
         
         public static void CheckResult(this Result result)
         {
-            if (result == Result.Ok || result == Result.Err_DSP_DontProcess || (result == Result.Err_Truncated && FmodSystem.AllowStringTruncation))
+            if (result == Result.Ok || result == Result.Err_DSP_DontProcess || (result == Result.Err_Truncated && Fmod.AllowStringTruncation))
             {
                 return;
             }
@@ -124,34 +125,55 @@ namespace FmodAudio
             };
         }
         
-        internal static Memory.SaferPointer AllocateCustomRolloff(ReadOnlySpan<Vector3> rolloff)
+        public static unsafe string BufferToString(byte* buffer, int buflen)
         {
-            if (rolloff.IsEmpty)
-                return null;
-
-            var ptr = Memory.Allocate(rolloff.Length * Unsafe.SizeOf<Vector3>());
-            
-            rolloff.CopyTo(ptr.AsSpan<Vector3>());
-
-            return ptr;
+            return BufferToString(new ReadOnlySpan<byte>(buffer, buflen));
         }
 
-        public static unsafe string PtrToString(byte* buffer, int buflen)
+        public static unsafe string BufferToString(byte* buffer, int buflen, Encoding encoding)
         {
-            return PtrToString(buffer, buflen, Encoding.UTF8);
+            return BufferToString(new ReadOnlySpan<byte>(buffer, buflen), encoding);
         }
 
-        public static unsafe string PtrToString(byte* buffer, int buflen, Encoding encoding)
+        public static unsafe string BufferToString(ReadOnlySpan<byte> buffer)
         {
-            return MemoryToString(new ReadOnlySpan<byte>(buffer, buflen), encoding);
+            int size = buffer.IndexOf(byte.MinValue);
+
+            if (size == 0)
+                return string.Empty;
+
+            if ((uint)size < (uint)buffer.Length)
+            {
+                buffer = buffer.Slice(0, size);
+            }
+
+            if (buffer.Length <= 1024)
+            {
+                Span<char> tmp = stackalloc char[buffer.Length];
+
+                var res = Utf8.ToUtf16(buffer, tmp, out _, out int written);
+                Debug.Assert(res == OperationStatus.Done);
+
+                return new string(tmp.Slice(0, written));
+            }
+            else
+            {
+                var pool = ArrayPool<char>.Shared;
+
+                char[] arr = pool.Rent(buffer.Length);
+
+                var res = Utf8.ToUtf16(buffer, arr, out _, out int written);
+                Debug.Assert(res == OperationStatus.Done);
+
+                var ret = new string(arr, 0, written);
+
+                pool.Return(arr);
+
+                return ret;
+            }
         }
 
-        public static unsafe string MemoryToString(ReadOnlySpan<byte> buffer)
-        {
-            return MemoryToString(buffer, Encoding.UTF8);
-        }
-
-        public static unsafe string MemoryToString(ReadOnlySpan<byte> buffer, Encoding encoding)
+        public static unsafe string BufferToString(ReadOnlySpan<byte> buffer, Encoding encoding)
         {
             int size = buffer.IndexOf(byte.MinValue);
 
@@ -168,14 +190,12 @@ namespace FmodAudio
 
         public static byte[] ToUTF8NullTerminated(ReadOnlySpan<char> str)
         {
-            Encoding enc = Encoding.UTF8;
+            int maxByteCount = str.Length * sizeof(char);
+            byte[] data = new byte[maxByteCount + 1]; //Extra charactor acts as the null terminator
 
-            int count = enc.GetByteCount(str);
-            byte[] data = new byte[count + 1]; //Extra charactor acts as the null terminator
+            var res = Utf8.FromUtf16(str, data.AsSpan(0, maxByteCount), out _, out _);
 
-            enc.GetBytes(str, data.AsSpan(0, count));
-
-            Debug.Assert(data[count] == byte.MinValue);
+            Debug.Assert(res == OperationStatus.Done);
 
             return data;
         }
@@ -186,7 +206,14 @@ namespace FmodAudio
             if (arr is null)
                 return null;
 
-            return (T[])arr.Clone();
+            if (arr.Length == 0)
+                return Array.Empty<T>();
+
+            T[] newArr = new T[arr.Length];
+
+            arr.CopyTo(newArr, 0);
+
+            return newArr;
         }
 
         /// <summary>
@@ -198,54 +225,52 @@ namespace FmodAudio
         /// <param name="encoding">The encoding to use for conversion</param>
         /// <param name="pointer">Unmanaged Memory Block</param>
         /// <returns>if 'pointer' was reallocated</returns>
-        internal static unsafe bool StringToPointer(string value, Encoding encoding, ref Memory.SaferPointer pointer)
+        internal static unsafe bool FixedDataForString(string value, Encoding encoding, ref byte[] fixedArray)
         {
             bool Reallocated = false;
+            var local = fixedArray; //Local Variable optimization
+
+            long allocSize = (local == null) ? 0 : local.Length;
 
             int count = encoding.GetByteCount(value);
-            var localptr = pointer; //Local Variable optimization
-
-            long allocSize = (localptr == null) ? 0 : localptr.AllocationSize;
 
             if (allocSize < count + 1)
             {
-                if (allocSize > 0)
-                {
-                    localptr.Dispose();
-                }
-
-                pointer = localptr = Memory.Allocate(count + 1);
+                fixedArray = local = GC.AllocateArray<byte>(count + 1, pinned: true);
                 Reallocated = true;
             }
             
-            var buf = localptr.AsSpan<byte>();
-            encoding.GetBytes(value.AsSpan(), buf);
-            buf[count] = 0;
+            encoding.GetBytes(value.AsSpan(), local.AsSpan(0, count));
+            local[count] = 0;
 
             return Reallocated;
         }
 
-        internal static unsafe Memory.SaferPointer StringToPointer(string value, Encoding encoding)
+        internal static unsafe byte[] FixedDataForString(string value, Encoding encoding)
         {
             int count = encoding.GetByteCount(value);
-            var ptr = Memory.Allocate(count + 1);
-            encoding.GetBytes(value, ptr.AsSpan<byte>(0, count));
+            var ptr = GC.AllocateArray<byte>(count + 1, pinned: true);
+            encoding.GetBytes(value, ptr.AsSpan(0, count));
             return ptr;
         }
 
         public static unsafe string PtrToStringUnknownSize(IntPtr buffer)
         {
-            int count = 0;
-            byte* ptr = (byte*)buffer;
+            return PtrToStringUnknownSize((byte*)buffer);
+        }
 
-            while(ptr[count] != 0)
+        public static unsafe string PtrToStringUnknownSize(byte* buffer)
+        {
+            if (buffer != null)
             {
-                count += 1;
-            }
+                ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(buffer, int.MaxValue);
 
-            if (count > 0)
-            {
-                return Encoding.UTF8.GetString(ptr, count);
+                span = span.Slice(0, span.IndexOf((byte)0));
+
+                if (span.Length > 0)
+                {
+                    return Encoding.UTF8.GetString(span);
+                }
             }
 
             return string.Empty;
@@ -257,11 +282,9 @@ namespace FmodAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void UpdateCallback<TDel>(TDel del, out TDel managedSite, out IntPtr unmanagedSite)
-            where TDel : Delegate
+        public static bool IsNull<T>(this T handle) where T: Base.IHandleType<IntPtr>
         {
-            unmanagedSite = (del != null) ? Marshal.GetFunctionPointerForDelegate(del) : (default);
-            managedSite = del;
+            return handle.Handle == default;
         }
     }
 }
