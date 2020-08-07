@@ -12,7 +12,7 @@ namespace FmodAudio
     using Base;
     using DigitalSignalProcessing;
 
-    public unsafe partial struct FmodSystem
+    public unsafe partial struct FmodSystem : IDisposable
     {
         public static implicit operator FmodSystem(SystemHandle handle)
         {
@@ -24,6 +24,16 @@ namespace FmodAudio
             return system.Handle;
         }
 
+        public static bool operator ==(FmodSystem l, FmodSystem r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(FmodSystem l, FmodSystem r)
+        {
+            return l.Handle != r.Handle;
+        }
+
         /// <summary>
         /// Internal VTable for Fmod
         /// </summary>
@@ -33,6 +43,11 @@ namespace FmodAudio
         internal FmodSystem(SystemHandle handle)
         {
             Handle = handle;
+        }
+
+        public void Dispose()
+        {
+            Release();
         }
         
         /// <summary>
@@ -534,7 +549,7 @@ namespace FmodAudio
             return (Mode)m;
         }
 
-        public unsafe SoundHandle CreateSound(string Filename, Mode mode = Mode.Default, CreateSoundInfo? info = null)
+        public unsafe Sound CreateSound(string Filename, Mode mode = Mode.Default, CreateSoundInfo? info = null)
         {
             if (Filename is null)
             {

@@ -8,7 +8,7 @@ using FmodAudio.Output;
 namespace FmodAudio.Base
 {
     [VTable]
-    public unsafe partial class FmodLibrary
+    public unsafe sealed partial class FmodLibrary
     {
         #region Global Functions
         [InteropMethod]
@@ -402,12 +402,7 @@ namespace FmodAudio.Base
         public partial Result System_Update(SystemHandle system);
 
         [InteropMethod]
-        private partial Result System_SetSpeakerPosition(SystemHandle system, Speaker speaker, float x, float y, int active);
-
-        public Result System_SetSpeakerPosition(SystemHandle system, Speaker speaker, float x, float y, FmodBool active)
-        {
-            return System_SetSpeakerPosition(system, speaker, x, y, active.value);
-        }
+        public partial Result System_SetSpeakerPosition(SystemHandle system, Speaker speaker, float x, float y, FmodBool active);
 
         [InteropMethod]
         public partial Result System_GetSpeakerPosition(SystemHandle system, Speaker speaker, float* x, float* y, FmodBool* active);
@@ -1596,10 +1591,10 @@ namespace FmodAudio.Base
         public partial Result Channel_SetVolume(ChannelHandle channelGroup, float volume);
 
         [InteropMethod]
-        private partial Result ChannelGroup_SetVolumeRamp(ChannelGroupHandle channelGroup, FmodBool ramp);
+        public partial Result ChannelGroup_SetVolumeRamp(ChannelGroupHandle channelGroup, FmodBool ramp);
 
         [InteropMethod]
-        private partial Result Channel_SetVolumeRamp(ChannelHandle channelGroup, FmodBool ramp);
+        public partial Result Channel_SetVolumeRamp(ChannelHandle channelGroup, FmodBool ramp);
 
         [InteropMethod]
         public partial Result ChannelGroup_GetVolumeRamp(ChannelGroupHandle channelGroup, FmodBool* ramp);
@@ -1863,10 +1858,10 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result ChannelGroup_SetDelay(ChannelGroupHandle channelGroup, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
+        public partial Result ChannelGroup_SetDelay(ChannelGroupHandle channelGroup, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
 
         [InteropMethod]
-        private partial Result Channel_SetDelay(ChannelHandle channel, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
+        public partial Result Channel_SetDelay(ChannelHandle channel, ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
 
         [InteropMethod]
         public partial Result ChannelGroup_GetDelay(ChannelGroupHandle channel, ulong* dspclock_start, ulong* dspclock_end, FmodBool* stopchannels);
@@ -1961,8 +1956,18 @@ namespace FmodAudio.Base
         [InteropMethod]
         public partial Result ChannelGroup_AddDSP(ChannelGroupHandle channelGroup, int index, DspHandle dsp);
 
+        public Result ChannelGroup_AddDSP(ChannelGroupHandle channelGroup, ChannelControlDSPIndex index, DspHandle dsp)
+        {
+            return ChannelGroup_AddDSP(channelGroup, (int)index, dsp);
+        }
+
         [InteropMethod]
         public partial Result Channel_AddDSP(ChannelHandle channel, int index, DspHandle dsp);
+
+        public Result Channel_AddDSP(ChannelHandle channel, ChannelControlDSPIndex index, DspHandle dsp)
+        {
+            return Channel_AddDSP(channel, (int)index, dsp);
+        }
 
         [InteropMethod]
         public partial Result ChannelGroup_RemoveDSP(ChannelGroupHandle channelGroup, DspHandle dsp);
@@ -1973,8 +1978,24 @@ namespace FmodAudio.Base
         [InteropMethod]
         public partial Result ChannelGroup_GetNumDSPs(ChannelGroupHandle channelGroup, int* count);
 
+        public Result ChannelGroup_GetNumDSPs(ChannelGroupHandle channel, out int count)
+        {
+            fixed (int* pCount = &count)
+            {
+                return ChannelGroup_GetNumDSPs(channel, pCount);
+            }
+        }
+
         [InteropMethod]
-        public partial Result Channel_GetNumDSPs(ChannelHandle channelGroup, int* count);
+        public partial Result Channel_GetNumDSPs(ChannelHandle channel, int* count);
+
+        public Result Channel_GetNumDSPs(ChannelHandle channel, out int count)
+        {
+            fixed (int* pCount = &count)
+            {
+                return Channel_GetNumDSPs(channel, pCount);
+            }
+        }
 
         [InteropMethod]
         public partial Result ChannelGroup_SetDSPIndex(ChannelGroupHandle channelGroup, DspHandle dsp, int index);
@@ -1985,8 +2006,24 @@ namespace FmodAudio.Base
         [InteropMethod]
         public partial Result ChannelGroup_GetDSPIndex(ChannelGroupHandle channelGroup, DspHandle dsp, int* index);
 
+        public Result ChannelGroup_GetDSPIndex(ChannelGroupHandle channelGroup, DspHandle dsp, out int index)
+        {
+            fixed (int* pIndex = &index)
+            {
+                return ChannelGroup_GetDSPIndex(channelGroup, dsp, pIndex);
+            }
+        }
+
         [InteropMethod]
         public partial Result Channel_GetDSPIndex(ChannelHandle channelGroup, DspHandle dsp, int* index);
+
+        public Result Channel_GetDSPIndex(ChannelHandle channel, DspHandle dsp, out int index)
+        {
+            fixed (int* pIndex = &index)
+            {
+                return Channel_GetDSPIndex(channel, dsp, pIndex);
+            }
+        }
 
         [InteropMethod]
         public partial Result ChannelGroup_Set3DAttributes(ChannelGroupHandle channelGroup, Vector3* pos, Vector3* vel, Vector3* alt_pan_pos);
@@ -2694,12 +2731,7 @@ namespace FmodAudio.Base
         public partial Result DSP_SetParameterFloat(DspHandle dsp, int index, float value);
 
         [InteropMethod]
-        private partial Result DSP_SetParameterBool(DspHandle dsp, int index, int value);
-
-        public Result DSP_SetParameterBool(DspHandle dsp, int index, bool value)
-        {
-            return DSP_SetParameterBool(dsp, index, value ? 1 : 0);
-        }
+        public partial Result DSP_SetParameterBool(DspHandle dsp, int index, FmodBool value);
 
         [InteropMethod]
         public partial Result DSP_SetParameterInt(DspHandle dsp, int index, int value);
@@ -2748,24 +2780,24 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterint(DspHandle dsp, int index, int* value, byte* valuestr, int valuestrlen);
+        public partial Result DSP_GetParameterInt(DspHandle dsp, int index, int* value, byte* valuestr, int valuestrlen);
 
-        public Result DSP_GetParameterint(DspHandle dsp, int index, out int value, byte* valuestr, int valuestrlen)
+        public Result DSP_GetParameterInt(DspHandle dsp, int index, out int value, byte* valuestr, int valuestrlen)
         {
             fixed (int* pValue = &value)
             {
-                return DSP_GetParameterint(dsp, index, pValue, valuestr, valuestrlen);
+                return DSP_GetParameterInt(dsp, index, pValue, valuestr, valuestrlen);
             }
         }
 
-        public Result DSP_GetParameterint(DspHandle dsp, int index, int* value)
+        public Result DSP_GetParameterInt(DspHandle dsp, int index, int* value)
         {
-            return DSP_GetParameterint(dsp, index, value, null, 0);
+            return DSP_GetParameterInt(dsp, index, value, null, 0);
         }
 
-        public Result DSP_GetParameterint(DspHandle dsp, int index, out int value)
+        public Result DSP_GetParameterInt(DspHandle dsp, int index, out int value)
         {
-            return DSP_GetParameterint(dsp, index, out value, null, 0);
+            return DSP_GetParameterInt(dsp, index, out value, null, 0);
         }
 
         [InteropMethod]
@@ -3079,12 +3111,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        private partial Result Geometry_SetActive(GeometryHandle geometry, int active);
-
-        public Result Geometry_SetActive(GeometryHandle geometry, FmodBool active)
-        {
-            return Geometry_SetActive(geometry, active.value);
-        }
+        public partial Result Geometry_SetActive(GeometryHandle geometry, FmodBool active);
 
         [InteropMethod]
         public partial Result Geometry_GetActive(GeometryHandle geometry, FmodBool* active);

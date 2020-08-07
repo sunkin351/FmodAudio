@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using FmodAudio.Base;
 
 namespace FmodAudio.DigitalSignalProcessing
@@ -66,26 +67,53 @@ namespace FmodAudio.DigitalSignalProcessing
                 return type;
             }
         }
-        
-        public unsafe void SetMixMatrix(Span<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
+
+        public unsafe void SetMixMatrix(float* matrix, int outChannels, int inChannels, int inChannelHop = 0)
+        {
+            library.DSPConnection_SetMixMatrix(Handle, matrix, outChannels, inChannels, inChannelHop).CheckResult();
+        }
+
+        public unsafe void SetMixMatrix(ReadOnlySpan<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
         {
             if (matrix.Length < outChannels * inChannels)
             {
                 throw new ArgumentOutOfRangeException("Matrix length is too small!");
             }
 
-            fixed (float* mptr = matrix)
+            fixed (float* pMatrix = matrix)
             {
-                library.DSPConnection_SetMixMatrix(Handle, mptr, outChannels, inChannels, inChannelHop).CheckResult();
+                SetMixMatrix(pMatrix, outChannels, inChannels, inChannelHop);
             }
         }
 
-        public unsafe void GetMixMatrix(Span<float> matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
+        public unsafe void GetMixMatrix(float* matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
         {
-            fixed(float* mptr = matrix)
+            library.DSPConnection_GetMixMatrix(Handle, matrix, out outChannels, out inChannels, inChannelHop).CheckResult();
+        }
+
+        public unsafe bool TryGetMixMatrix(Span<float> matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
+        {
+            Unsafe.SkipInit(out outChannels);
+            Unsafe.SkipInit(out inChannels);
+
+            int Out, In;
+
+            library.DSPConnection_GetMixMatrix(Handle, null, &Out, &In, inChannelHop).CheckResult();
+
+            if (matrix.Length < Out * In)
             {
-                library.DSPConnection_GetMixMatrix(Handle, mptr, out outChannels, out inChannels, inChannelHop).CheckResult();
+                return false;
             }
+
+            fixed (float* pMatrix = matrix)
+            {
+                library.DSPConnection_GetMixMatrix(Handle, pMatrix, &Out, &In, inChannelHop).CheckResult();
+            }
+
+            outChannels = Out;
+            inChannels = In;
+
+            return true;
         }
 
         public override bool Equals(object obj)

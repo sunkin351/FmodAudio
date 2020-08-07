@@ -276,11 +276,6 @@ namespace FmodAudio
             return string.Empty;
         }
 
-        public static GCHandle CreateGCHandle<T>(T handle) where T: HandleBase
-        {
-            return GCHandle.Alloc(handle, GCHandleType.Weak);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull<T>(this T handle) where T: Base.IHandleType<IntPtr>
         {

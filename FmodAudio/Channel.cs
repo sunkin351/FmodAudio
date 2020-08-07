@@ -183,6 +183,7 @@ namespace FmodAudio
         public override float Audibility => throw new NotImplementedException();
 
         public override float Pitch { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        
         public override bool Mute { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public override void GetReverbProperties(int instance, out float wet)
@@ -233,12 +234,12 @@ namespace FmodAudio
             throw new NotImplementedException();
         }
 
-        public override void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels = true)
+        public override void SetDelay(ulong dspclock_start, ulong dspclock_end, FmodBool stopChannels)
         {
             throw new NotImplementedException();
         }
 
-        public override void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels)
+        public override void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopChannels)
         {
             throw new NotImplementedException();
         }

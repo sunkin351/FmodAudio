@@ -7,7 +7,7 @@ using FmodAudio.DigitalSignalProcessing.Interop;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
-    public unsafe partial class Dsp
+    public unsafe partial class Dsp : IDisposable
     {
         public static implicit operator Dsp?(DspHandle handle)
         {
@@ -26,6 +26,16 @@ namespace FmodAudio.DigitalSignalProcessing
         internal Dsp(DspHandle handle)
         {
             Handle = handle;
+        }
+
+        public void Dispose()
+        {
+            Release();
+        }
+
+        public void Release()
+        {
+            library.DSP_Release(Handle).CheckResult();
         }
 
         /// <summary>
@@ -272,7 +282,7 @@ namespace FmodAudio.DigitalSignalProcessing
         public unsafe float GetParameterFloat(int index)
         {
             CheckParamIndex(index);
-            library.DSP_GetParameterFloat(Handle, index, out float value, null, 0).CheckResult();
+            library.DSP_GetParameterFloat(Handle, index, out float value).CheckResult();
             return value;
         }
 
@@ -281,14 +291,14 @@ namespace FmodAudio.DigitalSignalProcessing
             CheckParamIndex(index);
 
             int value;
-            library.DSP_GetParameterint(Handle, index, &value).CheckResult();
+            library.DSP_GetParameterInt(Handle, index, &value).CheckResult();
             return value;
         }
 
         public unsafe bool GetParameterBool(int index)
         {
             CheckParamIndex(index);
-            library.DSP_GetParameterBool(Handle, index, out FmodBool value, null, 0).CheckResult();
+            library.DSP_GetParameterBool(Handle, index, out FmodBool value).CheckResult();
             return value;
         }
 

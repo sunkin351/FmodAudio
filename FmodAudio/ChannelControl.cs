@@ -110,9 +110,9 @@ namespace FmodAudio
 
         public abstract void GetDSPClock(out ulong dspClock, out ulong parentClock);
 
-        public abstract void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels = true);
+        public abstract void SetDelay(ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
 
-        public abstract void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels);
+        public abstract void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels);
 
         public void GetDelay(out ulong dspclock_start, out ulong dspclock_end)
         {
