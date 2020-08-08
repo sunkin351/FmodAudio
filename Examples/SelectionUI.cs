@@ -9,15 +9,13 @@ namespace Examples
 
     public class SelectionUI
     {
-        private readonly string[] List;
+        private readonly ExampleInfo[] ExampleList;
         private readonly char[] lineBuffer;
-        private readonly Type[] ExampleTypes;
         private int currentSelection = 0;
 
-        public SelectionUI(string[] list, Type[] exampleTypes)
+        public SelectionUI(ExampleInfo[] examples)
         {
-            List = list;
-            ExampleTypes = exampleTypes;
+            ExampleList = examples;
             lineBuffer = new char[ConsoleHelpers.ColumnCount];
         }
 
@@ -29,27 +27,39 @@ namespace Examples
 
         public Type Select()
         {
+            const string BeginString = "[ ]:";
+
             Console.Title = "Fmod Example Selection";
 
             ClearScreen();
 
             Span<char> buffer = lineBuffer;
 
-            buffer[2] = ':';
+            BeginString.AsSpan().CopyTo(buffer);
 
-            Span<char> nameBuffer = buffer.Slice(4);
+            Span<char> nameBuffer = buffer.Slice(BeginString.Length + 1);
 
             ConsoleHelpers.Draw("Select An Example to Run:");
 
             while (true)
             {
-                for (int i = 0; i < List.Length; ++i)
+                for (int i = 0; i < ExampleList.Length; ++i)
                 {
-                    var example = List[i];
+                    ref var example = ref ExampleList[i];
 
-                    buffer[1] = (i == currentSelection) ? '>' : default;
+                    if (i != currentSelection)
+                    {
+                        buffer[1] = default;
+                    }
+                    else
+                    {
+                        if (example.Enabled)
+                            buffer[1] = '-';
+                        else
+                            buffer[1] = 'x';
+                    }
 
-                    WriteTitleToBuffer(example, nameBuffer);
+                    WriteTitleToBuffer(example.Name, nameBuffer);
 
                     ConsoleHelpers.Draw(lineBuffer);
 
@@ -66,7 +76,7 @@ namespace Examples
                         case ConsoleKey.DownArrow:
                             tmp = currentSelection + 1;
 
-                            if (tmp < List.Length)
+                            if (tmp < ExampleList.Length)
                             {
                                 currentSelection = tmp;
                             }
@@ -82,9 +92,14 @@ namespace Examples
                             break;
 
                         case ConsoleKey.Enter:
+                            ref var example = ref ExampleList[currentSelection];
+
+                            if (!example.Enabled)
+                                break;
+
                             ClearScreen();
 
-                            return ExampleTypes[currentSelection];
+                            return example.ExampleType;
 
                         case ConsoleKey.Escape:
                             return null;
@@ -106,6 +121,15 @@ namespace Examples
             }
 
             tmp.CopyTo(buffer);
+        }
+
+        public struct ExampleInfo
+        {
+            public string Name { get; init; }
+
+            public Type ExampleType { get; init; }
+
+            public bool Enabled { get; init; }
         }
     }
 }

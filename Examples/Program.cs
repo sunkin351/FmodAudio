@@ -15,43 +15,89 @@ namespace Examples
 
         static Program()
         {
-            Type[] ExampleTypes = new Type[]
+            SelectionUI.ExampleInfo[] examples = new SelectionUI.ExampleInfo[]
             {
-                typeof(_3DExample),
-                typeof(AsyncIOExample),
-                typeof(ChannelGroupsExample),
-                typeof(ConvolutionReverbExample),
-                typeof(CustomDSPExample),
-                typeof(DspEffectPerSpeakerExample),
-                typeof(EffectsExample),
-                typeof(GaplessPlaybackExample),
-                typeof(GenerateToneExample),
-                typeof(GranularSynthExample),
-                typeof(LoadFromMemoryExample),
-                typeof(MultipleSpeakerExample),
-                typeof(RecordExample)
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "3D Example",
+                    ExampleType = typeof(_3DExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Async IO Example (Broken)",
+                    ExampleType = typeof(AsyncIOExample),
+                    Enabled = false
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Channel Group Example",
+                    ExampleType = typeof(ChannelGroupsExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Convolution Reverb Example",
+                    ExampleType = typeof(ConvolutionReverbExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Custom DSP Example (Broken)",
+                    ExampleType = typeof(CustomDSPExample),
+                    Enabled = false
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Dsp Effect Per Speaker Example",
+                    ExampleType = typeof(DspEffectPerSpeakerExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Effects Example",
+                    ExampleType = typeof(EffectsExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Gapless Playback Example",
+                    ExampleType = typeof(GaplessPlaybackExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Generate Tone Example",
+                    ExampleType = typeof(GenerateToneExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                { 
+                    Name = "Granular Synth Example",
+                    ExampleType = typeof(GranularSynthExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                { 
+                    Name = "Load From Memory Example",
+                    ExampleType = typeof(LoadFromMemoryExample),
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                { 
+                    Name = "Multiple Speaker Example", 
+                    ExampleType = typeof(MultipleSpeakerExample), 
+                    Enabled = true
+                },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Record Example",
+                    ExampleType = typeof(RecordExample),
+                    Enabled = true
+                },
             };
 
-            string[] ExampleNames = new string[]
-            {
-                "3D Example",
-                "Async IO Example (Broken)",
-                "Channel Group Example",
-                "Convolution Reverb Example",
-                "Custom DSP Example (Broken)",
-                "Dsp Effect Per Speaker Example",
-                "Effects Example",
-                "Gapless Playback Example",
-                "Generate Tone Example",
-                "Granular Synth Example",
-                "Load From Memory Exmaple",
-                "Multiple Speaker Example",
-                "Record Example"
-            };
-
-            Debug.Assert(ExampleNames.Length == ExampleTypes.Length);
-
-            UI = new SelectionUI(ExampleNames, ExampleTypes);
+            UI = new SelectionUI(examples);
         }
 
         private static void Main(string[] args)
@@ -93,7 +139,7 @@ namespace Examples
 
                 if (e is FmodException fe && fe.Result != null)
                 {
-                    Console.WriteLine("Fmod Error Code: " + fe.Result);
+                    Console.WriteLine("Fmod Error Code: " + fe.Result.Value);
                 }
 
                 Console.WriteLine(e);
