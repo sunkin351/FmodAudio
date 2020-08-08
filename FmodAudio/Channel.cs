@@ -531,5 +531,21 @@ namespace FmodAudio
         }
 
         #endregion
+
+        public static bool operator ==(Channel? l, Channel? r)
+        {
+            if (ReferenceEquals(l, r))
+                return true;
+
+            if (l is null || r is null)
+                return false;
+
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(Channel? l, Channel? r)
+        {
+            return !(l == r);
+        }
     }
 }

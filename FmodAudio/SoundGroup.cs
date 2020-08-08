@@ -30,7 +30,8 @@ namespace FmodAudio
         {
             get
             {
-                library.SoundGroup_GetSystemObject(Handle, out SystemHandle system);
+                SystemHandle system;
+                library.SoundGroup_GetSystemObject(Handle, &system);
                 return system;
             }
         }
@@ -151,6 +152,16 @@ namespace FmodAudio
         public void Stop()
         {
             library.SoundGroup_Stop(Handle).CheckResult();
+        }
+
+        public static bool operator ==(SoundGroup l, SoundGroup r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(SoundGroup l, SoundGroup r)
+        {
+            return l.Handle != r.Handle;
         }
     }
 }

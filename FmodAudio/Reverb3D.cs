@@ -85,5 +85,15 @@ namespace FmodAudio
                 library.Reverb3D_SetUserData(Handle, value).CheckResult();
             }
         }
+
+        public static bool operator ==(Reverb3D l, Reverb3D r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(Reverb3D l, Reverb3D r)
+        {
+            return l.Handle != r.Handle;
+        }
     }
 }

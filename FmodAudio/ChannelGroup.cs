@@ -479,5 +479,21 @@ namespace FmodAudio
                 library.ChannelGroup_SetUserData(Handle, value).CheckResult();
             }
         }
+
+        public static bool operator ==(ChannelGroup? l, ChannelGroup? r)
+        {
+            if (ReferenceEquals(l, r))
+                return true;
+
+            if (l is null || r is null)
+                return false;
+
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(ChannelGroup? l, ChannelGroup? r)
+        {
+            return !(l == r);
+        }
     }
 }

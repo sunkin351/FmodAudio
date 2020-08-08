@@ -209,5 +209,15 @@ namespace FmodAudio
                 library.Geometry_SetUserData(Handle, value).CheckResult();
             }
         }
+
+        public static bool operator ==(Geometry l, Geometry r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(Geometry l, Geometry r)
+        {
+            return l.Handle != r.Handle;
+        }
     }
 }
