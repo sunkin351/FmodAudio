@@ -75,7 +75,7 @@ namespace FmodAudio
 
             fixed (float* pMatrix = matrix)
             {
-                SetMixMatrix(matrix, outChannels, inChannels, inChannelHop);
+                SetMixMatrix(pMatrix, outChannels, inChannels, inChannelHop);
             }
         }
 
@@ -111,6 +111,11 @@ namespace FmodAudio
         public abstract void GetDSPClock(out ulong dspClock, out ulong parentClock);
 
         public abstract void SetDelay(ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
+
+        public void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels = true)
+        {
+            SetDelay(dspclock_start, dspclock_end, (FmodBool)stopchannels);
+        }
 
         public abstract void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels);
 

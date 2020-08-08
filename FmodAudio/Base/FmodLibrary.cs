@@ -2463,6 +2463,12 @@ namespace FmodAudio.Base
             }
         }
 
+        [InteropMethod]
+        public partial Result Channel_GetUserData(ChannelHandle channel, IntPtr* userData);
+
+        [InteropMethod]
+        public partial Result Channel_SetUserData(ChannelHandle channel, IntPtr userData);
+
         #endregion
 
         #region Channel Group Specific Functions
