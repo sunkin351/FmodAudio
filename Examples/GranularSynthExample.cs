@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 using FmodAudio;
-using FmodAudio.Dsp;
 
 namespace Examples
 {
@@ -81,7 +78,7 @@ namespace Examples
 
                 System.Update();
 
-                var res = Fmod.Library.ChannelGroup_IsPlaying(Channels[Slot].Handle, out bool isPlaying);
+                var res = Fmod.Library.Channel_IsPlaying(Channels[Slot], out var isPlaying);
 
                 if (res != Result.Ok && res != Result.Err_Invalid_Handle)
                 {
@@ -104,7 +101,8 @@ namespace Examples
         {
             foreach(var sound in Sounds)
             {
-                sound?.Dispose();
+                if (sound != default)
+                    sound.Dispose();
             }
 
             base.Dispose();
@@ -118,7 +116,7 @@ namespace Examples
 
             Sound newSound = Sounds[newIndex];
 
-            var newChannel = System.PlaySound(newSound, paused: true);
+            Channel newChannel = System.PlaySound(newSound, paused: true);
 
             if (playingChannel != null)
             {

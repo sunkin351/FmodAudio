@@ -4,6 +4,7 @@ using System;
 namespace Examples
 {
     using Base;
+    using FmodAudio.Base;
 
     public class RecordExample : Example
     {
@@ -86,7 +87,7 @@ namespace Examples
 
                 System.Update();
 
-                var res = Fmod.Library.System_GetRecordPosition(System.Handle, DriverIndex, out uint recordPos);
+                var res = Fmod.Library.System_GetRecordPosition(System, DriverIndex, out uint recordPos);
 
                 if (res != Result.Ok)
                 {
@@ -113,7 +114,7 @@ namespace Examples
 
                 if (channel != null)
                 {
-                    res = Fmod.Library.System_IsRecording(System.Handle, DriverIndex, out bool isRecording);
+                    res = Fmod.Library.System_IsRecording(System, DriverIndex, out FmodBool isRecording);
 
                     if (res != Result.Ok)
                     {
@@ -177,16 +178,17 @@ namespace Examples
 
         public override void Dispose()
         {
-            if (System != null)
+            if (System != default)
             {
-                var res = Fmod.Library.System_IsRecording(System.Handle, DriverIndex, out bool recording); //Using this to obtain access to the Result
+                var res = Fmod.Library.System_IsRecording(System, DriverIndex, out FmodBool recording); //Using this to obtain access to the Result
 
                 if (res == Result.Ok && recording)
                 {
                     System.RecordStop(DriverIndex);
                 }
 
-                sound?.Dispose();
+                if (sound != default)
+                    sound.Dispose();
             }
 
             base.Dispose();

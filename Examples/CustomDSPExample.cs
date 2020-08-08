@@ -5,7 +5,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
 using FmodAudio;
-using FmodAudio.Dsp;
+using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
@@ -14,7 +14,7 @@ namespace Examples
     //Warning, this example is not in working condition
     public unsafe class CustomDSPExample : Example
     {
-        public class MyCustomDSP : FmodAudio.Dsp.UserDefinedDsp
+        public class MyCustomDSP : FmodAudio.DigitalSignalProcessing.UserDefinedDsp
         {
             private static readonly ParameterDescription[] paramDescriptions = new ParameterDescription[]
             {
@@ -329,7 +329,8 @@ namespace Examples
 
         public override void Dispose()
         {
-            sound?.Dispose();
+            if (sound != default)
+                sound.Dispose();
 
             if (dsp != null)
             {

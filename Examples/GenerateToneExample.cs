@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 
 using FmodAudio;
-using FmodAudio.Dsp;
+using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
     using Base;
     public class GenerateToneExample : Example
     {
-        DSP dsp;
+        Dsp dsp;
         Channel channel = null;
 
         public GenerateToneExample() : base("Fmod Generate Tone Example")

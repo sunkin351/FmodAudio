@@ -18,7 +18,7 @@ namespace Examples
         private Vector3 ListenerPos = new Vector3() { Z = -1.0f * DistanceFactor };
         private Vector3 Up = new Vector3(0, 1, 0), Forward = new Vector3(0, 0, 1);
 
-        private Sound s1, s2, s3;
+        private Sound? s1, s2, s3;
         private Channel c1, c2, c3;
         private bool autoMove = true;
 
@@ -29,7 +29,7 @@ namespace Examples
             RegisterCommand(ConsoleKey.D3, () =>
             {
                 if (c3 == null || !c3.IsPlaying)
-                    c3 = System.PlaySound(s3);
+                    c3 = System.PlaySound(s3.Value);
             });
 
             RegisterCommand(ConsoleKey.Spacebar, () => autoMove = !autoMove);
@@ -49,11 +49,12 @@ namespace Examples
             //Load some sounds
             float min = 0.5f * DistanceFactor, max = 5000.0f * DistanceFactor;
 
-            s1 = System.CreateSound(MediaPath("drumloop.wav"), Mode._3D | Mode.Loop_Normal);
-            s1.Set3DMinMaxDistance(min, max);
+            Sound sound;
+            s1 = sound = System.CreateSound(MediaPath("drumloop.wav"), Mode._3D | Mode.Loop_Normal);
+            sound.Set3DMinMaxDistance(min, max);
 
-            s2 = System.CreateSound(MediaPath("jaguar.wav"), Mode._3D | Mode.Loop_Normal);
-            s2.Set3DMinMaxDistance(min, max);
+            s2 = sound = System.CreateSound(MediaPath("jaguar.wav"), Mode._3D | Mode.Loop_Normal);
+            sound.Set3DMinMaxDistance(min, max);
 
             s3 = System.CreateSound(MediaPath("swish.wav"), Mode._2D);
 
@@ -62,13 +63,13 @@ namespace Examples
 
             pos.X = -10.0f * DistanceFactor;
 
-            c1 = System.PlaySound(s1, paused: true);
+            c1 = System.PlaySound(s1.Value, paused: true);
             c1.Set3DAttributes(in pos, in vel, default);
             c1.Paused = false;
 
             pos.X = 15.0f * DistanceFactor;
 
-            c2 = System.PlaySound(s2, paused: true);
+            c2 = System.PlaySound(s2.Value, paused: true);
             c2.Set3DAttributes(in pos, in vel, default);
             c2.Paused = false;
         }

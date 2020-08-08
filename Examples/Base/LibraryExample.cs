@@ -78,7 +78,8 @@ namespace Examples.Base
 
         public virtual void Dispose()
         {
-            System?.Dispose();
+            if (System != default)
+                System.Dispose();
         }
 
         protected void RegisterCommand(ConsoleKey key, Action action)

@@ -7,6 +7,8 @@ using System.Runtime.CompilerServices;
 namespace Examples
 {
     using Base;
+    using FmodAudio;
+
     static class Program
     {
         private static readonly SelectionUI UI;
@@ -33,10 +35,10 @@ namespace Examples
             string[] ExampleNames = new string[]
             {
                 "3D Example",
-                "Async IO Example",
+                "Async IO Example (Broken)",
                 "Channel Group Example",
                 "Convolution Reverb Example",
-                "Custom DSP Example",
+                "Custom DSP Example (Broken)",
                 "Dsp Effect Per Speaker Example",
                 "Effects Example",
                 "Gapless Playback Example",
@@ -55,6 +57,7 @@ namespace Examples
         private static void Main(string[] args)
         {
             ConsoleHelpers.Initialize();
+            Fmod.SetLibraryLocation(@"D:\Programming\FMOD2\api\core\lib\x64");
 
             while (true)
             {
@@ -88,7 +91,7 @@ namespace Examples
             {
                 ConsoleHelpers.OnError();
 
-                if (e is FmodAudio.FmodException fe && fe.Result != null)
+                if (e is FmodException fe && fe.Result != null)
                 {
                     Console.WriteLine("Fmod Error Code: " + fe.Result);
                 }

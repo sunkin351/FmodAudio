@@ -7,6 +7,7 @@ using FmodAudio;
 namespace Examples
 {
     using Base;
+    using FmodAudio.Base;
 
     public class LoadFromMemoryExample : Example
     {
@@ -54,7 +55,7 @@ namespace Examples
                 System.Update();
 
                 uint ms = 0, lenms = 0;
-                bool isPlaying = false, paused = false;
+                FmodBool isPlaying = false, paused = false;
                 int channelsPlaying = 0;
 
 
@@ -62,27 +63,25 @@ namespace Examples
                 {
                     var library = Fmod.Library;
 
-                    var res = library.ChannelGroup_IsPlaying(Channel.Handle, out isPlaying);
+                    var res = library.Channel_IsPlaying(Channel, out isPlaying);
                     if (res != Result.Ok && res != Result.Err_Invalid_Handle && res != Result.Err_Channel_Stolen)
                     {
                         res.CheckResult();
                     }
 
-                    res = library.ChannelGroup_GetPaused(Channel.Handle, out paused);
+                    res = library.Channel_GetPaused(Channel, out paused);
                     if (res != Result.Ok && res != Result.Err_Invalid_Handle && res != Result.Err_Channel_Stolen)
                     {
                         res.CheckResult();
                     }
 
-                    res = library.Channel_GetPosition(Channel.Handle, out ms, TimeUnit.MS);
+                    res = library.Channel_GetPosition(Channel, out ms, TimeUnit.MS);
                     if (res != Result.Ok && res != Result.Err_Invalid_Handle && res != Result.Err_Channel_Stolen)
                     {
                         res.CheckResult();
                     }
 
-                    IntPtr shandle = default;
-
-                    library.Channel_GetCurrentSound(Channel.Handle, out shandle);
+                    library.Channel_GetCurrentSound(Channel, out SoundHandle shandle);
 
                     if (shandle != default)
                     {
@@ -114,9 +113,20 @@ namespace Examples
 
         public override void Dispose()
         {
-            Sound1?.Dispose();
-            Sound2?.Dispose();
-            Sound3?.Dispose();
+            if (Sound1 != default)
+            {
+                Sound1.Dispose();
+            }
+
+            if (Sound2 != default)
+            {
+                Sound2.Dispose();
+            }
+
+            if (Sound3 != default)
+            {
+                Sound3.Dispose();
+            }
 
             base.Dispose();
         }
