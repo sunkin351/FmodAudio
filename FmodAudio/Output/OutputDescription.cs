@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 namespace FmodAudio.Output
 {
     public enum OutputMethod : int
     { 
-        Mix_Direct,
-        Polling,
-        Mix_Buffered
+        Mix_Direct = 0,
+        Polling = 1,
+        Mix_Buffered = 2
     }
 
     public struct OutputDescriptionStruct
@@ -14,7 +14,7 @@ namespace FmodAudio.Output
         public FmodVersion ApiVersion;
         public IntPtr Name;
         public FmodVersion Version;
-        public OutputMethod Polling;
+        public OutputMethod Method;
         public IntPtr GetDriverCount;
         public IntPtr GetDriverInfo;
         public IntPtr Init;

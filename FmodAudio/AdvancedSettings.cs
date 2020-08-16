@@ -73,8 +73,6 @@ namespace FmodAudio
 
         public DSPResampler ResamplerMethod { get => Struct.resamplerMethod; set => Struct.resamplerMethod = value; }
 
-        public uint CommandQueueSize { get => Struct.commandQueueSize; set => Struct.commandQueueSize = value; }
-
         public uint RandomSeed { get => Struct.randomSeed; set => Struct.randomSeed = value; }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -102,7 +100,6 @@ namespace FmodAudio
             public uint stackSizeNonBlocking;       /* [r/w] Optional. Specify 0 to ignore. Specify the stack size for the FMOD_NONBLOCKING loading thread.  Useful for custom codecs that use excess stack.  Default 65,536 (64kb) */
             public uint stackSizeMixer;             /* [r/w] Optional. Specify 0 to ignore. Specify the stack size for the FMOD mixer thread.  Useful for custom dsps that use excess stack.  Default 49,152 (48kb) */
             public DSPResampler resamplerMethod;            /* [r/w] Optional. Specify 0 to ignore. Resampling method used with fmod's software mixer.  See FMOD_DSP_RESAMPLER for details on methods. */
-            public uint commandQueueSize;           /* [r/w] Optional. Specify 0 to ignore. Specify the command queue size for thread safe processing.  Default 2048 (2kb) */
             public uint randomSeed;                 /* [r/w] Optional. Specify 0 to ignore. Seed value that FMOD will use to initialize its internal random number generators. */
         }
     }
