@@ -1,4 +1,4 @@
-#pragma warning disable IDE0052, CA1034
+﻿#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -9,7 +9,9 @@ namespace FmodAudio
 
     public static unsafe class Fmod
     {
-        public static FmodVersion BindingVersion => new FmodVersion(0x00020005);
+        public static FmodVersion BindingVersion => new FmodVersion(0x00020100);
+
+        private static readonly FmodVersion MinimumSupportedVersion = new FmodVersion(0x00020100);
 
         public static uint PluginSDKVersion => 110;
 
@@ -167,14 +169,26 @@ namespace FmodAudio
 
         public unsafe static FmodSystem CreateSystem()
         {
-            SystemHandle handle;
+            SystemHandle system;
+            FmodVersion version;
+
+            var library = Library;
 
             lock (CreationSyncObject)
             {
-                Library.System_Create(&handle).CheckResult();
+                library.System_Create(&system).CheckResult();
+
+                library.System_GetVersion(system, &version).CheckResult();
+
+                if (version < MinimumSupportedVersion)
+                {
+                    library.System_Release(system).CheckResult();
+
+                    throw new InvalidOperationException("Native API version is " + version.ToString() + ", but only " + MinimumSupportedVersion.ToString() + " and above is supported by FmodAudio 2.0.");
+                }
             }
 
-            return new FmodSystem(handle);
+            return system;
         }
 
         public static class Memory
