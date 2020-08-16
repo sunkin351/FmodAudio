@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0052, CA1034
+#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -179,26 +179,18 @@ namespace FmodAudio
 
         public static class Memory
         {
-            private static MemoryAllocCallback userAlloc;
-            private static MemoryReallocCallback userRealloc;
-            private static MemoryFreeCallback userFree;
+            public static void Initialize(IntPtr poolmem,
+                                          int poollen,
+                                          delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> useralloc,
+                                          delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc,
+                                          delegate* stdcall<IntPtr, MemoryType, IntPtr, void> userfree,
+                                          MemoryType memtypeflags)
+            {
+                if (useralloc == null || userfree == null)
+                    throw new ArgumentNullException();
 
-            //public static void Initialize(IntPtr poolmem,
-            //                              int poollen,
-            //                              MemoryAllocCallback useralloc,
-            //                              MemoryReallocCallback userrealloc,
-            //                              MemoryFreeCallback userfree,
-            //                              MemoryType memtypeflags)
-            //{
-            //    if (useralloc is null || userrealloc is null || userfree is null)
-            //        throw new ArgumentNullException();
-
-            //    Library.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
-
-            //    userAlloc = useralloc;
-            //    userRealloc = userrealloc;
-            //    userFree = userfree;
-            //}
+                Library.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
+            }
 
             public static void GetStats(out int currentlyAllocated, out int maxAllocated, bool blocking)
             {
