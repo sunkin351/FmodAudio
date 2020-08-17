@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -24,15 +26,19 @@ namespace Examples.Base
         public const int ColumnCount = 50;
         public const int RowCount = 25;
 
-
-        static ConsoleHelpers()
-        {
-            ClearBuffer();
-        }
-
         static bool isInitialized = false;
         static int LastLineLen = 0;
         static readonly char[] LineBuffer = new char[ColumnCount];
+        static readonly TextWriter ConsoleOut = Console.Out;
+
+        static ConsoleHelpers()
+        {
+            Debug.Assert(sizeof(char) == 2);
+            ClearBuffer();
+        }
+
+        const char SpaceChar = ' ';
+        const ushort SpaceCharUShort = SpaceChar;
 
         private static unsafe int FillBuffer(ReadOnlySpan<char> input)
         {
@@ -43,13 +49,15 @@ namespace Examples.Base
             {
                 if (Sse2.IsSupported && count >= Vector128<ushort>.Count)
                 {
-                    Vector128<ushort> Space = Vector128.Create((ushort)0x20); //Space character
+                    Vector128<ushort> Space = Vector128.Create(SpaceCharUShort); //Space character
 
                     do
                     {
                         var data = Sse2.LoadVector128((ushort*)pInput + i);
 
-                        var comp = Sse2.CompareEqual(data, Vector128<ushort>.Zero);
+                        var comp = Vector128<ushort>.Zero;
+
+                        comp = Sse2.CompareEqual(comp, data);
 
                         if (Sse41.IsSupported)
                         {
@@ -59,7 +67,7 @@ namespace Examples.Base
                         {
                             comp = Sse2.And(comp, Space);
 
-                            data = Sse2.Or(data, comp);
+                            data = Sse2.Or(data, comp); //Elements being replaced are already 0'ed
                         }
 
                         Sse2.Store((ushort*)buffer + i, data);
@@ -93,7 +101,7 @@ namespace Examples.Base
                 {
                     if (Sse2.IsSupported && count >= Vector128<ushort>.Count)
                     {
-                        Vector128<ushort> Space = Vector128.Create((ushort)0x20);
+                        Vector128<ushort> Space = Vector128.Create(SpaceCharUShort);
 
                         do
                         {
@@ -106,7 +114,7 @@ namespace Examples.Base
 
                     while (i < count)
                     {
-                        buffer[i] = ' ';
+                        buffer[i] = SpaceChar;
 
                         i += 1;
                     }
@@ -115,7 +123,7 @@ namespace Examples.Base
                 return;
             }
 
-            LineBuffer.AsSpan(startIdx).Fill(' ');
+            LineBuffer.AsSpan(startIdx).Fill(SpaceChar);
         }
 
         private static void SetConsoleDimensions(int width, int height)
@@ -163,6 +171,7 @@ namespace Examples.Base
             Console.ForegroundColor = ConsoleColor.Green;
 
             SetConsoleDimensions(ColumnCount, RowCount);
+            isInitialized = true;
         }
 
         public static void OnExit()
@@ -181,9 +190,9 @@ namespace Examples.Base
 
         public static void OnError()
         {
-            SetConsoleDimensions(100, 50);
+            Console.Clear(); 
 
-            Console.Clear();
+            SetConsoleDimensions(100, 50);
 
             Console.SetCursorPosition(0, 0);
         }
@@ -196,7 +205,7 @@ namespace Examples.Base
                 LastLineLen = 0;
             }
 
-            Console.Write(LineBuffer);
+            ConsoleOut.Write(LineBuffer);
         }
 
         public static void Draw(string input)
@@ -219,7 +228,7 @@ namespace Examples.Base
             }
 
             LastLineLen = len;
-            Console.Write(LineBuffer);
+            ConsoleOut.Write(LineBuffer);
         }
     }
 }
