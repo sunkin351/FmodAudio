@@ -112,7 +112,7 @@ namespace Examples
 
                     if (i != currentSelection)
                     {
-                        buffer[1] = default;
+                        buffer[1] = ' ';
                     }
                     else
                     {

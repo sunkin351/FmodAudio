@@ -95,6 +95,12 @@ namespace Examples
                     ExampleType = typeof(RecordExample),
                     Enabled = true
                 },
+                new SelectionUI.ExampleInfo()
+                {
+                    Name = "Music Player",
+                    ExampleType = typeof(MusicPlayer),
+                    Enabled = true
+                }
             };
 
             UI = new SelectionUI(examples);
