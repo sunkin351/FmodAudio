@@ -11,6 +11,27 @@ namespace FmodAudio.Base
     public unsafe sealed partial class FmodLibrary
     {
         #region Global Functions
+        /// <summary>
+        /// Specifies a method for FMOD to allocate memory.
+        /// </summary>
+        /// <param name="poolmem">Block of memory of size poollen bytes for FMOD to manage, mutually exclusive with <paramref name="useralloc"/> / <paramref name="userrealloc"/> / <paramref name="userfree"/>.</param>
+        /// <param name="poollen">Size of <paramref name="poolmem"/>, must be a multiple of 512.</param>
+        /// <param name="useralloc">Memory allocation callback compatible with ANSI malloc, mutually exclusive with <paramref name="poolmem"/>.</param>
+        /// <param name="userrealloc">Memory reallocation callback compatible with ANSI realloc, mutually exclusive with <paramref name="poolmem"/>.</param>
+        /// <param name="userfree">Memory free callback compatible with ANSI free, mutually exclusive with <paramref name="poolmem"/>. </param>
+        /// <param name="memtypeflags">Types of memory callbacks you wish to handle.</param>
+        /// <remarks>
+        /// This function must be called before any FMOD System object is created.
+        /// 
+        /// Valid usage of this function requires either <paramref name="poolmem"/> and <paramref name="poollen"/>, or <paramref name="useralloc"/>, <paramref name="userrealloc"/> and <paramref name="userfree"/> being set.
+        /// If 'useralloc' and 'userfree' are provided without 'userrealloc' the reallocation is implemented via an allocation of the new size, copy from old address to new, then a free of the old address.
+        /// 
+        /// To find out the required fixed size call this method with an overly large pool size (or no pool) and find out the maximum RAM usage at any one time with <see cref="Memory_GetStats(int*, int*, FmodBool)"/>.
+        /// 
+        /// Callback implementations must be thread safe.
+        /// 
+        /// If you specify a fixed size pool that is too small, FMOD will return <see cref="Result.Err_Memory"/> when the limit of the fixed size pool is exceeded. At this point, it's possible that FMOD may become unstable. To maintain stability, do not allow FMOD to run out of memory.
+        /// </remarks>
         [InteropMethod]
         public partial Result Memory_Initialize(IntPtr poolmem, int poollen, delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> useralloc, delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc, delegate* stdcall<IntPtr, MemoryType, IntPtr, void> userfree, MemoryType memtypeflags);
 
@@ -19,8 +40,16 @@ namespace FmodAudio.Base
         /// </summary>
         /// <param name="currentalloced">Currently allocated memory at time of call.</param>
         /// <param name="maxalloced">Maximum allocated memory since System</param>
-        /// <param name="blocking">Boolean indicating whether to favour speed or accuracy. Specifying true for this parameter will flush the DSP network to make sure all queued allocations happen immediately, which can be costly.</param>
-        /// <returns></returns>
+        /// <param name="blocking">
+        /// Boolean indicating whether to favour speed or accuracy.
+        /// Specifying true for this parameter will flush the DSP network to make sure all queued allocations happen immediately, which can be costly.
+        /// </param>
+        /// <remarks>
+        /// This information is byte accurate and counts all allocs and frees internally.
+        /// This is useful for determining a fixed memory size to make FMOD work within for fixed memory machines such as consoles.
+        /// 
+        /// Note that if using <see cref="Memory_Initialize(IntPtr, int, delegate*{uint, MemoryType, IntPtr, IntPtr}, delegate*{IntPtr, uint, MemoryType, IntPtr, IntPtr}, delegate*{IntPtr, MemoryType, IntPtr, void}, MemoryType)"/>, the memory usage will be slightly higher than without it, as FMOD has to have a small amount of memory overhead to manage the available memory.
+        /// </remarks>
         [InteropMethod]
         public partial Result Memory_GetStats(int* currentAlloced, int* maxAlloced, FmodBool blocking);
 
@@ -33,9 +62,21 @@ namespace FmodAudio.Base
             }
         }
 
+        /// <summary>
+        /// Specify the level and delivery method of log messages when using the logging version of FMOD.
+        /// </summary>
+        /// <param name="flags">Bitfield representing the desired log information. Note: LOG implies WARN and WARN implies ERROR. </param>
+        /// <param name="mode">Destination for log messages.</param>
+        /// <param name="callback">Callback to use when mode is set to callback, only required when using that mode.</param>
+        /// <param name="filename">Filename to use when mode is set to file, only required when using that mode.</param>
+        /// <remarks>
+        /// This function will return <see cref="Result.Err_Unsupported"/> when using the non-logging (release) versions of FMOD.
+        /// The logging version of FMOD can be recognized by the 'L' suffix in the library name, `fmodL.dll` or `libfmodL.so` for instance.
+        /// </remarks>
         [InteropMethod]
-        public partial Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, byte* filename);
+        public partial Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, byte* filename = null);
 
+        ///<inheritdoc cref="Debug_Initialize(DebugFlags, DebugMode, delegate*{DebugFlags, byte*, int, byte*, byte*, Result}, byte*)"/>
         public Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
         {
             fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
@@ -44,12 +85,32 @@ namespace FmodAudio.Base
             }
         }
 
+        /// <summary>
+        /// Sets the busy state for disk access ensuring mutual exclusion of file operations.
+        /// </summary>
+        /// <param name="busy">Busy state where true represent the begining of disk access and false represents the end of disk access.</param>
+        /// <remarks>
+        /// If file IO is currently being performed by FMOD this function will block until it has completed.
+        ///
+        /// This function should be called in pairs once to set the state, then again to clear it once complete.
+        /// </remarks>
         [InteropMethod]
         public partial Result File_SetDiskBusy(FmodBool busy);
 
+        /// <summary>
+        /// Information function to retrieve the state of FMOD disk access.
+        /// </summary>
+        /// <param name="busy">Busy state of the disk at the current time. true being busy, false being not busy</param>
+        /// <remarks>
+        /// Do not use this function to synchronize your own reads with, as due to timing,
+        /// you might call this function and it says false = it is not busy, but the split second after call this function,
+        /// internally FMOD might set it to busy.
+        /// Use <see cref="File_SetDiskBusy(FmodBool)"/> for proper mutual exclusion as it uses semaphores.
+        /// </remarks>
         [InteropMethod]
         public partial Result File_GetDiskBusy(FmodBool* busy);
 
+        ///<inheritdoc cref="File_GetDiskBusy(FmodBool*)"/>
         public Result File_GetDiskBusy(out FmodBool busy)
         {
             fixed (FmodBool* pBusy = &busy)
