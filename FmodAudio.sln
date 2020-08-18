@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Exampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FmodAudioSourceGenerator", "FmodAudioSourceGenerator\FmodAudioSourceGenerator.csproj", "{CF935AEB-4323-4670-BFE3-B8421FD41661}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGeneratorTests", "SourceGeneratorTests\SourceGeneratorTests.csproj", "{96CCFC53-8859-4B05-BAED-970F64A6CEFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGeneratorTests", "SourceGeneratorTests\SourceGeneratorTests.csproj", "{96CCFC53-8859-4B05-BAED-970F64A6CEFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,8 +25,8 @@ Global
 		{4DD9C721-61ED-41CA-93A8-3C78D1E090B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD9C721-61ED-41CA-93A8-3C78D1E090B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD9C721-61ED-41CA-93A8-3C78D1E090B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Release|Any CPU.Build.0 = Release|Any CPU
 		{96CCFC53-8859-4B05-BAED-970F64A6CEFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

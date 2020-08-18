@@ -29,7 +29,7 @@ As Always, please log an issue on the github repo if you run into any issues.</P
   </PropertyGroup>
 
   <ItemGroup>
-    <Analyzer Include="..\FmodAudioSourceGenerator\bin\Release\netstandard2.0\FmodAudioSourceGenerator.dll" />
+    <ProjectReference Include="..\FmodAudioSourceGenerator\FmodAudioSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
   <ItemGroup>
