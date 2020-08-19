@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0052, CA1034
+#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -159,12 +159,13 @@ namespace FmodAudio
                 Library.File_GetDiskBusy(&value).CheckResult();
 
                 return value;
-            }
+            }   
+        }
 
-            set
-            {
-                Library.File_SetDiskBusy(value).CheckResult();
-            }    
+        /// <inheritdoc cref="FmodLibrary.File_SetDiskBusy(FmodBool)"/>
+        public static void SetDiskBusy(bool busy)
+        {
+            Library.File_SetDiskBusy(busy).CheckResult();
         }
 
         public unsafe static FmodSystem CreateSystem()
