@@ -51,7 +51,7 @@ namespace FmodAudio
 
         public abstract Mode Mode { get; set; }
 
-        public abstract void SetCallback(delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public abstract void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
 
         public abstract bool IsPlaying { get; }
 

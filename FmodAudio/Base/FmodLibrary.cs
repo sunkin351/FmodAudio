@@ -33,7 +33,7 @@ namespace FmodAudio.Base
         /// If you specify a fixed size pool that is too small, FMOD will return <see cref="Result.Err_Memory"/> when the limit of the fixed size pool is exceeded. At this point, it's possible that FMOD may become unstable. To maintain stability, do not allow FMOD to run out of memory.
         /// </remarks>
         [InteropMethod]
-        public partial Result Memory_Initialize(IntPtr poolmem, int poollen, delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> useralloc, delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc, delegate* stdcall<IntPtr, MemoryType, IntPtr, void> userfree, MemoryType memtypeflags);
+        public partial Result Memory_Initialize(IntPtr poolmem, int poollen, delegate* unmanaged<uint, MemoryType, IntPtr, IntPtr> useralloc, delegate* unmanaged<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc, delegate* unmanaged<IntPtr, MemoryType, IntPtr, void> userfree, MemoryType memtypeflags);
 
         /// <summary>
         /// Returns information on the memory usage of FMOD.
@@ -74,10 +74,10 @@ namespace FmodAudio.Base
         /// The logging version of FMOD can be recognized by the 'L' suffix in the library name, `fmodL.dll` or `libfmodL.so` for instance.
         /// </remarks>
         [InteropMethod]
-        public partial Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, byte* filename = null);
+        public partial Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, byte* filename = null);
 
         ///<inheritdoc cref="Debug_Initialize(DebugFlags, DebugMode, delegate*{DebugFlags, byte*, int, byte*, byte*, Result}, byte*)"/>
-        public Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
+        public Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
         {
             fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
             {
@@ -223,20 +223,20 @@ namespace FmodAudio.Base
 
         [InteropMethod]
         public partial Result System_SetFileSystem(SystemHandle system,
-            delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> useropen,
-            delegate* stdcall<IntPtr, IntPtr, Result> userclose,
-            delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> userread,
-            delegate* stdcall<IntPtr, uint, IntPtr, Result> userseek,
-            delegate* stdcall<AsyncReadInfo*, IntPtr, Result> userasyncread,
-            delegate* stdcall<AsyncReadInfo*, IntPtr, Result> userasynccancel,
+            delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> useropen,
+            delegate* unmanaged<IntPtr, IntPtr, Result> userclose,
+            delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> userread,
+            delegate* unmanaged<IntPtr, uint, IntPtr, Result> userseek,
+            delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> userasyncread,
+            delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> userasynccancel,
             int blockalign);
 
         [InteropMethod]
         public partial Result System_AttachFileSystem(SystemHandle system,
-            delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> useropen,
-            delegate* stdcall<IntPtr, IntPtr, Result> userclose,
-            delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> userread,
-            delegate* stdcall<IntPtr, uint, IntPtr, Result> userseek);
+            delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> useropen,
+            delegate* unmanaged<IntPtr, IntPtr, Result> userclose,
+            delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> userread,
+            delegate* unmanaged<IntPtr, uint, IntPtr, Result> userseek);
 
         [InteropMethod]
         public partial Result System_SetAdvancedSettings(SystemHandle system, AdvancedSettings.Structure* settings);
@@ -271,7 +271,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_SetCallback(SystemHandle system, delegate* stdcall<IntPtr, SystemCallbackType, IntPtr, IntPtr, IntPtr, Result> callback, SystemCallbackType callbackmask);
+        public partial Result System_SetCallback(SystemHandle system, delegate* unmanaged<IntPtr, SystemCallbackType, IntPtr, IntPtr, IntPtr, Result> callback, SystemCallbackType callbackmask);
 
         [InteropMethod]
         public partial Result System_SetPluginPath(SystemHandle system, byte* path);
@@ -543,7 +543,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_Set3DRolloffCallback(SystemHandle system, delegate* stdcall<IntPtr, float, float> callback);
+        public partial Result System_Set3DRolloffCallback(SystemHandle system, delegate* unmanaged<IntPtr, float, float> callback);
 
         [InteropMethod]
         public partial Result System_MixerSuspend(SystemHandle system);
@@ -1845,10 +1845,10 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetCallback(ChannelGroupHandle channelGroup, delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public partial Result ChannelGroup_SetCallback(ChannelGroupHandle channelGroup, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
 
         [InteropMethod]
-        public partial Result Channel_SetCallback(ChannelHandle channel, delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public partial Result Channel_SetCallback(ChannelHandle channel, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
 
         [InteropMethod]
         public partial Result ChannelGroup_SetPan(ChannelGroupHandle channelGroup, float pan);

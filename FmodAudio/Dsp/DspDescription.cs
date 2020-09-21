@@ -39,47 +39,47 @@ namespace FmodAudio.DigitalSignalProcessing
         /// <summary>
         /// Delegate Definition: delegate Result DspStateCallback(DspState* state);
         /// </summary>
-        public delegate* stdcall<DspState*, Result> Create;
+        public delegate* unmanaged<DspState*, Result> Create;
 
         /// <summary>
         /// Delegate Definition: delegate Result DspStateCallback(DspState* state);
         /// </summary>
-        public delegate* stdcall<DspState*, Result> Release;
+        public delegate* unmanaged<DspState*, Result> Release;
 
         /// <summary>
         /// Delegate Definition: delegate Result DspStateCallback(DspState* state);
         /// </summary>
-        public delegate* stdcall<DspState*, Result> Reset;
+        public delegate* unmanaged<DspState*, Result> Reset;
 
         /// <summary>
         /// 
         /// </summary>
-        public delegate* stdcall<DspState*, float*, float*, uint, int, int*, Result> Read;
+        public delegate* unmanaged<DspState*, float*, float*, uint, int, int*, Result> Read;
         
-        public delegate* stdcall<DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result> Process;
-        public delegate* stdcall<DspState*, uint, Result> SetPosition;
+        public delegate* unmanaged<DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result> Process;
+        public delegate* unmanaged<DspState*, uint, Result> SetPosition;
 
         public int ParameterCount;
         public ParameterDescriptionStruct** ParameterDescriptions;
 
-        public delegate* stdcall<DspState*, int, float, Result> SetParamFloat;
-        public delegate* stdcall<DspState*, int, int, Result> SetParamInt;
-        public delegate* stdcall<DspState*, int, int, Result> SetParamBool;
-        public delegate* stdcall<DspState*, int, void*, uint, Result> SetParamData;
+        public delegate* unmanaged<DspState*, int, float, Result> SetParamFloat;
+        public delegate* unmanaged<DspState*, int, int, Result> SetParamInt;
+        public delegate* unmanaged<DspState*, int, int, Result> SetParamBool;
+        public delegate* unmanaged<DspState*, int, void*, uint, Result> SetParamData;
 
-        public delegate* stdcall<DspState*, int, float*, byte*, Result> GetParamFloat;
-        public delegate* stdcall<DspState*, int, int*, byte*, Result> GetParamInt;
-        public delegate* stdcall<DspState*, int, int*, byte*, Result> GetParamBool;
-        public delegate* stdcall<DspState*, int, void**, uint*, byte*, Result> GetParamData;
+        public delegate* unmanaged<DspState*, int, float*, byte*, Result> GetParamFloat;
+        public delegate* unmanaged<DspState*, int, int*, byte*, Result> GetParamInt;
+        public delegate* unmanaged<DspState*, int, int*, byte*, Result> GetParamBool;
+        public delegate* unmanaged<DspState*, int, void**, uint*, byte*, Result> GetParamData;
 
-        public delegate* stdcall<DspState*, int, uint, ChannelMask, int, int*, Result> ShouldIProcess;
+        public delegate* unmanaged<DspState*, int, uint, ChannelMask, int, int*, Result> ShouldIProcess;
 
         [Obsolete]
         public IntPtr UserData;
 
-        public delegate* stdcall<DspState*, Result> SystemRegister;
-        public delegate* stdcall<DspState*, Result> SystemDeregister;
-        public delegate* stdcall<DspState*, int, Result> SystemMix;
+        public delegate* unmanaged<DspState*, Result> SystemRegister;
+        public delegate* unmanaged<DspState*, Result> SystemDeregister;
+        public delegate* unmanaged<DspState*, int, Result> SystemMix;
 
         /// <summary>
         /// [w] Name of the unit to be displayed in the network.

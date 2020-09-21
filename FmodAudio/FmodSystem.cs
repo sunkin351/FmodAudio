@@ -335,22 +335,22 @@ namespace FmodAudio
         }
 
         public void SetFileSystem(
-            delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> userOpen,
-            delegate* stdcall<IntPtr, IntPtr, Result> userClose,
-            delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> userRead,
-            delegate* stdcall<IntPtr, uint, IntPtr, Result> userSeek,
-            delegate* stdcall<AsyncReadInfo*, IntPtr, Result> userAsyncRead,
-            delegate* stdcall<AsyncReadInfo*, IntPtr, Result> userAsyncCancel,
+            delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> userOpen,
+            delegate* unmanaged<IntPtr, IntPtr, Result> userClose,
+            delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> userRead,
+            delegate* unmanaged<IntPtr, uint, IntPtr, Result> userSeek,
+            delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> userAsyncRead,
+            delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> userAsyncCancel,
             int blockAlignment = -1)
         {
             library.System_SetFileSystem(Handle, userOpen, userClose, userRead, userSeek, userAsyncRead, userAsyncCancel, blockAlignment).CheckResult();
         }
 
         public void AttachFileSystem(
-            delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> userOpen,
-            delegate* stdcall<IntPtr, IntPtr, Result> userClose,
-            delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> userRead,
-            delegate* stdcall<IntPtr, uint, IntPtr, Result> userSeek)
+            delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> userOpen,
+            delegate* unmanaged<IntPtr, IntPtr, Result> userClose,
+            delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> userRead,
+            delegate* unmanaged<IntPtr, uint, IntPtr, Result> userSeek)
         {
             library.System_AttachFileSystem(Handle, userOpen, userClose, userRead, userSeek).CheckResult();
         }
@@ -377,7 +377,7 @@ namespace FmodAudio
             library.System_SetAdvancedSettings(Handle, ref settings.Struct).CheckResult();
         }
 
-        public unsafe void SetCallback(delegate* stdcall<IntPtr, SystemCallbackType, IntPtr, IntPtr, IntPtr, Result> callback, SystemCallbackType mask)
+        public unsafe void SetCallback(delegate* unmanaged<IntPtr, SystemCallbackType, IntPtr, IntPtr, IntPtr, Result> callback, SystemCallbackType mask)
         {
             library.System_SetCallback(Handle, callback, mask).CheckResult();
         }
@@ -437,7 +437,7 @@ namespace FmodAudio
             library.System_Get3DListenerAttributes(Handle, listener, out pos, out vel, out forward, out up).CheckResult();
         }
 
-        public void Set3DRolloffCallback(delegate* stdcall<IntPtr, float, float> callback)
+        public void Set3DRolloffCallback(delegate* unmanaged<IntPtr, float, float> callback)
         {
             library.System_Set3DRolloffCallback(Handle, callback).CheckResult();
         }

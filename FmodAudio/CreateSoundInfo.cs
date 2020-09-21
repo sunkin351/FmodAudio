@@ -36,11 +36,11 @@ namespace FmodAudio
 
         public int InclusionListCount;
 
-        public delegate* stdcall<IntPtr, IntPtr, uint, Result> PCMReadCallback;
+        public delegate* unmanaged<IntPtr, IntPtr, uint, Result> PCMReadCallback;
 
-        public delegate* stdcall<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback;
+        public delegate* unmanaged<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback;
 
-        public delegate* stdcall<IntPtr, Result, Result> NonBlockCallback;
+        public delegate* unmanaged<IntPtr, Result, Result> NonBlockCallback;
 
         public byte* DLSName;
 
@@ -52,17 +52,17 @@ namespace FmodAudio
 
         public SoundType SuggestedSoundType;
 
-        public delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen;
+        public delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen;
 
-        public delegate* stdcall<IntPtr, IntPtr, Result> FileUserClose;
+        public delegate* unmanaged<IntPtr, IntPtr, Result> FileUserClose;
 
-        public delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead;
+        public delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead;
 
-        public delegate* stdcall<IntPtr, uint, IntPtr, Result> FileUserSeek;
+        public delegate* unmanaged<IntPtr, uint, IntPtr, Result> FileUserSeek;
 
-        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead;
+        public delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead;
 
-        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel;
+        public delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel;
 
         public IntPtr FileUserData;
 
@@ -209,7 +209,7 @@ namespace FmodAudio
         /// Callback to 'piggyback' on FMOD's read functions and accept or even write PCM data while FMOD is opening the sound.
         /// Used for user sounds created with OPENUSER or for capturing decoded data as FMOD reads it.
         /// </summary>
-        public delegate* stdcall<IntPtr, IntPtr, uint, Result> PCMReadCallback
+        public delegate* unmanaged<IntPtr, IntPtr, uint, Result> PCMReadCallback
         {
             get => Struct.PCMReadCallback;
             set => Struct.PCMReadCallback = value;
@@ -218,7 +218,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for when the user calls a seeking function such as Channel::setPosition within a multi-sample sound, and for when it is opened.
         /// </summary>
-        public delegate* stdcall<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback
+        public delegate* unmanaged<IntPtr, int, uint, TimeUnit, Result> PCMSetPosCallback
         {
             get => Struct.PCMSetPosCallback;
             set => Struct.PCMSetPosCallback = value;
@@ -227,7 +227,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for successful completion, or error while loading a sound that used the FMOD_NONBLOCKING flag.
         /// </summary>
-        public delegate* stdcall<IntPtr, Result, Result> NonBlockCallback
+        public delegate* unmanaged<IntPtr, Result, Result> NonBlockCallback
         {
             get => Struct.NonBlockCallback;
             set => Struct.NonBlockCallback = value;
@@ -303,7 +303,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for opening this file.
         /// </summary>
-        public delegate* stdcall<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen
+        public delegate* unmanaged<byte*, uint*, IntPtr*, IntPtr, Result> FileUserOpen
         {
             get => Struct.FileUserOpen;
             set => Struct.FileUserOpen = value;
@@ -312,7 +312,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for closing this file.
         /// </summary>
-        public delegate* stdcall<IntPtr, IntPtr, Result> FileUserClose
+        public delegate* unmanaged<IntPtr, IntPtr, Result> FileUserClose
         {
             get => Struct.FileUserClose;
             set => Struct.FileUserClose = value;
@@ -321,7 +321,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for reading from this file.
         /// </summary>
-        public delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead
+        public delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> FileUserRead
         {
             get => Struct.FileUserRead;
             set => Struct.FileUserRead = value;
@@ -330,7 +330,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for seeking within this file.
         /// </summary>
-        public delegate* stdcall<IntPtr, uint, IntPtr, Result> FileUserSeek
+        public delegate* unmanaged<IntPtr, uint, IntPtr, Result> FileUserSeek
         {
             get => Struct.FileUserSeek;
             set => Struct.FileUserSeek = value;
@@ -339,7 +339,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for asyncronously reading from this file.
         /// </summary>
-        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead
+        public delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> FileUserAsyncRead
         {
             get => Struct.FileUserAsyncRead;
             set => Struct.FileUserAsyncRead = value;
@@ -348,7 +348,7 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Callback for cancelling an asyncronous read.
         /// </summary>
-        public delegate* stdcall<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel
+        public delegate* unmanaged<AsyncReadInfo*, IntPtr, Result> FileUserAsyncCancel
         {
             get => Struct.FileUserAsyncCancel;
             set => Struct.FileUserAsyncCancel = value;

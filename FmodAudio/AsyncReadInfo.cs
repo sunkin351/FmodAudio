@@ -17,7 +17,7 @@ namespace FmodAudio
         public readonly IntPtr Userdata;                    /* [r] User data pointer. */
         public readonly IntPtr Buffer;                      /* [w] Buffer to read file data into. */
         public uint BytesRead;                              /* [w] Fill this in before setting result code to tell FMOD how many bytes were read. */
-        private readonly delegate* stdcall<AsyncReadInfo*, Result, void> _done;   /* [r] FMOD file system wake up function.  Call this when user file read is finished.  Pass result of file read as a parameter. */
+        private readonly delegate* unmanaged<AsyncReadInfo*, Result, void> _done;   /* [r] FMOD file system wake up function.  Call this when user file read is finished.  Pass result of file read as a parameter. */
 
         public void Done(Result result)
         {

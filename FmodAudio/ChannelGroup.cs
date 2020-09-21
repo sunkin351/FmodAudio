@@ -245,7 +245,7 @@ namespace FmodAudio
             }
         }
 
-        public override unsafe void SetCallback(delegate* stdcall<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback)
+        public override unsafe void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback)
         {
             library.ChannelGroup_SetCallback(Handle, callback).CheckResult();
         }

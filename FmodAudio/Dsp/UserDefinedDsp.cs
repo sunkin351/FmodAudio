@@ -75,7 +75,7 @@ namespace FmodAudio.DigitalSignalProcessing
             MethodReferences.SystemDeregister = _systemDeregisterMethod;
             MethodReferences.SystemMix = _systemMixMethod;
 
-            //DspCreateStructure.Create = Marshal.GetFunctionPointerForDelegate(MethodReferences.Create);
+            //DspCreateStructure.Create = &_createMethod;
             //DspCreateStructure.Release = Marshal.GetFunctionPointerForDelegate(MethodReferences.Release);
             //DspCreateStructure.Reset = Marshal.GetFunctionPointerForDelegate(MethodReferences.Reset);
             //DspCreateStructure.Read = Marshal.GetFunctionPointerForDelegate(MethodReferences.Read);
@@ -120,7 +120,7 @@ namespace FmodAudio.DigitalSignalProcessing
             return dsp;
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _createMethod(DspState* state)
         {
             var dsp = GetDSPObject(state);
@@ -144,7 +144,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _releaseMethod(DspState* state)
         {
             var dsp = GetDSPObject(state);
@@ -172,7 +172,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _resetMethod(DspState* state)
         {
             var dsp = GetDSPObject(state);
@@ -196,7 +196,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _readMethod(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
         {
             var dsp = GetDSPObject(state);
@@ -220,7 +220,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _processMethod(DspState* state, uint length, DspBufferArray* inBufferArray, DspBufferArray* outBufferArray, bool inputsIdle, ProcessOperation operation)
         {
             var dsp = GetDSPObject(state);
@@ -244,7 +244,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _setPositionMethod(DspState* state, uint pos)
         {
             var dsp = GetDSPObject(state);
@@ -268,7 +268,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _setParamFloat(DspState* state, int index, float value)
         {
             var dsp = GetDSPObject(state);
@@ -292,7 +292,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _setParamInt(DspState* state, int index, int value)
         {
             var dsp = GetDSPObject(state);
@@ -316,7 +316,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _setParamBool(DspState* state, int index, bool value)
         {
             var dsp = GetDSPObject(state);
@@ -340,7 +340,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _setParamData(DspState* state, int index, IntPtr data, uint length)
         {
             var dsp = GetDSPObject(state);
@@ -364,7 +364,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _getParamFloat(DspState* state, int index, float* value, IntPtr strValue)
         {
             value = default;
@@ -389,7 +389,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _getParamInt(DspState* state, int index, int* value, IntPtr strValue)
         {
             value = default;
@@ -414,7 +414,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _getParamBool(DspState* state, int index, FmodBool* value, IntPtr strValue)
         {
             value = default;
@@ -443,7 +443,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _getParamData(DspState* state, int index, IntPtr* data, uint* length, IntPtr strValue)
         {
             data = default;
@@ -469,7 +469,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _shouldIProcessMethod(DspState* state, bool inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode)
         {
             var dsp = GetDSPObject(state);
@@ -493,7 +493,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _systemRegisterMethod(DspState* state)
         {
             var dsp = GetDSPObject(state);
@@ -517,7 +517,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _systemDeregisterMethod(DspState* state)
         {
             var dsp = GetDSPObject(state);
@@ -541,7 +541,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result _systemMixMethod(DspState* state, int stage)
         {
             var dsp = GetDSPObject(state);

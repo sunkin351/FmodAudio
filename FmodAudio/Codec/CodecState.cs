@@ -17,9 +17,9 @@ namespace FmodAudio.Codec
         public IntPtr FileHandle;
         public uint FileSize;
 
-        private readonly delegate* stdcall<IntPtr, byte*, uint, uint*, IntPtr, Result> fileRead;
-        private readonly delegate* stdcall<IntPtr, uint, IntPtr, Result> fileSeek;
-        private readonly delegate* stdcall<CodecState*, TagType, byte*, byte*, uint, TagDataType, int, Result> metaData;
+        private readonly delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> fileRead;
+        private readonly delegate* unmanaged<IntPtr, uint, IntPtr, Result> fileSeek;
+        private readonly delegate* unmanaged<CodecState*, TagType, byte*, byte*, uint, TagDataType, int, Result> metaData;
 
         public int WaveFormatVersion;
 

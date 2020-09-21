@@ -1,10 +1,11 @@
-#pragma warning disable IDE0052, CA1034
+﻿#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
+    using System.Runtime.CompilerServices;
     using Base;
 
     public static unsafe class Fmod
@@ -113,7 +114,7 @@ namespace FmodAudio
 
         private static DebugCallback DebugCallbackReference;
 
-        [UnmanagedCallersOnly(CallingConvention = CallingConvention.StdCall)]
+        [UnmanagedCallersOnly]
         private static Result DebugCallbackMarshaller(DebugFlags flags, byte* file, int line, byte* func, byte* message)
         {
             try
@@ -138,7 +139,7 @@ namespace FmodAudio
         //{
         //    DebugCallbackReference = callback;
 
-        //    delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callbackPointer = &DebugCallbackMarshaller;
+        //    delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callbackPointer = &DebugCallbackMarshaller;
 
         //    fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
         //    {
@@ -146,7 +147,7 @@ namespace FmodAudio
         //    }
         //}
 
-        public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* stdcall<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
         {
             Library.Debug_Initialize(flags, mode, callback, filename).CheckResult();
         }
@@ -196,9 +197,9 @@ namespace FmodAudio
         {
             public static void Initialize(IntPtr poolmem,
                                           int poollen,
-                                          delegate* stdcall<uint, MemoryType, IntPtr, IntPtr> useralloc,
-                                          delegate* stdcall<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc,
-                                          delegate* stdcall<IntPtr, MemoryType, IntPtr, void> userfree,
+                                          delegate* unmanaged<uint, MemoryType, IntPtr, IntPtr> useralloc,
+                                          delegate* unmanaged<IntPtr, uint, MemoryType, IntPtr, IntPtr> userrealloc,
+                                          delegate* unmanaged<IntPtr, MemoryType, IntPtr, void> userfree,
                                           MemoryType memtypeflags)
             {
                 if (useralloc == null || userfree == null)

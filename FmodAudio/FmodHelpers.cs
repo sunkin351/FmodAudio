@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Unicode;
 
@@ -277,7 +276,7 @@ namespace FmodAudio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNull<T>(this T handle) where T: Base.IHandleType<IntPtr>
+        public static bool IsNull<T>(this T handle) where T: unmanaged, Base.IHandleType<IntPtr>
         {
             return handle.Handle == default;
         }
