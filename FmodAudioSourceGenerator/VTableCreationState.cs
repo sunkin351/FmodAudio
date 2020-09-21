@@ -30,14 +30,14 @@ namespace FmodAudioSourceGenerator
             )
         };
 
-        internal SourceGeneratorContext Context;
+        internal GeneratorExecutionContext Context;
         internal readonly SyntaxReceiver Receiver;
 
         private readonly Dictionary<SyntaxTree, SemanticModel> SemanticModels = new Dictionary<SyntaxTree, SemanticModel>();
 
         private readonly INamedTypeSymbol VTableAttributeClass, WrapperTypeAttributeClass, InteropMethodAttributeClass;
 
-        public VTableCreationState(in SourceGeneratorContext context, SyntaxReceiver receiver)
+        public VTableCreationState(in GeneratorExecutionContext context, SyntaxReceiver receiver)
         {
             Context = context;
             Receiver = receiver;
@@ -60,8 +60,6 @@ namespace FmodAudioSourceGenerator
                 var model = GetSemanticModel(vTable.SyntaxTree);
 
                 var symbol = model.GetDeclaredSymbol(vTable);
-
-                
 
                 var source = ProcessVTableType(marshalContext, symbol);
 
@@ -238,7 +236,7 @@ namespace FmodAudioSourceGenerator
             return true;
         }
 
-        private static bool LookForParameterProblems(IMethodSymbol method, ref SourceGeneratorContext context)
+        private static bool LookForParameterProblems(IMethodSymbol method, ref GeneratorExecutionContext context)
         {
             bool problemFound = false;
 

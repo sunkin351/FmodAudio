@@ -57,7 +57,7 @@ namespace FmodAudioSourceGenerator
 
             var nullIdentifier = SyntaxFactory.MissingToken(SyntaxKind.IdentifierToken);
 
-            var list = new List<ParameterSyntax>(symbolParameters.Length + 1);
+            var list = new List<FunctionPointerParameterSyntax>(symbolParameters.Length + 1);
 
             for (int i = 0; i < syntaxParameters.Count; ++i)
             {
@@ -78,18 +78,22 @@ namespace FmodAudioSourceGenerator
                     }
                 }
 
-                var tmp = SyntaxFactory.Parameter(default, default, typeSyntax, nullIdentifier, null);
+                var tmp = SyntaxFactory.FunctionPointerParameter(typeSyntax);
 
                 list.Add(tmp);
             }
 
             //Marshaling of return type is not currently supported
-            list.Add(SyntaxFactory.Parameter(default, default, methodSyntax.ReturnType, nullIdentifier, null));
+            list.Add(SyntaxFactory.FunctionPointerParameter(methodSyntax.ReturnType));
 
             //All Fmod library functions are stdcall
             return SyntaxFactory.FunctionPointerType(
-                SyntaxFactory.Identifier("stdcall"),
-                SyntaxFactory.SeparatedList(list)
+                SyntaxFactory.FunctionPointerCallingConvention(
+                    SyntaxFactory.Token(SyntaxKind.UnmanagedKeyword)
+                ),
+                SyntaxFactory.FunctionPointerParameterList(
+                    SyntaxFactory.SeparatedList(list)
+                )
             );
         }
 

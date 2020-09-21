@@ -1,15 +1,9 @@
-using System;
-using Xunit;
-
+using System.Linq;
+using System.Reflection;
 using FmodAudioSourceGenerator;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Reflection;
-using System.Linq;
-using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Xunit;
 
 namespace SourceGeneratorTests
 {
@@ -17,7 +11,7 @@ namespace SourceGeneratorTests
     {
         CSharpParseOptions options = new CSharpParseOptions(LanguageVersion.Preview);
         CSharpCompilation compilation;
-        ImmutableArray<ISourceGenerator> generators;
+        ISourceGenerator[] generators;
 
         public SourceGenerationTests()
         {
@@ -28,15 +22,15 @@ namespace SourceGeneratorTests
                 new[] { MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location) },
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
 
-            generators = new ISourceGenerator[] { new PrimarySourceGenerator() }.ToImmutableArray();
+            generators = new ISourceGenerator[] { new PrimarySourceGenerator() };
         }
 
         [Fact]
         public void GenerationTestSimple()
         {
-            var driver = new CSharpGeneratorDriver(options, generators, default, ImmutableArray<AdditionalText>.Empty);
+            var driver = CSharpGeneratorDriver.Create(generators, parseOptions: options);
 
-            driver.RunFullGeneration(compilation, out var newCompile, out var diags);
+            driver.RunGeneratorsAndUpdateCompilation(compilation, out var newCompile, out var diags);
 
             var compileDiags = newCompile.GetDiagnostics();
 
