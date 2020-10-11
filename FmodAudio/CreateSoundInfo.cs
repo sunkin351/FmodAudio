@@ -1,5 +1,3 @@
-#pragma warning disable IDE1006, IDE0052, CA1815
-
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -151,32 +149,34 @@ namespace FmodAudio
         /// In a multi-sample format such as .FSB/.DLS/.SF2 it may be desirable to specify only a subset of sounds to be loaded out of the whole file.
         /// This is an array of subsound indicies to load into memory when created.
         /// </summary>
-        public ReadOnlySpan<int> InclusionList => InclusionListMemory;
-
-        public void SetInclusionList(ReadOnlySpan<int> list)
+        public ReadOnlySpan<int> InclusionList
         {
-            if (list.IsEmpty)
+            get => InclusionListMemory;
+            set
             {
-                InclusionListMemory = null;
-                Struct.InclusionList = null;
-                Struct.InclusionListCount = 0;
-                return;
-            };
+                if (value.IsEmpty)
+                {
+                    InclusionListMemory = null;
+                    Struct.InclusionList = null;
+                    Struct.InclusionListCount = 0;
+                    return;
+                };
 
-            if (InclusionListMemory != null && InclusionListMemory.Length >= list.Length)
-            {
-                list.CopyTo(InclusionListMemory);
-                goto NoAlloc;
+                if (InclusionListMemory != null && InclusionListMemory.Length >= value.Length)
+                {
+                    value.CopyTo(InclusionListMemory);
+                }
+                else
+                {
+                    int[] tmp = GC.AllocateArray<int>(value.Length, pinned: true);
+                    value.CopyTo(tmp);
+
+                    InclusionListMemory = tmp;
+                    Struct.InclusionList = (int*)Unsafe.AsPointer(ref tmp[0]);
+                }
+                
+                Struct.InclusionListCount = value.Length;
             }
-
-            int[] tmp = GC.AllocateArray<int>(list.Length, pinned: true);
-            list.CopyTo(tmp);
-
-            InclusionListMemory = tmp;
-            Struct.InclusionList = (int*)Unsafe.AsPointer(ref tmp[0]);
-
-        NoAlloc:
-            Struct.InclusionListCount = list.Length;
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace FmodAudio
                 
                 if (FmodHelpers.FixedDataForString(value, Encoding.UTF8, ref DLSNameMemory))
                 {
-                    Struct.DLSName = (byte*)Unsafe.AsPointer(ref DLSNameMemory[0]);
+                    Struct.DLSName = (byte*)Unsafe.AsPointer(ref DLSNameMemory![0]);
                 }
             }
         }
@@ -282,6 +282,7 @@ namespace FmodAudio
                 }
             }
         }
+
         /// <summary>
         /// [w] Optional.
         /// For sequenced formats with dynamic channel allocation such as .MID and .IT, this specifies the maximum voice count allowed while playing.
