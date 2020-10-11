@@ -55,8 +55,6 @@ namespace FmodAudioSourceGenerator
             var methodSyntax = (MethodDeclarationSyntax)method.DeclaringSyntaxReferences[0].GetSyntax();
             var syntaxParameters = methodSyntax.ParameterList.Parameters;
 
-            var nullIdentifier = SyntaxFactory.MissingToken(SyntaxKind.IdentifierToken);
-
             var list = new List<FunctionPointerParameterSyntax>(symbolParameters.Length + 1);
 
             for (int i = 0; i < syntaxParameters.Count; ++i)
