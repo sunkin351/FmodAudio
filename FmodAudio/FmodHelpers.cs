@@ -204,21 +204,22 @@ namespace FmodAudio
             return data;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T[] ArrayClone<T>(this T[] arr)
-        {
-            if (arr is null)
-                return null;
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[return: NotNullIfNotNull("arr")]
+        //internal static T[]? ArrayClone<T>(this T[]? arr)
+        //{
+        //    if (arr is null)
+        //        return null;
 
-            if (arr.Length == 0)
-                return Array.Empty<T>();
+        //    if (arr.Length == 0)
+        //        return Array.Empty<T>();
 
-            T[] newArr = new T[arr.Length];
+        //    T[] newArr = new T[arr.Length];
 
-            arr.CopyTo(newArr, 0);
+        //    arr.CopyTo(newArr, 0);
 
-            return newArr;
-        }
+        //    return newArr;
+        //}
 
         /// <summary>
         /// Converts 'value' into bytes using 'encoding' and stores them in 'pointer'.
