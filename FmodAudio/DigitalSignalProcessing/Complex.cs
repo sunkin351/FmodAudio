@@ -25,7 +25,7 @@ namespace FmodAudio.DigitalSignalProcessing
             return new Complex(comp.Real, comp.Imag);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Fmod_Complex comp && comp.Real == Real && comp.Imag == Imag;
         }

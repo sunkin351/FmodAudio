@@ -100,7 +100,7 @@ namespace FmodAudio
 
         internal static string GetErrorMessage(Result res)
         {
-            if (!ErrorMessageLookup.TryGetValue(res, out string message))
+            if (!ErrorMessageLookup.TryGetValue(res, out string? message))
             {
                 message = "Unknown Error";
             }
@@ -189,8 +189,11 @@ namespace FmodAudio
             return encoding.GetString(buffer);
         }
 
-        public static byte[] ToUTF8NullTerminated(ReadOnlySpan<char> str)
+        public static byte[]? ToUTF8NullTerminated(ReadOnlySpan<char> str)
         {
+            if (str.IsEmpty)
+                return null;
+
             int maxByteCount = str.Length * sizeof(char);
             byte[] data = new byte[maxByteCount + 1]; //Extra charactor acts as the null terminator
 
@@ -226,7 +229,7 @@ namespace FmodAudio
         /// <param name="encoding">The encoding to use for conversion</param>
         /// <param name="pointer">Unmanaged Memory Block</param>
         /// <returns>if 'pointer' was reallocated</returns>
-        internal static unsafe bool FixedDataForString(string value, Encoding encoding, ref byte[] fixedArray)
+        internal static unsafe bool FixedDataForString(string value, Encoding encoding, ref byte[]? fixedArray)
         {
             bool Reallocated = false;
             var local = fixedArray; //Local Variable optimization
@@ -241,8 +244,8 @@ namespace FmodAudio
                 Reallocated = true;
             }
             
-            encoding.GetBytes(value.AsSpan(), local.AsSpan(0, count));
-            local[count] = 0;
+            encoding.GetBytes(value, local.AsSpan(0, count));
+            local![count] = 0;
 
             return Reallocated;
         }

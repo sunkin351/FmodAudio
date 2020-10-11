@@ -9,8 +9,6 @@ using System.Runtime.InteropServices;
 
 using FmodAudio.Base;
 
-#nullable enable
-
 namespace FmodAudio
 {
     public unsafe readonly struct Sound : IDisposable, IEquatable<Sound>

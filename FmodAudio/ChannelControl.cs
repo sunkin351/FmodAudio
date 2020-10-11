@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-#nullable enable
-
 namespace FmodAudio
 {
     using Base;

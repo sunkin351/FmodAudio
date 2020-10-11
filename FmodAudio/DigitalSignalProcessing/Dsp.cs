@@ -3,8 +3,6 @@ using System;
 using FmodAudio.Base;
 using FmodAudio.DigitalSignalProcessing.Interop;
 
-#nullable enable
-
 namespace FmodAudio.DigitalSignalProcessing
 {
     public unsafe partial class Dsp : IDisposable

@@ -4,8 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using FmodAudio.Base;
 
-#nullable enable
-
 namespace FmodAudio.DigitalSignalProcessing
 {
     public unsafe abstract class UserDefinedDsp : Dsp

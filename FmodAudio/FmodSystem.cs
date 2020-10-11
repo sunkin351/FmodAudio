@@ -1,11 +1,9 @@
-#pragma warning disable IDE0052, IDE1006, CA1031
+#pragma warning disable IDE0052, IDE1006, CA1031, CS0660, CS0661
 
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace FmodAudio
 {

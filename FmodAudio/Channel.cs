@@ -1,9 +1,9 @@
+#pragma warning disable CS0660, CS0661
+
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using FmodAudio.Base;
-
-#nullable enable
 
 namespace FmodAudio
 {
@@ -99,7 +99,7 @@ namespace FmodAudio
                 ChannelGroupHandle handle;
                 library.Channel_GetChannelGroup(Handle, &handle).CheckResult();
 
-                return handle;
+                return handle!;
             }
 
             set

@@ -31,7 +31,7 @@ namespace FmodAudio.DigitalSignalProcessing
             {
                 library.DSPConnection_GetInput(Handle, out DspHandle handle).CheckResult();
 
-                return handle;
+                return handle!;
             }
         }
 
@@ -41,7 +41,7 @@ namespace FmodAudio.DigitalSignalProcessing
             {
                 library.DSPConnection_GetOutput(Handle, out DspHandle handle).CheckResult();
 
-                return handle;
+                return handle!;
             }
         }
 
@@ -116,7 +116,7 @@ namespace FmodAudio.DigitalSignalProcessing
             return true;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is DspConnection other && this == other;
         }

@@ -1,8 +1,9 @@
+#pragma warning disable CS0660, CS0661
+
 using System;
 using System.Numerics;
 
 using FmodAudio.Base;
-#nullable enable
 
 namespace FmodAudio
 {

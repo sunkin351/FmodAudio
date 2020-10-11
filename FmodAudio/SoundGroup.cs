@@ -1,6 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0660, CS0661
 
-#nullable enable
+using System;
 
 namespace FmodAudio
 {

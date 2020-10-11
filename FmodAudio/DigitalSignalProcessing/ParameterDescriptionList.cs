@@ -5,8 +5,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using FmodAudio.DigitalSignalProcessing.Interop;
 
-#nullable enable
-
 namespace FmodAudio.DigitalSignalProcessing
 {
     public class ParameterDescriptionList

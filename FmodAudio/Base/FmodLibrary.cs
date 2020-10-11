@@ -648,7 +648,7 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo info, SoundHandle* sound)
+        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo? info, SoundHandle* sound)
         {
             if (info is null)
             {

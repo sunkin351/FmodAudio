@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0052, CA1034
+#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -27,8 +27,8 @@ namespace FmodAudio
 
         #region Pre-Native Setup
 
-        private static string defaultLibName;
-        private static string location;
+        private static string? defaultLibName;
+        private static string? location;
 
         // <summary>
         // Subscribe to this to log when fatal errors occur.String passed is the error message.
@@ -112,11 +112,14 @@ namespace FmodAudio
 
         internal static readonly object CreationSyncObject = new object();
 
-        private static DebugCallback DebugCallbackReference;
+        private static DebugCallback? DebugCallbackReference;
 
         [UnmanagedCallersOnly]
         private static Result DebugCallbackMarshaller(DebugFlags flags, byte* file, int line, byte* func, byte* message)
         {
+            if (DebugCallbackReference is null)
+                return Result.Ok;
+
             try
             {
                 var fileString = FmodHelpers.PtrToStringUnknownSize(file);

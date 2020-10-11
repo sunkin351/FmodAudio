@@ -15,7 +15,7 @@ namespace FmodAudio.Base
 
         public bool Equals(SystemHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is SystemHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is SystemHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -47,7 +47,7 @@ namespace FmodAudio.Base
 
         public bool Equals(SoundHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is SoundHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is SoundHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -73,7 +73,7 @@ namespace FmodAudio.Base
 
         public bool Equals(SoundGroupHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is SoundGroupHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is SoundGroupHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -105,7 +105,7 @@ namespace FmodAudio.Base
 
         public bool Equals(ChannelHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is ChannelHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is ChannelHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -137,7 +137,7 @@ namespace FmodAudio.Base
 
         public bool Equals(ChannelGroupHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is ChannelGroupHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is ChannelGroupHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -169,7 +169,7 @@ namespace FmodAudio.Base
 
         public bool Equals(DspHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is DspHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is DspHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -201,7 +201,7 @@ namespace FmodAudio.Base
 
         public bool Equals(DspConnectionHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is DspConnectionHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is DspConnectionHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -233,7 +233,7 @@ namespace FmodAudio.Base
 
         public bool Equals(GeometryHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is GeometryHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is GeometryHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -265,7 +265,7 @@ namespace FmodAudio.Base
 
         public bool Equals(Reverb3DHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is Reverb3DHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is Reverb3DHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -297,7 +297,7 @@ namespace FmodAudio.Base
 
         public bool Equals(PluginHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is PluginHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is PluginHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 
@@ -324,7 +324,7 @@ namespace FmodAudio.Base
 
         public bool Equals(SyncPointHandle other) => Handle == other.Handle;
 
-        public override bool Equals(object obj) => obj is SyncPointHandle other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is SyncPointHandle other && this.Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Handle);
 

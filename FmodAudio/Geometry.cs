@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0059
+﻿#pragma warning disable IDE0059, CS0660, CS0661
 
 using System;
 using System.Numerics;

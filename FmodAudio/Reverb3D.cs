@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0660, CS0661
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
