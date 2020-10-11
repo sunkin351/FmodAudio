@@ -104,9 +104,29 @@ namespace FmodAudio
 
         #region Native loading and System instantiation
 
-        private static readonly Lazy<IntPtr> LibraryHandleLazy = new Lazy<IntPtr>(() => NativeLibrary.Load(location ?? DefaultLibraryName));
+        internal class NativeLibraryHandle : SafeHandle
+        {
+            public NativeLibraryHandle(IntPtr handle) : base(default, true)
+            {
+                this.handle = handle;
+            }
 
-        private static readonly Lazy<FmodLibrary> nativeLibrary = new Lazy<FmodLibrary>(() => new FmodLibrary(LibraryHandleLazy.Value));
+            protected override bool ReleaseHandle()
+            { 
+                NativeLibrary.Free(handle);
+                handle = default;
+                return true;
+            }
+
+            public override bool IsInvalid => handle == default;
+        }
+
+        private static readonly Lazy<FmodLibrary> nativeLibrary = new Lazy<FmodLibrary>(() =>
+        {
+            var libHandle = new NativeLibraryHandle(NativeLibrary.Load(location ?? DefaultLibraryName));
+
+            return new FmodLibrary(libHandle);
+        });
 
         public static FmodLibrary Library => nativeLibrary.Value;
 
@@ -138,18 +158,22 @@ namespace FmodAudio
             }
         }
 
-        //public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
-        //{
-        //    DebugCallbackReference = callback;
+        /// <summary>
+        /// This overload assumes there is a single callback
+        /// </summary>
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
+        {
+            DebugCallbackReference = callback;
 
-        //    delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callbackPointer = &DebugCallbackMarshaller;
+            var callbackPointer = (delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result>)(delegate*<DebugFlags, byte*, int, byte*, byte*, Result>)&DebugCallbackMarshaller;
 
-        //    fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
-        //    {
-        //        Library.Debug_Initialize(flags, mode, callbackPointer, pFilename).CheckResult();
-        //    }
-        //}
+            fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
+            {
+                Library.Debug_Initialize(flags, mode, callbackPointer, pFilename).CheckResult();
+            }
+        }
 
+        /// <inheritdoc cref="FmodLibrary.Debug_Initialize(DebugFlags, DebugMode, delegate* unmanaged{DebugFlags, byte*, int, byte*, byte*, Result}, byte*)"/>
         public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
         {
             Library.Debug_Initialize(flags, mode, callback, filename).CheckResult();
