@@ -270,11 +270,11 @@ namespace FmodAudio
             {
                 ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(buffer, int.MaxValue);
 
-                span = span.Slice(0, span.IndexOf((byte)0));
-
-                if (span.Length > 0)
+                int len = span.IndexOf((byte)0);
+                
+                if (len > 0)
                 {
-                    return Encoding.UTF8.GetString(span);
+                    return BufferToString(span.Slice(0, len));
                 }
             }
 
