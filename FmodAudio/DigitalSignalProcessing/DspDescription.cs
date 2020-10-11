@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Unicode;
 
+using FmodAudio.Base;
 using FmodAudio.DigitalSignalProcessing.Interop;
 
 namespace FmodAudio.DigitalSignalProcessing
@@ -70,7 +71,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
         public delegate* unmanaged<DspState*, int, float*, byte*, Result> GetParamFloat;
         public delegate* unmanaged<DspState*, int, int*, byte*, Result> GetParamInt;
-        public delegate* unmanaged<DspState*, int, int*, byte*, Result> GetParamBool;
+        public delegate* unmanaged<DspState*, int, FmodBool*, byte*, Result> GetParamBool;
         public delegate* unmanaged<DspState*, int, void**, uint*, byte*, Result> GetParamData;
 
         public delegate* unmanaged<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result> ShouldIProcess;

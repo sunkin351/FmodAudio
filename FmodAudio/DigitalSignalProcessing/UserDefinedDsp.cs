@@ -10,6 +10,8 @@ namespace FmodAudio.DigitalSignalProcessing
 {
     public unsafe abstract class UserDefinedDsp : Dsp
     {
+        public const int GetParamValueStrLength = 32;
+
         protected internal enum DSPProcessType
         {
             /// <summary>
@@ -23,48 +25,10 @@ namespace FmodAudio.DigitalSignalProcessing
             Process
         }
 
-        private struct InteropMethods
-        {
-            public DspStateCallback Create;
-            public DspStateCallback Release;
-            public DspStateCallback Reset;
-            public DspReadCallback Read;
-            public DspProcessCallback Process;
-            public DspSetPositionCallback SetPosition;
-
-            public DspSetParamFloatCallback SetParamFloat;
-            public DspSetParamIntCallback SetParamInt;
-            public DspSetParamBoolCallback SetParamBool;
-            public DspSetParamDataCallback SetParamData;
-
-            public DspGetParamFloatCallback GetParamFloat;
-            public DspGetParamIntCallback GetParamInt;
-            public DspGetParamBoolCallback GetParamBool;
-            public DspGetParamDataCallback GetParamData;
-
-            public DspShouldIProcessCallback ShouldIProcess;
-            public DspStateCallback SystemRegister;
-            public DspStateCallback SystemDeregister;
-            public DspSystemMixCallback SystemMix;
-
-        }
-
-        private static readonly InteropMethods MethodReferences;
         private static readonly DspDescriptionStruct DspCreateStructure;
 
         static UserDefinedDsp()
         {
-            
-            MethodReferences.SetParamFloat = _setParamFloat;
-            MethodReferences.SetParamInt = _setParamInt;
-            MethodReferences.SetParamBool = _setParamBool;
-            MethodReferences.SetParamData = _setParamData;
-
-            //MethodReferences.GetParamFloat = _getParamFloat;
-            //MethodReferences.GetParamInt = _getParamInt;
-            //MethodReferences.GetParamBool = _getParamBool;
-            //MethodReferences.GetParamData = _getParamData;
-
             DspCreateStructure.Create =  (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_createMethod;
             DspCreateStructure.Release = (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_releaseMethod;
             DspCreateStructure.Reset =   (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_resetMethod;
@@ -72,15 +36,15 @@ namespace FmodAudio.DigitalSignalProcessing
             DspCreateStructure.Process = (delegate* unmanaged<DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)(delegate* <DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)& _processMethod;
             DspCreateStructure.SetPosition = (delegate* unmanaged<DspState*, uint, Result>)(delegate*<DspState*, uint, Result>)&_setPositionMethod;
 
-            //DspCreateStructure.SetParamFloat = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamFloat);
-            //DspCreateStructure.SetParamInt = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamInt);
-            //DspCreateStructure.SetParamBool = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamBool);
-            //DspCreateStructure.SetParamData = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamData);
+            DspCreateStructure.SetParamFloat = (delegate* unmanaged<DspState*, int, float, Result>)(delegate* <DspState*, int, float, Result>)&_setParamFloat;
+            DspCreateStructure.SetParamInt = (delegate* unmanaged<DspState*, int, int, Result>)(delegate* <DspState*, int, int, Result>)&_setParamInt;
+            DspCreateStructure.SetParamBool = (delegate* unmanaged<DspState*, int, int, Result>)(delegate*<DspState*, int, int, Result>)&_setParamBool;
+            DspCreateStructure.SetParamData = (delegate* unmanaged<DspState*, int, void*, uint, Result>)(delegate* <DspState*, int, void*, uint, Result>)&_setParamData;
 
-            //DspCreateStructure.GetParamFloat = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamFloat);
-            //DspCreateStructure.GetParamInt = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamInt);
-            //DspCreateStructure.GetParamBool = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamBool);
-            //DspCreateStructure.GetParamData = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamData);
+            DspCreateStructure.GetParamFloat= (delegate* unmanaged<DspState*, int, float*, byte*, Result>)(delegate* <DspState*, int, float*, byte*, Result>)&_getParamFloat;
+            DspCreateStructure.GetParamInt =  (delegate* unmanaged<DspState*, int, int*, byte*, Result>)(delegate* <DspState*, int, int*, byte*, Result>)&_getParamInt;
+            DspCreateStructure.GetParamBool = (delegate* unmanaged<DspState*, int, FmodBool*, byte*, Result>)(delegate*<DspState*, int, FmodBool*, byte*, Result>)&_getParamBool;
+            DspCreateStructure.GetParamData = (delegate* unmanaged<DspState*, int, void**, uint*, byte*, Result>)(delegate* <DspState*, int, void**, uint*, byte*, Result>)&_getParamData;
 
             DspCreateStructure.ShouldIProcess =   (delegate* unmanaged<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)(delegate*<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)&_shouldIProcessMethod;
 
@@ -309,7 +273,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _setParamBool(DspState* state, int index, bool value)
+        private static Result _setParamBool(DspState* state, int index, int value)
         {
             var dsp = GetDSPObject(state);
 
@@ -320,7 +284,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.SetParameterBool(state, index, value);
+                return dsp.SetParameterBool(state, index, value != 0);
             }
             catch (FmodException e)
             {
@@ -333,7 +297,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _setParamData(DspState* state, int index, IntPtr data, uint length)
+        private static Result _setParamData(DspState* state, int index, void* data, uint length)
         {
             var dsp = GetDSPObject(state);
 
@@ -344,7 +308,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.SetParameterData(state, index, data, length);
+                return dsp.SetParameterData(state, index, (IntPtr)data, length);
             }
             catch (FmodException e)
             {
@@ -357,7 +321,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _getParamFloat(DspState* state, int index, float* value, IntPtr strValue)
+        private static Result _getParamFloat(DspState* state, int index, float* value, byte* strValue)
         {
             value = default;
             var dsp = GetDSPObject(state);
@@ -369,7 +333,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.GetParameterFloat(state, index, out *value, strValue);
+                return dsp.GetParameterFloat(state, index, out *value, new Span<byte>(strValue, GetParamValueStrLength));
             }
             catch (FmodException e)
             {
@@ -382,7 +346,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _getParamInt(DspState* state, int index, int* value, IntPtr strValue)
+        private static Result _getParamInt(DspState* state, int index, int* value, byte* strValue)
         {
             value = default;
             var dsp = GetDSPObject(state);
@@ -394,7 +358,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.GetParameterInt(state, index, out *value, strValue);
+                return dsp.GetParameterInt(state, index, out *value, new Span<byte>(strValue, GetParamValueStrLength));
             }
             catch (FmodException e)
             {
@@ -407,7 +371,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _getParamBool(DspState* state, int index, FmodBool* value, IntPtr strValue)
+        private static Result _getParamBool(DspState* state, int index, FmodBool* value, byte* strValue)
         {
             value = default;
             var dsp = GetDSPObject(state);
@@ -419,7 +383,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                var res = dsp.GetParameterBool(state, index, out bool val, strValue);
+                var res = dsp.GetParameterBool(state, index, out bool val, new Span<byte>(strValue, GetParamValueStrLength));
 
                 *value = val;
 
@@ -436,7 +400,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _getParamData(DspState* state, int index, IntPtr* data, uint* length, IntPtr strValue)
+        private static Result _getParamData(DspState* state, int index, void** data, uint* length, byte* strValue)
         {
             data = default;
             length = default;
@@ -449,7 +413,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.GetParameterData(state, index, out *data, out *length, strValue);
+                return dsp.GetParameterData(state, index, out *(IntPtr*)data, out *length, new Span<byte>(strValue, GetParamValueStrLength));
             }
             catch (FmodException e)
             {
@@ -663,25 +627,25 @@ namespace FmodAudio.DigitalSignalProcessing
             return Result.Err_Unimplemented;
         }
 
-        protected virtual Result GetParameterFloat(DspState* state, int index, out float value, IntPtr valueStr)
+        protected virtual Result GetParameterFloat(DspState* state, int index, out float value, Span<byte> valueStr)
         {
             value = default;
             return Result.Err_Unimplemented;
         }
 
-        protected virtual Result GetParameterInt(DspState* state, int index, out int value, IntPtr valueStr)
+        protected virtual Result GetParameterInt(DspState* state, int index, out int value, Span<byte> valueStr)
         {
             value = default;
             return Result.Err_Unimplemented;
         }
 
-        protected virtual Result GetParameterBool(DspState* state, int index, out bool value, IntPtr valueStr)
+        protected virtual Result GetParameterBool(DspState* state, int index, out bool value, Span<byte> valueStr)
         {
             value = default;
             return Result.Err_Unimplemented;
         }
 
-        protected virtual Result GetParameterData(DspState* state, int index, out IntPtr value, out uint length, IntPtr valueStr)
+        protected virtual Result GetParameterData(DspState* state, int index, out IntPtr value, out uint length, Span<byte> valueStr)
         {
             value = default;
             length = default;
