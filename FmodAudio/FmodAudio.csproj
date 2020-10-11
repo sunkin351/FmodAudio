@@ -17,6 +17,7 @@
 Internal tracking of managed objects has been rewritten to use GCHandle instead of manual handle to object Dictionary lookup. With this change, I am utilizing the user data pointer in FMOD native objects for this purpose, and will no longer be exposing the ability to retrieve or set them. I appologize if this causes any inconvenience to users of this class library.
 
 As Always, please log an issue on the github repo if you run into any issues.</PackageReleaseNotes>
+  <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
