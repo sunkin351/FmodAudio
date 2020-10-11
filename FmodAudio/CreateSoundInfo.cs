@@ -1,6 +1,7 @@
 #pragma warning disable IDE1006, IDE0052, CA1815
 
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -91,42 +92,16 @@ namespace FmodAudio
     {
         internal CreateSoundInfoStruct Struct;
 
-        private int[] InclusionListMemory = null;
+        private int[]? InclusionListMemory = null;
         
         private Encoding encoding = Encoding.UTF8;
 
-        private string DLSNameManaged = null;
+        private string? DLSNameManaged = null;
 
-        private byte[] DLSNameMemory = null;
+        private byte[]? DLSNameMemory = null;
         
-        private string encryptionKey = null;
+        private byte[]? encryptionKeyMemory = null;
 
-        private byte[] encryptionKeyMemory = null;
-
-        /// <summary>
-        /// Affects how the encryption key will be translated to bytes, Default is UTF8
-        /// </summary>
-        public Encoding EncryptionKeyEncoding
-        {
-            get => encoding;
-            set
-            {
-                if (value is null)
-                    value = Encoding.UTF8;
-
-                if (ReferenceEquals(encoding, value) || encoding.EncodingName == value.EncodingName)
-                {
-                    return;
-                }
-                
-                encoding = value;
-
-                if (encryptionKey != null)
-                {
-                    UpdateEncryptionKey();
-                }
-            }
-        }
         
         public CreateSoundInfo()
         {
@@ -238,7 +213,7 @@ namespace FmodAudio
         /// Filename for a DLS or SF2 sample set when loading a MIDI file.
         /// If not specified, on windows it will attempt to open /windows/system32/drivers/gm.dls, otherwise the MIDI will fail to open.
         /// </summary>
-        public string DLSName
+        public string? DLSName
         {
             get => DLSNameManaged;
             set
@@ -272,17 +247,39 @@ namespace FmodAudio
         /// <summary>
         /// [w] Optional. Key for encrypted FSB file.  Without this key an encrypted FSB file will not load.
         /// </summary>
-        public string EncryptionKey
+        public ReadOnlySpan<byte> EncryptionKey
         {
-            get => encryptionKey;
+            get => encryptionKeyMemory;
             set
             {
-                if (string.Equals(encryptionKey, value))
-                    return;
+                int idx;
 
-                encryptionKey = string.IsNullOrEmpty(value) ? null : value;
+                if (value.Length == 0 || (idx = value.IndexOf((byte)0)) == 0)
+                {
+                    Struct.EncryptionKey = null;
+                }
+                else
+                {
+                    if (idx > 0)
+                        value = value.Slice(0, idx);
 
-                UpdateEncryptionKey();
+                    if (encryptionKeyMemory is null || encryptionKeyMemory.Length < value.Length)
+                    {
+                        var size = FmodHelpers.RoundUpToPowerOf2(value.Length);
+
+                        encryptionKeyMemory = GC.AllocateArray<byte>(size, true);
+                    }
+                    else
+                    {
+                        encryptionKeyMemory.AsSpan().Clear();
+                    }
+
+                    value.CopyTo(encryptionKeyMemory);
+
+                    //This is only safe because the array is pinned
+                    if (Struct.EncryptionKey == null)
+                        Struct.EncryptionKey = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(encryptionKeyMemory));
+                }
             }
         }
         /// <summary>
@@ -432,39 +429,5 @@ namespace FmodAudio
         /// Once loaded the GUID will be written back to the pointer. This is to avoid seeking and reading the FSB header.
         /// </summary>
         public Guid* FSBGuid { get => Struct.FSBGUID; set => Struct.FSBGUID = value; }
-
-        /// <summary>
-        /// Optimized for changing both the value and encoding of the FSB Encryption key at once.
-        /// </summary>
-        /// <param name="value">The new string value for the key</param>
-        /// <param name="encoding">The new encoding for the key</param>
-        public void ChangeEncryptionKey(string value, Encoding encoding)
-        {
-            encryptionKey = string.IsNullOrEmpty(value) ? null : value;
-
-            if (!ReferenceEquals(this.encoding, encoding) && this.encoding.EncodingName != encoding.EncodingName)
-            {
-                this.encoding = encoding;
-            }
-
-            UpdateEncryptionKey();
-        }
-
-        private void UpdateEncryptionKey()
-        {
-            if (encryptionKey is null)
-            {
-                encryptionKeyMemory = null;
-                Struct.EncryptionKey = default;
-                return;
-            }
-
-            if (FmodHelpers.FixedDataForString(encryptionKey, encoding, ref encryptionKeyMemory))
-            {
-                Struct.EncryptionKey = (byte*)Unsafe.AsPointer(ref encryptionKeyMemory[0]);
-            }
-        }
-
-
     }
 }

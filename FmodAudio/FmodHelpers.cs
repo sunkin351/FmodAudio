@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Unicode;
@@ -279,6 +281,11 @@ namespace FmodAudio
         public static bool IsNull<T>(this T handle) where T: unmanaged, Base.IHandleType<IntPtr>
         {
             return handle.Handle == default;
+        }
+
+        public static int RoundUpToPowerOf2(int x)
+        {
+            return 1 << (32 - BitOperations.LeadingZeroCount((uint)x - 1));
         }
     }
 }
