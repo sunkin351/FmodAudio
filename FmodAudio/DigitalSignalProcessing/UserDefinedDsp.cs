@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CA1031, IDE1006, CS0612
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using FmodAudio.Base;
 
@@ -53,12 +54,6 @@ namespace FmodAudio.DigitalSignalProcessing
 
         static UserDefinedDsp()
         {
-            MethodReferences.Create = _createMethod;
-            MethodReferences.Release = _releaseMethod;
-            MethodReferences.Reset = _resetMethod;
-            MethodReferences.Read = _readMethod;
-            MethodReferences.Process = _processMethod;
-            MethodReferences.SetPosition = _setPositionMethod;
             
             MethodReferences.SetParamFloat = _setParamFloat;
             MethodReferences.SetParamInt = _setParamInt;
@@ -70,17 +65,12 @@ namespace FmodAudio.DigitalSignalProcessing
             //MethodReferences.GetParamBool = _getParamBool;
             //MethodReferences.GetParamData = _getParamData;
 
-            MethodReferences.ShouldIProcess = _shouldIProcessMethod;
-            MethodReferences.SystemRegister = _systemRegisterMethod;
-            MethodReferences.SystemDeregister = _systemDeregisterMethod;
-            MethodReferences.SystemMix = _systemMixMethod;
-
-            //DspCreateStructure.Create = &_createMethod;
-            //DspCreateStructure.Release = Marshal.GetFunctionPointerForDelegate(MethodReferences.Release);
-            //DspCreateStructure.Reset = Marshal.GetFunctionPointerForDelegate(MethodReferences.Reset);
-            //DspCreateStructure.Read = Marshal.GetFunctionPointerForDelegate(MethodReferences.Read);
-            //DspCreateStructure.Process = Marshal.GetFunctionPointerForDelegate(MethodReferences.Process);
-            //DspCreateStructure.SetPosition = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetPosition);
+            DspCreateStructure.Create =  (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_createMethod;
+            DspCreateStructure.Release = (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_releaseMethod;
+            DspCreateStructure.Reset =   (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_resetMethod;
+            DspCreateStructure.Read = (delegate* unmanaged<DspState*, float*, float*, uint, int, int*, Result>)(delegate* <DspState*, float*, float*, uint, int, int*, Result>)&_readMethod;
+            DspCreateStructure.Process = (delegate* unmanaged<DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)(delegate* <DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)& _processMethod;
+            DspCreateStructure.SetPosition = (delegate* unmanaged<DspState*, uint, Result>)(delegate*<DspState*, uint, Result>)&_setPositionMethod;
 
             //DspCreateStructure.SetParamFloat = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamFloat);
             //DspCreateStructure.SetParamInt = Marshal.GetFunctionPointerForDelegate(MethodReferences.SetParamInt);
@@ -92,10 +82,12 @@ namespace FmodAudio.DigitalSignalProcessing
             //DspCreateStructure.GetParamBool = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamBool);
             //DspCreateStructure.GetParamData = Marshal.GetFunctionPointerForDelegate(MethodReferences.GetParamData);
 
-            //DspCreateStructure.ShouldIProcess = Marshal.GetFunctionPointerForDelegate(MethodReferences.ShouldIProcess);
-            //DspCreateStructure.SystemRegister = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemRegister);
-            //DspCreateStructure.SystemDeregister = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemDeregister);
-            //DspCreateStructure.SystemMix = Marshal.GetFunctionPointerForDelegate(MethodReferences.SystemMix);
+            DspCreateStructure.ShouldIProcess =   (delegate* unmanaged<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)(delegate*<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)&_shouldIProcessMethod;
+
+            DspCreateStructure.SystemRegister =   (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_systemRegisterMethod;
+            DspCreateStructure.SystemDeregister = (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_systemDeregisterMethod;
+            
+            DspCreateStructure.SystemMix =        (delegate* unmanaged<DspState*, int, Result>)(delegate* <DspState*, int, Result>)&_systemMixMethod;
         }
 
         private static UserDefinedDsp? GetDSPObject(DspState* state)
@@ -197,7 +189,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _readMethod(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
+        private static Result _readMethod(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, int* outChannels)
         {
             var dsp = GetDSPObject(state);
 
@@ -208,7 +200,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.Read(state, inBuffer, outBuffer, length, inChannels, ref outChannels);
+                return dsp.Read(state, inBuffer, outBuffer, length, inChannels, ref *outChannels);
             }
             catch (FmodException e)
             {
@@ -221,7 +213,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _processMethod(DspState* state, uint length, DspBufferArray* inBufferArray, DspBufferArray* outBufferArray, bool inputsIdle, ProcessOperation operation)
+        private static Result _processMethod(DspState* state, uint length, DspBufferArray* inBufferArray, DspBufferArray* outBufferArray, int inputsIdle, ProcessOperation operation)
         {
             var dsp = GetDSPObject(state);
 
@@ -232,7 +224,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.Process(state, length, inBufferArray, outBufferArray, inputsIdle, operation);
+                return dsp.Process(state, length, inBufferArray, outBufferArray, inputsIdle != 0, operation);
             }
             catch (FmodException e)
             {
@@ -470,7 +462,7 @@ namespace FmodAudio.DigitalSignalProcessing
         }
 
         [UnmanagedCallersOnly]
-        private static Result _shouldIProcessMethod(DspState* state, bool inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode)
+        private static Result _shouldIProcessMethod(DspState* state, int inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode)
         {
             var dsp = GetDSPObject(state);
 
@@ -481,7 +473,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
             try
             {
-                return dsp.ShouldIProcess(state, inputsIdle, length, inMask, inChannels, speakerMode);
+                return dsp.ShouldIProcess(state, inputsIdle != 0, length, inMask, inChannels, speakerMode);
             }
             catch (FmodException e)
             {
@@ -565,15 +557,14 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        private readonly DspDescription.ParameterDescriptionManager ParameterManager;
-        private readonly ParameterDescription[] Descriptions;
+        private readonly ParameterDescriptionList? DescriptionList;
 
-        public override int ParameterCount => Descriptions.Length;
+        public override int ParameterCount => DescriptionList?.List.Length ?? 0;
 
-        protected UserDefinedDsp(SystemHandle sys, string name, FmodVersion pluginVersion, int inputBufferCount, int outputBufferCount, ParameterDescription[] descriptions, DSPProcessType processType)
+        protected UserDefinedDsp(SystemHandle sys, string name, FmodVersion pluginVersion, int inputBufferCount, int outputBufferCount, ParameterDescription[]? descriptions, DSPProcessType processType)
             : base(default)
         {
-            var createStruct = DspCreateStructure;
+            var createStruct = DspCreateStructure; //Value Type Copy
 
             createStruct.InputBufferCount = inputBufferCount;
             createStruct.OutputBufferCount = outputBufferCount;
@@ -594,10 +585,12 @@ namespace FmodAudio.DigitalSignalProcessing
                     throw new ArgumentException("Invalid process type argument", nameof(processType));
             }
 
-            this.ParameterManager = new DspDescription.ParameterDescriptionManager(descriptions);
+            if (descriptions != null)
+            {
+                DescriptionList = new ParameterDescriptionList(descriptions);
 
-            createStruct.ParameterCount = ParameterManager.Length;
-            createStruct.ParameterDescriptions = (Interop.ParameterDescriptionStruct**)ParameterManager.PointerArray;
+                DescriptionList.GetPointerAndCount(out createStruct.ParameterDescriptions, out createStruct.ParameterCount);
+            }
 
             createStruct.UserData = (IntPtr)GCHandle.Alloc(this, GCHandleType.Weak);
 
@@ -605,18 +598,16 @@ namespace FmodAudio.DigitalSignalProcessing
             {
                 library.System_CreateDSP(sys, &createStruct, pHandle).CheckResult();
             }
-
-            this.Descriptions = descriptions;
         }
 
         public sealed override ParameterDescription GetParameterInfo(int index)
         {
-            if ((uint)index >= (uint)this.Descriptions.Length)
+            if ((uint)index >= (uint)ParameterCount)
             {
                 throw new IndexOutOfRangeException();
             }
 
-            return this.Descriptions[index];
+            return DescriptionList!.List[index];
         }
 
         protected virtual Result Create(DspState* state)
