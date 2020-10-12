@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -43,9 +43,9 @@ namespace Examples
                 },
                 new SelectionUI.ExampleInfo()
                 {
-                    Name = "Custom DSP Example (Broken)",
+                    Name = "Custom DSP Example",
                     ExampleType = typeof(CustomDSPExample),
-                    Enabled = false
+                    Enabled = true
                 },
                 new SelectionUI.ExampleInfo()
                 {
@@ -124,7 +124,7 @@ namespace Examples
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private static bool StartExample(Type exampleType)
         {
             if (!typeof(Example).IsAssignableFrom(exampleType))
