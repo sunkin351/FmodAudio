@@ -164,20 +164,29 @@ namespace FmodAudio
         /// <summary>
         /// This overload assumes there is a single callback
         /// </summary>
-        public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback callback, string filename)
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, DebugCallback? callback)
         {
-            DebugCallbackReference = callback;
-
-            var callbackPointer = (delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result>)(delegate*<DebugFlags, byte*, int, byte*, byte*, Result>)&DebugCallbackMarshaller;
-
-            fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
+            if (callback is null)
             {
-                Library.Debug_Initialize(flags, mode, callbackPointer, pFilename).CheckResult();
+                InitializeDebug(flags, mode, null, null);
+            }
+            else
+            {
+                DebugCallbackReference = callback;
+
+                delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callbackPointer = &DebugCallbackMarshaller;
+
+                InitializeDebug(flags, mode, callbackPointer, null);
             }
         }
 
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, string? filename = null)
+        {
+            InitializeDebug(flags, mode, null, filename);
+        }
+
         /// <inheritdoc cref="FmodLibrary.Debug_Initialize(DebugFlags, DebugMode, delegate* unmanaged{DebugFlags, byte*, int, byte*, byte*, Result}, byte*)"/>
-        public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
+        public static void InitializeDebug(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string? filename)
         {
             Library.Debug_Initialize(flags, mode, callback, filename).CheckResult();
         }
