@@ -86,7 +86,7 @@ namespace FmodAudio.Base
         public partial Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, byte* filename = null);
 
         ///<inheritdoc cref="Debug_Initialize(DebugFlags, DebugMode, delegate*{DebugFlags, byte*, int, byte*, byte*, Result}, byte*)"/>
-        public Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string filename)
+        public Result Debug_Initialize(DebugFlags flags, DebugMode mode, delegate* unmanaged<DebugFlags, byte*, int, byte*, byte*, Result> callback, string? filename)
         {
             fixed (byte* pFilename = FmodHelpers.ToUTF8NullTerminated(filename))
             {
