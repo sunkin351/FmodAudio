@@ -27,29 +27,29 @@ namespace FmodAudio.DigitalSignalProcessing
 
         static UserDefinedDsp()
         {
-            DspCreateStructure.Create =  (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_createMethod;
-            DspCreateStructure.Release = (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_releaseMethod;
-            DspCreateStructure.Reset =   (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_resetMethod;
-            DspCreateStructure.Read = (delegate* unmanaged<DspState*, float*, float*, uint, int, int*, Result>)(delegate* <DspState*, float*, float*, uint, int, int*, Result>)&_readMethod;
-            DspCreateStructure.Process = (delegate* unmanaged<DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)(delegate* <DspState*, uint, DspBufferArray*, DspBufferArray*, int, ProcessOperation, Result>)& _processMethod;
-            DspCreateStructure.SetPosition = (delegate* unmanaged<DspState*, uint, Result>)(delegate*<DspState*, uint, Result>)&_setPositionMethod;
+            DspCreateStructure.Create = &_createMethod;
+            DspCreateStructure.Release = &_releaseMethod;
+            DspCreateStructure.Reset = &_resetMethod;
+            DspCreateStructure.Read = &_readMethod;
+            DspCreateStructure.Process = & _processMethod;
+            DspCreateStructure.SetPosition = &_setPositionMethod;
 
-            DspCreateStructure.SetParamFloat = (delegate* unmanaged<DspState*, int, float, Result>)(delegate* <DspState*, int, float, Result>)&_setParamFloat;
-            DspCreateStructure.SetParamInt = (delegate* unmanaged<DspState*, int, int, Result>)(delegate* <DspState*, int, int, Result>)&_setParamInt;
-            DspCreateStructure.SetParamBool = (delegate* unmanaged<DspState*, int, int, Result>)(delegate*<DspState*, int, int, Result>)&_setParamBool;
-            DspCreateStructure.SetParamData = (delegate* unmanaged<DspState*, int, void*, uint, Result>)(delegate* <DspState*, int, void*, uint, Result>)&_setParamData;
+            DspCreateStructure.SetParamFloat = &_setParamFloat;
+            DspCreateStructure.SetParamInt = &_setParamInt;
+            DspCreateStructure.SetParamBool = &_setParamBool;
+            DspCreateStructure.SetParamData = &_setParamData;
 
-            DspCreateStructure.GetParamFloat= (delegate* unmanaged<DspState*, int, float*, byte*, Result>)(delegate* <DspState*, int, float*, byte*, Result>)&_getParamFloat;
-            DspCreateStructure.GetParamInt =  (delegate* unmanaged<DspState*, int, int*, byte*, Result>)(delegate* <DspState*, int, int*, byte*, Result>)&_getParamInt;
-            DspCreateStructure.GetParamBool = (delegate* unmanaged<DspState*, int, FmodBool*, byte*, Result>)(delegate*<DspState*, int, FmodBool*, byte*, Result>)&_getParamBool;
-            DspCreateStructure.GetParamData = (delegate* unmanaged<DspState*, int, void**, uint*, byte*, Result>)(delegate* <DspState*, int, void**, uint*, byte*, Result>)&_getParamData;
+            DspCreateStructure.GetParamFloat = &_getParamFloat;
+            DspCreateStructure.GetParamInt = &_getParamInt;
+            DspCreateStructure.GetParamBool = &_getParamBool;
+            DspCreateStructure.GetParamData = &_getParamData;
 
-            DspCreateStructure.ShouldIProcess =   (delegate* unmanaged<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)(delegate*<DspState*, int, uint, ChannelMask, int, SpeakerMode, Result>)&_shouldIProcessMethod;
+            DspCreateStructure.ShouldIProcess = &_shouldIProcessMethod;
 
-            DspCreateStructure.SystemRegister =   (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_systemRegisterMethod;
-            DspCreateStructure.SystemDeregister = (delegate* unmanaged<DspState*, Result>)(delegate* <DspState*, Result>)&_systemDeregisterMethod;
+            DspCreateStructure.SystemRegister = &_systemRegisterMethod;
+            DspCreateStructure.SystemDeregister = &_systemDeregisterMethod;
             
-            DspCreateStructure.SystemMix =        (delegate* unmanaged<DspState*, int, Result>)(delegate* <DspState*, int, Result>)&_systemMixMethod;
+            DspCreateStructure.SystemMix = &_systemMixMethod;
         }
 
         private static UserDefinedDsp? GetDSPObject(DspState* state)
