@@ -27,7 +27,6 @@ namespace FmodAudio
 
         #region Pre-Native Setup
 
-        private static string? defaultLibName;
         private static string? location;
 
         // <summary>
@@ -35,36 +34,40 @@ namespace FmodAudio
         // </summary>
         //public static event Action<string, string> FatalError;
 
-        public static string DefaultLibraryName
+        public static string DefaultLibraryName { get; } = SelectDefaultLibraryName();
+
+        public static string SelectDefaultLibraryName(bool loggingEnabled = false)
         {
-            get
+            string name;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (defaultLibName is null)
-                {
-                    string ext;
-
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        ext = ".dll";
-                    }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        ext = ".so";
-                    }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    {
-                        ext = ".dylib";
-                    }
-                    else
-                    {
-                        throw new PlatformNotSupportedException();
-                    }
-
-                    defaultLibName = string.Concat("fmod", ext);
-                }
-
-                return defaultLibName;
+                name = "fmod.dll";
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                name = "libfmod.so";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                name = "libfmod.dylib";
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
+
+            if (loggingEnabled)
+            {
+                ReadOnlySpan<char> nameSpan = name;
+                int idx = nameSpan.IndexOf('.');
+                var span1 = nameSpan.Slice(0, idx);
+                var span2 = nameSpan.Slice(idx);
+
+                name = string.Concat(span1, "L", span2);
+            }
+
+            return name;
         }
 
         /// <summary>
