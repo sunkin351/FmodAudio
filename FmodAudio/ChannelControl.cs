@@ -3,10 +3,11 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using FmodAudio.Base;
+using FmodAudio.DigitalSignalProcessing;
+
 namespace FmodAudio
 {
-    using Base;
-
     public unsafe abstract class ChannelControl
     {
         protected readonly FmodLibrary library = Fmod.Library;
@@ -161,21 +162,21 @@ namespace FmodAudio
 
         #region DSP Effects
 
-        public abstract DspHandle GetDSP(int index);
+        public abstract Dsp GetDSP(int index);
 
-        public abstract DspHandle GetDSP(ChannelControlDSPIndex index);
+        public abstract Dsp GetDSP(ChannelControlDSPIndex index);
 
-        public abstract void AddDSP(int index, DspHandle dsp);
+        public abstract void AddDSP(int index, Dsp dsp);
 
-        public abstract void AddDSP(ChannelControlDSPIndex index, DspHandle dsp);
+        public abstract void AddDSP(ChannelControlDSPIndex index, Dsp dsp);
 
-        public abstract void RemoveDSP(DspHandle dsp);
+        public abstract void RemoveDSP(Dsp dsp);
 
         public abstract int DspCount { get; }
 
-        public abstract void SetDSPIndex(DspHandle dsp, int index);
+        public abstract void SetDSPIndex(Dsp dsp, int index);
 
-        public abstract int GetDSPIndex(DspHandle dsp);
+        public abstract int GetDSPIndex(Dsp dsp);
 
         #endregion
 

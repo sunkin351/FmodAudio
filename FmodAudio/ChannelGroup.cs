@@ -4,6 +4,7 @@ using System;
 using System.Numerics;
 
 using FmodAudio.Base;
+using FmodAudio.DigitalSignalProcessing;
 
 namespace FmodAudio
 {
@@ -311,31 +312,31 @@ namespace FmodAudio
             library.ChannelGroup_GetFadePoints(Handle, count, dspClocks, volumes).CheckResult();
         }
 
-        public override DspHandle GetDSP(int index)
+        public override Dsp GetDSP(int index)
         {
             DspHandle handle;
             library.ChannelGroup_GetDSP(Handle, index, &handle);
             return handle;
         }
 
-        public override DspHandle GetDSP(ChannelControlDSPIndex index)
+        public override Dsp GetDSP(ChannelControlDSPIndex index)
         {
             DspHandle handle;
             library.ChannelGroup_GetDSP(Handle, index, &handle);
             return handle;
         }
 
-        public override void AddDSP(int index, DspHandle dsp)
+        public override void AddDSP(int index, Dsp dsp)
         {
             library.ChannelGroup_AddDSP(Handle, index, dsp).CheckResult();
         }
 
-        public override void AddDSP(ChannelControlDSPIndex index, DspHandle dsp)
+        public override void AddDSP(ChannelControlDSPIndex index, Dsp dsp)
         {
             library.ChannelGroup_AddDSP(Handle, index, dsp).CheckResult();
         }
 
-        public override void RemoveDSP(DspHandle dsp)
+        public override void RemoveDSP(Dsp dsp)
         {
             library.ChannelGroup_RemoveDSP(Handle, dsp).CheckResult();
         }
@@ -350,12 +351,12 @@ namespace FmodAudio
             }
         }
 
-        public override void SetDSPIndex(DspHandle dsp, int index)
+        public override void SetDSPIndex(Dsp dsp, int index)
         {
             library.ChannelGroup_SetDSPIndex(Handle, dsp, index).CheckResult();
         }
 
-        public override int GetDSPIndex(DspHandle dsp)
+        public override int GetDSPIndex(Dsp dsp)
         {
             int value;
             library.ChannelGroup_GetDSPIndex(Handle, dsp, &value).CheckResult();

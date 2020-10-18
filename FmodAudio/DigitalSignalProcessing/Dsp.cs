@@ -197,14 +197,16 @@ namespace FmodAudio.DigitalSignalProcessing
         /// <param name="input">DSP unit to be added</param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public DspConnection AddInput(DspHandle input, DSPConnectionType type = DSPConnectionType.Standard)
+        public DspConnection AddInput(Dsp input, DSPConnectionType type = DSPConnectionType.Standard)
         {
-            library.DSP_AddInput(Handle, input, out DspConnectionHandle connection, type).CheckResult();
+            DspConnectionHandle connection;
+
+            library.DSP_AddInput(Handle, input, &connection, type).CheckResult();
 
             return connection;
         }
 
-        public void DisconnectFrom(DspHandle dsp, DspConnectionHandle connection = default)
+        public void DisconnectFrom(Dsp dsp, DspConnection connection = default)
         {
             library.DSP_DisconnectFrom(Handle, dsp, connection).CheckResult();
         }
@@ -218,14 +220,14 @@ namespace FmodAudio.DigitalSignalProcessing
         {
             library.DSP_GetInput(Handle, index, out DspHandle input, out DspConnectionHandle connection).CheckResult();
 
-            return ((Dsp)input!, (DspConnection)connection);
+            return ((Dsp)input, (DspConnection)connection);
         }
 
         public (Dsp Dsp, DspConnection Connection) GetOutput(int index)
         {
             library.DSP_GetOutput(Handle, index, out DspHandle output, out DspConnectionHandle connection).CheckResult();
 
-            return ((Dsp)output!, (DspConnection)connection);
+            return ((Dsp)output, (DspConnection)connection);
         }
 
         public void SetWetDryMix(float prewet, float postwet, float dry)

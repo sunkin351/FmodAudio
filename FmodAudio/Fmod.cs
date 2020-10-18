@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
+using FmodAudio.Base;
+
 namespace FmodAudio
 {
-    using System.Runtime.CompilerServices;
-    using Base;
-
     public static unsafe class Fmod
     {
         public static FmodVersion BindingVersion => new FmodVersion(0x00020100);
