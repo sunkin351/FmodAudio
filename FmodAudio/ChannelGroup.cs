@@ -313,12 +313,16 @@ namespace FmodAudio
 
         public override DspHandle GetDSP(int index)
         {
-            throw new NotImplementedException();
+            DspHandle handle;
+            library.ChannelGroup_GetDSP(Handle, index, &handle);
+            return handle;
         }
 
         public override DspHandle GetDSP(ChannelControlDSPIndex index)
         {
-            throw new NotImplementedException();
+            DspHandle handle;
+            library.ChannelGroup_GetDSP(Handle, index, &handle);
+            return handle;
         }
 
         public override void AddDSP(int index, DspHandle dsp)
