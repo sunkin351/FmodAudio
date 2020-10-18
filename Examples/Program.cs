@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Examples
@@ -109,6 +106,7 @@ namespace Examples
         private static void Main(string[] args)
         {
             ConsoleHelpers.Initialize();
+
             Fmod.SetLibraryLocation(@"D:\Programming\FMOD2\api\core\lib\x64");
 
             while (true)

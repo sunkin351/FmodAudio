@@ -185,7 +185,8 @@ namespace Examples
 
         public override void Dispose()
         {
-            dsp?.Dispose();
+            if (dsp != default)
+                dsp.Dispose();
 
             base.Dispose();
         }

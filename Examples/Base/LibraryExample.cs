@@ -1,3 +1,4 @@
+#pragma warning disable IDE0057, CA1816
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +30,6 @@ namespace Examples.Base
             ConsoleUpdateStart = 0;
 
             System = Fmod.CreateSystem();
-            TestVersion(System);
         }
 
         public abstract void Run();

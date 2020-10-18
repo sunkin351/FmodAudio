@@ -116,10 +116,17 @@ namespace Examples
 
         public override void Dispose()
         {
-            dspLowpass?.Dispose();
-            dspHighpass?.Dispose();
-            dspEcho?.Dispose();
-            dspFlange?.Dispose();
+            if (dspLowpass != default)
+                dspLowpass.Dispose();
+
+            if (dspHighpass != default)
+                dspHighpass.Dispose();
+
+            if (dspEcho != default)
+                dspEcho.Dispose();
+
+            if (dspFlange != default)
+                dspFlange.Dispose();
 
             if (sound != default)
                 sound.Dispose();

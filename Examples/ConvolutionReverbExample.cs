@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 namespace Examples
 {
     using Base;
+    using FmodAudio.Base;
 
     public unsafe class ConvolutionReverbExample : Example
     {
@@ -112,7 +113,7 @@ namespace Examples
 
             mainGroup?.Dispose();
 
-            if (reverbUnit != null && reverbGroup != null)
+            if (reverbUnit != default && reverbGroup != null)
             {
                 reverbGroup.RemoveDSP(reverbUnit);
                 reverbGroup.Dispose();
@@ -120,8 +121,9 @@ namespace Examples
             }
             else
             {
-                reverbGroup?.Dispose();
-                reverbUnit?.Dispose();
+                if (reverbGroup != null) reverbGroup.Dispose();
+
+                if (reverbUnit != default) reverbUnit.Dispose();
             }
 
             base.Dispose();

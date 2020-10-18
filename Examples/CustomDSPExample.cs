@@ -9,27 +9,195 @@ using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
+    using System.Runtime.InteropServices;
     using Base;
 
-    //Warning, this example is not in working condition
     public unsafe class CustomDSPExample : Example
     {
-        public class MyCustomDSP : FmodAudio.DigitalSignalProcessing.UserDefinedDsp
+        #region Dsp Implementation
+        public class MyCustomDSP : IDisposable
         {
+            public static Dsp CreateDsp(FmodSystem system)
+            {
+                return system.CreateDSP(in Description);
+            }
+
             private static readonly ParameterDescription[] paramDescriptions = new ParameterDescription[]
             {
                 new DataParameterDescription("wave data", null, ParameterDataType.User),
                 new FloatParameterDescription("volume", "%", 0, 1, 1)
             };
 
+            private static ParameterDescriptionList paramList = new ParameterDescriptionList(paramDescriptions);
+
+            private static readonly DspDescriptionStruct Description = new DspDescriptionStruct
+            {
+                PluginSDKVersion = Fmod.PluginSDKVersion,
+                Name = "MyDsp",
+                Version = new FmodVersion(1, 0, 0),
+                InputBufferCount = 1,
+                OutputBufferCount = 1,
+
+                //Function Pointers
+                Create = &_myCreate,
+                Release = &_myRelease,
+                Reset = &_myReset,
+                Read = &_myRead,
+                ShouldIProcess = &_myShouldIProcess,
+                GetParamFloat = &_myGetParameterFloat,
+                SetParamFloat = &_mySetParameterFloat,
+                GetParamData = &_myGetParameterData
+            };
+
+            static MyCustomDSP()
+            {
+                paramList.GetPointerAndCount(out Description.ParameterDescriptions, out Description.ParameterCount);
+            }
+
+            #region Dsp Implementation Details
+
+            private static MyCustomDSP? GetManagedState(DspState* state)
+            {
+                if (state->plugindata != default)
+                {
+                    return GCHandle.FromIntPtr(state->plugindata).Target as MyCustomDSP;
+                }
+
+                return null;
+            }
+
+#pragma warning disable IDE1006
+
+            [UnmanagedCallersOnly]
+            private static Result _myCreate(DspState* state)
+            {
+                var res = state->GetBlockSize(out uint size);
+
+                if (res != Result.Ok)
+                {
+                    return res;
+                }
+
+                var managedState = new MyCustomDSP((int)size);
+
+                var gchandle = GCHandle.Alloc(managedState, GCHandleType.Normal);
+
+                state->plugindata = GCHandle.ToIntPtr(gchandle);
+
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myRelease(DspState* state)
+            {
+                var gchandle = GCHandle.FromIntPtr(state->plugindata);
+
+                if (gchandle.IsAllocated && gchandle.Target is MyCustomDSP managedState)
+                {
+                    managedState.Dispose();
+                    gchandle.Free();
+                }
+
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myReset(DspState* state)
+            {
+                var managedState = GetManagedState(state);
+
+                if (managedState is null)
+                    return Result.Err_Internal;
+
+                managedState.buffer.AsSpan().Clear();
+                managedState.volumeLinear = 1.0f;
+
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myRead(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, int* outChannels)
+            {
+                var managedState = GetManagedState(state);
+
+                if (managedState is null)
+                    return Result.Err_Internal;
+
+                return managedState.Read(state, inBuffer, outBuffer, length, inChannels, ref *outChannels);
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myShouldIProcess(DspState* state, int inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode)
+            {
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myGetParameterData(DspState* state, int index, void** data, uint* length, byte* valueStr)
+            {
+                if (index != 0)
+                {
+                    return Result.Err_Invalid_Param;
+                }
+
+                var managedState = GetManagedState(state);
+
+                if (managedState is null)
+                    return Result.Err_Internal;
+
+                *data = Unsafe.AsPointer(ref managedState.buffer[0]); //Safe because the array is already pinned
+                *length = (uint)(managedState.channels * managedState.lengthSamples);
+
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myGetParameterFloat(DspState* state, int index, float* value, byte* valueStr)
+            {
+                if (index != 1)
+                {
+                    return Result.Err_Invalid_Param;
+                }
+
+                var managedState = GetManagedState(state);
+
+                *value = managedState.Volume;
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _mySetParameterFloat(DspState* state, int index, float value)
+            {
+                if (index != 1)
+                {
+                    return Result.Err_Invalid_Param;
+                }
+
+                var managedState = GetManagedState(state);
+
+                managedState.Volume = value;
+
+                return Result.Ok;
+            }
+
+#pragma warning restore IDE1006
+
+            #endregion
+
             private float[] buffer;
             private float volumeLinear = 1.0f;
             private int lengthSamples, channels;
-            public readonly ReaderWriterLockSlim DspLock = new ReaderWriterLockSlim();
+            private readonly ReaderWriterLockSlim DspLock = new ReaderWriterLockSlim();
 
-            public MyCustomDSP(FmodSystem system, string name)
-                : base(system, name, new FmodVersion(1, 0, 0), 1, 1, paramDescriptions, DSPProcessType.Read)
+            private MyCustomDSP(int size)
             {
+                lengthSamples = size;
+                buffer = GC.AllocateArray<float>(size * 8, pinned: true);
+            }
+
+            public void Dispose()
+            {
+                DspLock.Dispose();
             }
 
             public ReadOnlySpan<float> Data => this.buffer.AsSpan(0, this.lengthSamples * this.channels);
@@ -43,33 +211,6 @@ namespace Examples
             public int Channels => this.channels;
 
             public int LengthSamples => this.lengthSamples;
-
-            protected override Result Create(DspState* state)
-            {
-                var res = state->GetBlockSize(out uint size);
-
-                if (res != Result.Ok)
-                {
-                    return res;
-                }
-
-                this.lengthSamples = (int)size;
-                this.buffer = new float[(int)size * 8];
-
-                return Result.Ok;
-            }
-
-            protected override unsafe Result Release(DspState* state)
-            {
-                DspLock.Dispose();
-                return Result.Ok;
-            }
-
-            protected override Result Reset(DspState* state)
-            {
-                this.buffer.AsSpan().Clear();
-                return Result.Ok;
-            }
 
             // A little look into C# intrinsics, .NET Core 3+ only
             private static void AdjustVolumeAllSamples(float* inbuffer, float* outbuffer, int length, float volume)
@@ -119,7 +260,7 @@ namespace Examples
                 }
             }
 
-            protected override unsafe Result Read(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
+            private unsafe Result Read(DspState* state, float* inBuffer, float* outBuffer, uint length, int inChannels, ref int outChannels)
             {
                 Debug.Assert(inChannels == outChannels);
 
@@ -138,6 +279,10 @@ namespace Examples
                         this.channels = inChannels;
                         this.lengthSamples = (int)length;
                     }
+                    catch
+                    {
+                        return Result.Err_Internal;
+                    }
                     finally
                     {
                         this.DspLock.ExitWriteLock();
@@ -146,86 +291,13 @@ namespace Examples
 
                 return Result.Ok;
             }
-
-            protected override Result ShouldIProcess(DspState* state, bool inputsIdle, uint length, ChannelMask inMask, int inChannels, SpeakerMode speakerMode)
-            {
-                return Result.Ok;
-            }
         }
 
-        //static unsafe Result MyDSPGetParameterDataCallback(DspState* state, int index, out IntPtr data, out uint length, IntPtr _)
-        //{
-        //    data = default;
-        //    length = default;
-
-        //    if (index != 0)
-        //    {
-        //        return Result.Err_Invalid_Param;
-        //    }
-            
-        //    var res = state->Functions->GetBlockSize.Invoke(state, out uint blockSize);
-        //    if (res != Result.Ok)
-        //    {
-        //        return res;
-        //    }
-
-        //    data = state->plugindata;
-        //    length = blockSize * 2 * sizeof(float);
-
-        //    return Result.Ok;
-        //}
-
-        //static unsafe Result MyDSPGetParameterFloat(DspState* state, int index, out float value, IntPtr _)
-        //{
-        //    if (index != 1)
-        //    {
-        //        value = default;
-        //        return Result.Err_Invalid_Param;
-        //    }
-
-        //    value = ((MyDSPData*)state->plugindata)->VolumeLinear;
-        //    return Result.Ok;
-        //}
-
-        //static unsafe Result MyDSPSetParameterFloat(DspState* state, int index, float value)
-        //{
-        //    if (index != 1)
-        //        return Result.Err_Invalid_Param;
-
-        //    ((MyDSPData*)state->plugindata)->VolumeLinear = value;
-        //    return Result.Ok;
-        //}
-
-        //private unsafe DSP CreateCustomDSP()
-        //{
-        //    ParameterDescription WaveDataDesc= new DataParameterDescription("wave data", null, ParameterDataType.User);
-        //    ParameterDescription VolumeDesc = new FloatParameterDescription("volume", "%", 0, 1, 1);
-
-        //    var dspDesc = new DspDescription()
-        //    {
-        //        Name = "My Dsp",
-        //        PluginSDKVersion = Fmod.PluginSDKVersion,
-        //        Version = new FmodVersion(1, 0, 0),
-                
-        //        InputBufferCount = 1,
-        //        OutputBufferCount = 1,
-
-        //        CreateCallback = MyDSPCreateCallback,
-        //        ReleaseCallback = MyDSPReleaseCallback,
-        //        ReadCallback = MyDSPCallback,
-        //        GetParamDataCallback = MyDSPGetParameterDataCallback,
-        //        SetParamFloatCallback = MyDSPSetParameterFloat,
-        //        GetParamFloatCallback = MyDSPGetParameterFloat
-        //    };
-
-        //    dspDesc.SetParameterDescriptions(WaveDataDesc, VolumeDesc);
-
-        //    return System.CreateDSP(dspDesc);
-        //}
+        #endregion
 
         private Sound sound;
         private Channel channel;
-        private MyCustomDSP dsp;
+        private Dsp dsp;
         private ChannelGroup masterGroup;
 
         public CustomDSPExample() : base("Fmod Custom DSP Example")
@@ -246,7 +318,7 @@ namespace Examples
 
             channel = System.PlaySound(sound, paused: true);
 
-            dsp = new MyCustomDSP(System, "MyDSP");
+            dsp = MyCustomDSP.CreateDsp(System);
 
             masterGroup = System.MasterChannelGroup;
 
@@ -259,9 +331,10 @@ namespace Examples
         {
             Span<char> display = stackalloc char[50];
 
-            var ParamIndex = dsp.GetDataParameterIndex(ParameterDataType.User);
-
             channel.Paused = false;
+
+            System.GetDSPBufferSize(out var sampleLen, out _);
+            dsp.GetChannelFormat(out _, out var channels, out _);
 
             do
             {
@@ -270,12 +343,12 @@ namespace Examples
                 System.Update();
 
                 bool bypass = dsp.Bypass;
+                var volume = dsp.GetParameterFloat(1);
+                var ptr = dsp.GetParameterData(0, out var len);
 
-                ParameterDescription desc = dsp.GetParameterInfo(1);
+                var data = new ReadOnlySpan<float>(ptr, (int)len);
 
-                var data = dsp.Data;
-
-                string volstr = (dsp.Volume * 100).ToString("N1");
+                string volstr = (volume * 100).ToString("N1");
 
                 DrawText("==================================================");
                 DrawText("Custom DSP Example.");
@@ -292,20 +365,9 @@ namespace Examples
 
                 if (data.Length != 0)
                 {
-                    Debug.Assert((uint)dsp.Channels <= 10);
+                    Debug.Assert((uint)channels <= 10);
 
-                    float[] levels;
-
-                    dsp.DspLock.EnterReadLock();
-
-                    try
-                    {
-                        levels = DetermineChannelLevels(data, dsp.Channels, dsp.LengthSamples);
-                    }
-                    finally
-                    {
-                        dsp.DspLock.ExitReadLock();
-                    }
+                    float[] levels = DetermineChannelLevels(data, channels, (int)sampleLen);
 
                     int channel = 0;
 
@@ -332,7 +394,7 @@ namespace Examples
             if (sound != default)
                 sound.Dispose();
 
-            if (dsp != null)
+            if ((FmodAudio.Base.DspHandle)dsp != default)
             {
                 masterGroup.RemoveDSP(dsp);
                 dsp.Dispose();
@@ -341,9 +403,9 @@ namespace Examples
             base.Dispose();
         }
 
-        private static void AdjustVolume(MyCustomDSP dsp, float adjustment)
+        private static void AdjustVolume(Dsp dsp, float adjustment)
         {
-            dsp.Volume = Math.Clamp(dsp.Volume + adjustment, 0, 1);
+            dsp.SetParameterFloat(1, Math.Clamp(dsp.GetParameterFloat(1) + adjustment, 0, 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -351,6 +413,7 @@ namespace Examples
         {
             if (channels * sampleCount > buffer.Length)
             {
+                throw new ArgumentException("");
                 //Throw some error here
             }
 

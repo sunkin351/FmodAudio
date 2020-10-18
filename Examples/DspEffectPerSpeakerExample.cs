@@ -164,8 +164,11 @@ namespace Examples
             if (sound != default)
                 sound.Dispose();
 
-            lowPass?.Dispose();
-            highPass?.Dispose();
+            if (lowPass != default)
+                lowPass.Dispose();
+
+            if (highPass != default)
+                highPass.Dispose();
 
             base.Dispose();
         }
