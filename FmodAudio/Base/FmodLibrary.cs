@@ -2910,7 +2910,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result DSP_GetParameterInfo(DspHandle dsp, int index, DigitalSignalProcessing.Interop.ParameterDescriptionStruct** desc);
+        public partial Result DSP_GetParameterInfo(DspHandle dsp, int index, DigitalSignalProcessing.ParameterDescriptionStruct** desc);
 
         [InteropMethod]
         public partial Result DSP_GetDataParameterIndex(DspHandle dsp, int datatype, int* index);

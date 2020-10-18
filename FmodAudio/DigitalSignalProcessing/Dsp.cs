@@ -1,25 +1,38 @@
 using System;
 
 using FmodAudio.Base;
-using FmodAudio.DigitalSignalProcessing.Interop;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
-    public unsafe partial class Dsp : IDisposable
+    public unsafe struct Dsp : IDisposable, IEquatable<Dsp>
     {
-        public static implicit operator Dsp?(DspHandle handle)
+        public static implicit operator Dsp(DspHandle handle)
         {
-            return handle.IsNull() ? null : new Dsp(handle);
+            return new Dsp(handle);
         }
 
-        public static implicit operator DspHandle(Dsp? dsp)
+        public static implicit operator DspHandle(Dsp dsp)
         {
-            return dsp is null ? default : dsp.Handle;
+            return dsp.Handle;
         }
 
-        protected readonly FmodLibrary library = Fmod.Library;
-        protected readonly DspHandle Handle;
+        public static bool operator ==(Dsp l, Dsp r)
+        {
+            return l.Handle == r.Handle;
+        }
 
+        public static bool operator !=(Dsp l, Dsp r)
+        {
+            return l.Handle != r.Handle;
+        }
+
+        public bool Equals(Dsp handle)
+        {
+            return this == handle;
+        }
+
+        private static readonly FmodLibrary library = Fmod.Library;
+        private readonly DspHandle Handle;
 
         internal Dsp(DspHandle handle)
         {
@@ -135,7 +148,7 @@ namespace FmodAudio.DigitalSignalProcessing
         /// <remarks>
         /// Use this to enumerate all parameters of a DSP unit with <see cref="Dsp.GetParameterInfo(int)"/>
         /// </remarks>
-        public virtual int ParameterCount
+        public int ParameterCount
         {
             get
             {
@@ -307,7 +320,7 @@ namespace FmodAudio.DigitalSignalProcessing
             return data;
         }
 
-        public virtual ParameterDescription GetParameterInfo(int index)
+        public ParameterDescription GetParameterInfo(int index)
         {
             ParameterDescriptionStruct* ptr;
             library.DSP_GetParameterInfo(Handle, index, &ptr).CheckResult();

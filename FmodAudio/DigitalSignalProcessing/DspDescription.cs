@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.Unicode;
 
 using FmodAudio.Base;
-using FmodAudio.DigitalSignalProcessing.Interop;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
@@ -34,9 +33,6 @@ namespace FmodAudio.DigitalSignalProcessing
 
         public int InputBufferCount;
         public int OutputBufferCount;
-
-        // TODO: Implement all of the following delegates as "function pointers", when the language feature becomes available.
-        // Source: https://github.com/dotnet/csharplang/blob/master/proposals/function-pointers.md
 
         /// <summary>
         /// Delegate Definition: delegate Result DspStateCallback(DspState* state);

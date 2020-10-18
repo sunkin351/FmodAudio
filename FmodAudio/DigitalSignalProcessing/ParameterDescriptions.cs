@@ -5,7 +5,6 @@ using System.Text.Unicode;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
-    using Interop;
     public abstract class ParameterDescription
     {
         internal ParameterDescriptionStruct internalDescription;
@@ -97,12 +96,12 @@ namespace FmodAudio.DigitalSignalProcessing
             : base(DSPParameterType.Bool, name, label)
         {
             _managedDefault = defaultValue;
-            Description.DefaultValue = defaultValue ? 1 : 0;
+            Description.DefaultValue = defaultValue;
         }
 
         internal unsafe BoolParameterDescription(ParameterDescriptionStruct* ptr) : base(ptr)
         {
-            _managedDefault = Description.DefaultValue != 0;
+            _managedDefault = Description.DefaultValue;
         }
 
         private ref BoolDescription Description => ref internalDescription.DescUnion.BoolDescription;

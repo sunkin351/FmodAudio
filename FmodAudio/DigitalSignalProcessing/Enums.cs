@@ -214,7 +214,7 @@
         Data
     }
 
-    public enum ParameterFloatMappingType
+    public enum ParameterFloatMappingType : int
     {
         Linear = 0,
         Auto,

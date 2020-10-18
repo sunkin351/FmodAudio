@@ -2,10 +2,23 @@
 
 using System;
 using System.Runtime.InteropServices;
+using FmodAudio.Base;
 
-namespace FmodAudio.DigitalSignalProcessing.Interop
+namespace FmodAudio.DigitalSignalProcessing
 {
-    [StructLayout(LayoutKind.Sequential)]
+    public struct ParameterFloatMappingPiecewiseLinear
+    {
+        public int PointCount;
+        public IntPtr PointParamValues;
+        public IntPtr pointPositions;
+    }
+
+    public struct ParameterFloatMapping
+    {
+        public ParameterFloatMappingType Type;
+        public ParameterFloatMappingPiecewiseLinear PiecewiseLinearMapping;
+    }
+
     public struct FloatDescription
     {
         public float Min;
@@ -30,7 +43,6 @@ namespace FmodAudio.DigitalSignalProcessing.Interop
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
     public struct IntDescription
     {
         public int Min;
@@ -47,10 +59,9 @@ namespace FmodAudio.DigitalSignalProcessing.Interop
         public IntPtr ValueNames;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
     public struct BoolDescription
     {
-        public int DefaultValue;
+        public FmodBool DefaultValue;
 
         /// <summary>
         /// [Optional] Names for true and false respectively. There should be 2 strings.
@@ -58,7 +69,6 @@ namespace FmodAudio.DigitalSignalProcessing.Interop
         public IntPtr ValueNames;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
     public struct DataDescription
     {
         public int DataType;
@@ -69,7 +79,6 @@ namespace FmodAudio.DigitalSignalProcessing.Interop
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
     public unsafe struct ParameterDescriptionStruct
     {
         public DSPParameterType Type;
@@ -81,9 +90,9 @@ namespace FmodAudio.DigitalSignalProcessing.Interop
         /// <summary>
         /// byte* UTF8 null terminated string
         /// </summary>
-        public IntPtr Description;
+        public byte* Description;
 
-        internal DescriptionUnion DescUnion;
+        public DescriptionUnion DescUnion;
 
         [StructLayout(LayoutKind.Explicit)]
         public struct DescriptionUnion

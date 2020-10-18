@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using FmodAudio.DigitalSignalProcessing.Interop;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
@@ -27,7 +26,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
         public ParameterDescription[] List => ManagedArray;
 
-        internal unsafe void GetPointerAndCount(out ParameterDescriptionStruct** ptr, out int length)
+        public unsafe void GetPointerAndCount(out ParameterDescriptionStruct** ptr, out int length)
         {
             EnsureInitialized();
 
