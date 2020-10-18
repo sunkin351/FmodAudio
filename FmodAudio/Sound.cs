@@ -63,7 +63,7 @@ namespace FmodAudio
         }
 
 
-        public bool IsSubsound => Parent != null;
+        public bool IsSubsound => Parent != default;
 
         public SoundLock Lock(uint offset, uint length)
         {
@@ -385,7 +385,7 @@ namespace FmodAudio
             }
         }
 
-        internal unsafe IntPtr UserData
+        public unsafe IntPtr UserData
         {
             get
             {

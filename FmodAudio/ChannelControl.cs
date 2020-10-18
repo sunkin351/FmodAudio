@@ -218,7 +218,7 @@ namespace FmodAudio
 
         public abstract void Get3DDistanceFilter(out FmodBool custom, out float customLevel, out float centerFreq);
 
-        internal abstract unsafe IntPtr UserData { get; set; }
+        public abstract unsafe IntPtr UserData { get; set; }
 
         #endregion
     }

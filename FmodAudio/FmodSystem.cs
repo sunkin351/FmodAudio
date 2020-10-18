@@ -866,7 +866,7 @@ namespace FmodAudio
             }
         }
 
-        internal IntPtr UserData
+        public IntPtr UserData
         {
             get
             {

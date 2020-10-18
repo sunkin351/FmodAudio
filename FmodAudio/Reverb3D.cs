@@ -73,7 +73,7 @@ namespace FmodAudio
             }
         }
 
-        internal unsafe IntPtr UserData
+        public unsafe IntPtr UserData
         {
             get
             {

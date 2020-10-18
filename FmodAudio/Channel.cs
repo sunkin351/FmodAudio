@@ -520,7 +520,7 @@ namespace FmodAudio
             library.Channel_Get3DDistanceFilter(Handle, out custom, out customLevel, out centerFreq).CheckResult();
         }
 
-        internal override IntPtr UserData
+        public override IntPtr UserData
         {
             get
             {

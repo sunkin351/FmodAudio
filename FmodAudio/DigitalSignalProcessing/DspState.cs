@@ -147,7 +147,7 @@ namespace FmodAudio.DigitalSignalProcessing
             }
         }
 
-        internal Result GetUserData(out IntPtr userData)
+        public Result GetUserData(out IntPtr userData)
         {
             // This struct is expected to always live within unmanaged memory, or on the stack. Meaning, it won't be moved by the GC
             var ThisPtr = (DspState*)Unsafe.AsPointer(ref this);

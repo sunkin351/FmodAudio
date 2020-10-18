@@ -195,7 +195,7 @@ namespace FmodAudio
             return data;
         }
 
-        internal unsafe IntPtr UserData
+        public unsafe IntPtr UserData
         {
             get
             {
