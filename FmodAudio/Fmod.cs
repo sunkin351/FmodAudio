@@ -1,4 +1,3 @@
-#pragma warning disable IDE0052, CA1034
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -59,12 +58,9 @@ namespace FmodAudio
 
             if (loggingEnabled)
             {
-                ReadOnlySpan<char> nameSpan = name;
-                int idx = nameSpan.IndexOf('.');
-                var span1 = nameSpan.Slice(0, idx);
-                var span2 = nameSpan.Slice(idx);
+                int idx = name.IndexOf('.');
 
-                name = string.Concat(span1, "L", span2);
+                name = string.Concat(name.AsSpan(0, idx), "L", name.AsSpan(idx));
             }
 
             return name;
