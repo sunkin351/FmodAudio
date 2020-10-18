@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -10,13 +10,12 @@
     <RepositoryUrl>https://github.com/sunkin351/FmodAudio</RepositoryUrl>
     <RepositoryType></RepositoryType>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Description>Wrapper Library for the Fmod Core API in C#. Requires .NET Core 2.1+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
+    <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Greatly simplifies creating a custom DSP for those using FMOD's DSP api. You can now simply inherit from `FmodAudio.Dsp.UserDefinedDSP` and overload the methods you wish FMOD to use.
-
-Internal tracking of managed objects has been rewritten to use GCHandle instead of manual handle to object Dictionary lookup. With this change, I am utilizing the user data pointer in FMOD native objects for this purpose, and will no longer be exposing the ability to retrieve or set them. I appologize if this causes any inconvenience to users of this class library.
-
-As Always, please log an issue on the github repo if you run into any issues.</PackageReleaseNotes>
+    <PackageReleaseNotes>- This release is a massive rework of the codebase, and is not backwards compatible with previous versions.
+- This release uses C# Function Pointers, made available in the .NET 5 SDK, and as such, this library will from here on be .NET 5.0+ exclusive. (It also uses a few other features that can only be found in .NET 5.0+)
+- This release frees User Data pointers for FmodAudio users to use again, by defining library types as stateless typed handles. (Mostly, Channel/ChannelGroup/ChannelControl are still classes, but stateless too)
+- This release fixes a bug where on platforms other than windows, the library would look for the native library with an incorrect file name by default.</PackageReleaseNotes>
   <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -30,7 +29,7 @@ As Always, please log an issue on the github repo if you run into any issues.</P
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FmodAudioSourceGenerator\FmodAudioSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="..\FmodAudioSourceGenerator\FmodAudioSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

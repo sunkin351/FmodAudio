@@ -369,9 +369,7 @@ namespace Examples
 
                     float[] levels = DetermineChannelLevels(data, channels, (int)sampleLen);
 
-                    int channel = 0;
-
-                    do
+                    for (int channel = 0; channel < levels.Length; ++channel)
                     {
                         display.Clear();
 
@@ -381,7 +379,6 @@ namespace Examples
 
                         DrawText(display);
                     }
-                    while (++channel < levels.Length);
                 }
                 
                 Sleep(50);
