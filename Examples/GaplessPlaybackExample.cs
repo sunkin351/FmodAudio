@@ -122,7 +122,7 @@ namespace Examples
             {
                 Sound s = sounds[Notes[i]];
 
-                var channel = System.PlaySound(s, channelGroup, true);
+                Channel channel = System.PlaySound(s, channelGroup, true);
 
                 if (clockStart == 0)
                 {
@@ -180,7 +180,8 @@ namespace Examples
         {
             foreach (var sound in sounds)
             {
-                sound?.Dispose();
+                if (sound != default)
+                    sound.Dispose();
             }
 
             channelGroup?.Dispose();

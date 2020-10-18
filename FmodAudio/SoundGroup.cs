@@ -1,43 +1,47 @@
-﻿using System;
+﻿#pragma warning disable CS0660, CS0661
 
-#nullable enable
+using System;
 
 namespace FmodAudio
 {
-    using System.Diagnostics;
-    using System.Runtime.InteropServices;
-    using Interop;
-    public sealed unsafe class SoundGroup : HandleBase
+    using Base;
+    public unsafe struct SoundGroup : IDisposable
     {
-        internal static SoundGroup? FromHandle(IntPtr handle)
+        public static implicit operator SoundGroup(SoundGroupHandle handle)
         {
-            IntPtr value;
-            Fmod.UserDataMethods.SoundGroup_GetUserData(handle, &value).CheckResult();
+            return new SoundGroup(handle);
+        }
 
-            if (value != default)
+        public static implicit operator SoundGroupHandle(SoundGroup soundGroup)
+        {
+            return soundGroup.Handle;
+        }
+
+        private static readonly FmodLibrary library = Fmod.Library;
+
+        private readonly SoundGroupHandle Handle;
+
+        internal SoundGroup(SoundGroupHandle handle)
+        {
+            Handle = handle;
+        }
+
+        public SystemHandle SystemObject
+        {
+            get
             {
-                var gchandle = (GCHandle)value;
-
-                if (gchandle.IsAllocated && gchandle.Target is SoundGroup group)
-                {
-                    return group;
-                }
+                SystemHandle system;
+                library.SoundGroup_GetSystemObject(Handle, &system);
+                return system;
             }
-
-            return null;
         }
 
-        private readonly NativeLibrary library = Fmod.Library;
-
-        public FmodSystem SystemObject { get; }
-        internal string? _name = null;
-
-        internal SoundGroup(FmodSystem sys, IntPtr inst, bool ownsHandle) : base(inst, ownsHandle)
+        public void Dispose()
         {
-            SystemObject = sys;
+            Release();
         }
 
-        protected override void ReleaseImpl()
+        public void Release()
         {
             library.SoundGroup_Release(Handle).CheckResult();
         }
@@ -98,21 +102,16 @@ namespace FmodAudio
             }
         }
 
-        public unsafe string Name
+        public string Name
         {
             get
             {
-                if (_name is null)
-                {
-                    const int len = FmodSystem.MaxInteropNameStringLength;
-                    var ptr = stackalloc byte[len];
+                const int len = Fmod.MaxInteropNameStringLength;
+                var ptr = stackalloc byte[len];
 
-                    library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
+                library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
 
-                    _name = FmodHelpers.PtrToString(ptr, len);
-                }
-                
-                return _name;
+                return FmodHelpers.BufferToString(ptr, len);
             }
         }
 
@@ -136,23 +135,33 @@ namespace FmodAudio
             }
         }
 
-        internal override IntPtr UserData
+        public IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                Fmod.UserDataMethods.SoundGroup_GetUserData(Handle, &value).CheckResult();
+                library.SoundGroup_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
             set
             {
-                Fmod.UserDataMethods.SoundGroup_SetUserData(Handle, value).CheckResult();
+                library.SoundGroup_SetUserData(Handle, value).CheckResult();
             }
         }
 
         public void Stop()
         {
             library.SoundGroup_Stop(Handle).CheckResult();
+        }
+
+        public static bool operator ==(SoundGroup l, SoundGroup r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(SoundGroup l, SoundGroup r)
+        {
+            return l.Handle != r.Handle;
         }
     }
 }

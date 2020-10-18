@@ -35,7 +35,7 @@ namespace FmodAudio
             return EncodedVersion == other.EncodedVersion;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is FmodVersion tmp && this.Equals(tmp);
         }

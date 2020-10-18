@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using FmodAudio;
-using FmodAudio.Dsp;
+using FmodAudio.Base;
+using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
     using Base;
+
     public class EffectsExample : Example
     {
         Sound sound;
         Channel channel;
 
-        DSP dspLowpass, dspHighpass, dspEcho, dspFlange;
-
-        ChannelGroup Master;
+        Dsp dspLowpass, dspHighpass, dspEcho, dspFlange;
 
         public EffectsExample() : base("Fmod Effects Example")
         {
@@ -68,11 +66,11 @@ namespace Examples
                 OnUpdate();
 
                 System.Update();
-                bool Paused = true;
+                FmodBool Paused = true;
 
                 if (channel != null)
                 {
-                    var res = Fmod.Library.ChannelGroup_GetPaused(channel.Handle, out Paused);
+                    var res = Fmod.Library.Channel_GetPaused(channel, out Paused);
 
                     if (res != Result.Ok)
                     {
@@ -118,12 +116,20 @@ namespace Examples
 
         public override void Dispose()
         {
-            dspLowpass?.Dispose();
-            dspHighpass?.Dispose();
-            dspEcho?.Dispose();
-            dspFlange?.Dispose();
+            if (dspLowpass != default)
+                dspLowpass.Dispose();
 
-            sound?.Dispose();
+            if (dspHighpass != default)
+                dspHighpass.Dispose();
+
+            if (dspEcho != default)
+                dspEcho.Dispose();
+
+            if (dspFlange != default)
+                dspFlange.Dispose();
+
+            if (sound != default)
+                sound.Dispose();
 
             base.Dispose();
         }

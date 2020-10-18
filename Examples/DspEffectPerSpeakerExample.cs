@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using FmodAudio;
-using FmodAudio.Dsp;
+using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
@@ -13,7 +13,7 @@ namespace Examples
     {
         Sound sound;
         Channel channel;
-        DSP lowPass, highPass;
+        Dsp lowPass, highPass;
         float pan = 0f;
 
         public DspEffectPerSpeakerExample() : base("Fmod DSP Effects per Speaker Example")
@@ -65,7 +65,7 @@ namespace Examples
             ///Wavetable is the drumloop sound, and it feeds its data from the right to left
 
             //[DSPHEAD]<------------[DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
-            DSP head, channelMixer;
+            Dsp head, channelMixer;
 
             ChannelGroup masterGroup = System.MasterChannelGroup;
             head = masterGroup.GetDSP(ChannelControlDSPIndex.DspHead);
@@ -85,7 +85,7 @@ namespace Examples
                      \y           
                       [DSPHIGHPASS]
             */
-            DSPConnection lowPassConnection, highPassConnection;
+            DspConnection lowPassConnection, highPassConnection;
 
             lowPassConnection = head.AddInput(lowPass);
             highPassConnection = head.AddInput(highPass);
@@ -161,10 +161,14 @@ namespace Examples
 
         public override void Dispose()
         {
-            sound?.Dispose();
+            if (sound != default)
+                sound.Dispose();
 
-            lowPass?.Dispose();
-            highPass?.Dispose();
+            if (lowPass != default)
+                lowPass.Dispose();
+
+            if (highPass != default)
+                highPass.Dispose();
 
             base.Dispose();
         }

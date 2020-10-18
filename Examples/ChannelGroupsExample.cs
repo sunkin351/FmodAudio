@@ -1,4 +1,4 @@
-﻿using FmodAudio;
+using FmodAudio;
 using System;
 
 namespace Examples
@@ -100,7 +100,8 @@ namespace Examples
         {
             foreach (var sound in sounds)
             {
-                sound?.Dispose();
+                if (sound != default)
+                    sound.Dispose();
             }
 
             A?.Dispose();

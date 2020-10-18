@@ -6,7 +6,7 @@ using System.Text;
 
 namespace FmodAudio.Codec
 {
-    using FmodAudio.Interop;
+    using FmodAudio.Base;
 
     public unsafe struct CodecState
     {
@@ -17,16 +17,16 @@ namespace FmodAudio.Codec
         public IntPtr FileHandle;
         public uint FileSize;
 
-        private readonly FileReadCallback fileRead;
-        private readonly FileSeekCallback fileSeek;
-        private readonly CodecMetadataCallback metaData;
+        private readonly delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> fileRead;
+        private readonly delegate* unmanaged<IntPtr, uint, IntPtr, Result> fileSeek;
+        private readonly delegate* unmanaged<CodecState*, TagType, byte*, byte*, uint, TagDataType, int, Result> metaData;
 
         public int WaveFormatVersion;
 
         public uint FileRead(IntPtr fileHandle, byte* buffer, uint bufferLength, IntPtr userData)
         {
             uint bytesRead = 0;
-            fileRead.Invoke(fileHandle, buffer, bufferLength, &bytesRead, userData).CheckResult();
+            fileRead(fileHandle, buffer, bufferLength, &bytesRead, userData).CheckResult();
             return bytesRead;
         }
 
@@ -50,7 +50,7 @@ namespace FmodAudio.Codec
 
         public void FileSeek(IntPtr fileHandle, uint pos, IntPtr userData)
         {
-            fileSeek.Invoke(fileHandle, pos, userData).CheckResult();
+            fileSeek(fileHandle, pos, userData).CheckResult();
         }
 
         public void FileSeek(uint pos, IntPtr userData)
@@ -58,65 +58,17 @@ namespace FmodAudio.Codec
             FileSeek(FileHandle, pos, userData);
         }
 
-        public void MetaData(CodecState* state, TagType tagType, string name, byte* data, uint dataLen, TagDataType dataType, bool unique)
+        public void MetaData(CodecState* state, TagType tagType, byte* name, byte* data, uint dataLen, TagDataType dataType, FmodBool unique)
         {
-            metaData.Invoke(state, tagType, name, data, dataLen, dataType, unique).CheckResult();
+            metaData(state, tagType, name, data, dataLen, dataType, unique.value).CheckResult();
         }
 
-        public void MetaData(CodecState* state, TagType tagType, string name, Span<byte> data, TagDataType dataType, bool unique)
+        public void MetaData(CodecState* state, TagType tagType, string name, Span<byte> data, TagDataType dataType, FmodBool unique)
         {
-            fixed (byte* dataPtr = data)
+            fixed (byte* dataPtr = data, pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
-                metaData.Invoke(state, tagType, name, dataPtr, (uint)data.Length, dataType, unique);
+                metaData(state, tagType, pName, dataPtr, (uint)data.Length, dataType, unique.value);
             }
-        }
-
-        private struct FileReadCallback
-        {
-            private delegate Result Delegate(IntPtr funcPtr, IntPtr fileHandle, byte* buffer, uint bufferlength, uint* bytesRead, IntPtr userData);
-            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
-
-            private readonly IntPtr FuncPtr;
-
-            public Result Invoke(IntPtr fileHandle, byte* buffer, uint bufferlength, uint* bytesRead, IntPtr userData)
-            {
-                return InvokeImpl(FuncPtr, fileHandle, buffer, bufferlength, bytesRead, userData);
-            }
-
-            public bool IsDefault => FuncPtr == default;
-        }
-
-        private struct FileSeekCallback
-        {
-            private delegate Result Delegate(IntPtr funcPtr, IntPtr fileHandle, uint pos, IntPtr userData);
-            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
-
-            private readonly IntPtr FuncPtr;
-
-            public Result Invoke(IntPtr fileHandle, uint pos, IntPtr userData)
-            {
-                return InvokeImpl(FuncPtr, fileHandle, pos, userData);
-            }
-
-            public bool IsDefault => FuncPtr == default;
-        }
-
-        private struct CodecMetadataCallback
-        {
-            private delegate Result Delegate(IntPtr funcPtr, CodecState* state, TagType tagType, byte* name, byte* data, uint dataLen, TagDataType dataType, int unique);
-            private static readonly Delegate InvokeImpl = DelegateILGeneration.GenerateCalli<Delegate>();
-
-            private readonly IntPtr FuncPtr;
-
-            public Result Invoke(CodecState* state, TagType tagType, string name, byte* data, uint dataLen, TagDataType dataType, bool unique)
-            {
-                fixed (byte* namePtr = FmodHelpers.ToUTF8NullTerminated(name))
-                {
-                    return InvokeImpl(FuncPtr, state, tagType, namePtr, data, dataLen, dataType, unique ? 1 : 0);
-                }
-            }
-
-            public bool IsDefault => FuncPtr == default;
         }
     }
 }

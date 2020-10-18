@@ -4,82 +4,66 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#nullable enable
+using FmodAudio.Base;
 
 namespace FmodAudio
 {
-    public sealed unsafe class Sound : HandleBase
+    public unsafe readonly struct Sound : IDisposable, IEquatable<Sound>
     {
-        internal static Sound FromNewHandle(FmodSystem system, IntPtr handle, bool ownsHandle = true)
+        public static implicit operator Sound(SoundHandle handle)
         {
-            return FromHandle(handle) ?? new Sound(system, handle, ownsHandle);
+            return new Sound(handle);
         }
 
-        internal static unsafe Sound? FromHandle(IntPtr handle)
+        public static implicit operator SoundHandle(Sound sound)
         {
-            IntPtr ptr;
-            Fmod.UserDataMethods.Sound_GetUserData(handle, &ptr).CheckResult();
-
-            if (ptr != default)
-            {
-                GCHandle gcHandle = (GCHandle)ptr;
-
-                if (gcHandle.IsAllocated && gcHandle.Target is Sound sound)
-                {
-                    return sound;
-                }
-            }
-
-            return null;
+            return sound.Handle;
         }
 
-        private readonly Interop.NativeLibrary library = Fmod.Library;
+        private static readonly FmodLibrary library = Fmod.Library;
+        private readonly SoundHandle Handle;
 
-        public FmodSystem SystemObject { get; }
-
-        public Sound? Parent { get; internal set; } = null;
-
-        private string? name;
-        private Memory.SaferPointer? CustomRolloff3D = null; //Pointer to an unmanaged array of Vector
-        private readonly List<Sound>? Subsounds = null;
-        internal SoundGroup? soundGroup = null;
-
-        internal Sound(FmodSystem sys, IntPtr inst, bool ownsHandle = true) : base(inst, ownsHandle)
+        internal Sound(SoundHandle handle)
         {
-            SystemObject = sys;
+            Handle = handle;
+        }
 
-            if (!ownsHandle)
+        public void Dispose()
+        {
+            Release();
+        }
+
+        public void Release()
+        {
+            library.Sound_Release(Handle).CheckResult();
+        }
+
+        public FmodSystem SystemObject
+        {
+            get
             {
-                return;
-            }
-
-            int count;
-            library.Sound_GetNumSubSounds(inst, &count).CheckResult();
-
-            if (count != 0)
-            {
-                Subsounds = new List<Sound>(count);
-
-                for (int i = 0; i < count; ++i)
-                {
-                    library.Sound_GetSubSound(Handle, i, out IntPtr subsoundHandle).CheckResult();
-
-                    Subsounds.Add(new Sound(sys, subsoundHandle, false) { Parent = this });
-                }
+                SystemHandle handle;
+                library.Sound_GetSystemObject(Handle, &handle).CheckResult();
+                return handle;
             }
         }
 
-        protected override void ReleaseImpl()
+
+        public Sound Parent
         {
-            if (!IsSubsound)
+            get
             {
-                library.Sound_Release(Handle).CheckResult();
+                SoundHandle handle;
+                library.Sound_GetSubSoundParent(Handle, &handle).CheckResult();
+                return handle;
             }
         }
 
-        public bool IsSubsound => Parent != null;
+
+        public bool IsSubsound => Parent != default;
 
         public SoundLock Lock(uint offset, uint length)
         {
@@ -131,48 +115,25 @@ namespace FmodAudio
             library.Sound_Get3DConeSettings(Handle, out insideconeangle, out outsideconeangle, out outsidevolume).CheckResult();
         }
         
-        public unsafe Span<Vector3> GetCustomRolloff3D()
+        public void GetCustomRolloff3D(out Vector3* points, out int count)
         {
-            library.Sound_Get3DCustomRolloff(Handle, out IntPtr points, out int Number).CheckResult();
-
-            if (points == IntPtr.Zero)
-            {
-                return default;
-            }
-            else
-            {
-                return new Span<Vector3>((void*)points, Number);
-            }
+            library.Sound_Get3DCustomRolloff(Handle, out points, out count).CheckResult();
         }
 
-        public void SetCustomRolloff3D(ReadOnlySpan<Vector3> points)
+        public void Get3DCustomRolloff(out Vector3* points, out int count)
         {
-            int num = 0;
-            Memory.SaferPointer arrptr = FmodHelpers.AllocateCustomRolloff(points);
+            library.Sound_Get3DCustomRolloff(Handle, out points, out count).CheckResult();
+        }
 
-            if (arrptr != null)
-            {
-                num = points.Length;
-            }
-            else if(CustomRolloff3D == null)
-            {
-                return;
-            }
-
-            library.Sound_Set3DCustomRolloff(Handle, arrptr, num).CheckResult();
-
-            CustomRolloff3D = arrptr;
+        public void Set3DCustomRolloff(Vector3* points, int count)
+        {
+            library.Sound_Set3DCustomRolloff(Handle, points, count).CheckResult();
         }
         
         public int SubSoundCount
         {
             get
             {
-                if (Subsounds != null)
-                {
-                    return Subsounds.Count;
-                }
-
                 library.Sound_GetNumSubSounds(Handle, out int number).CheckResult();
 
                 return number;
@@ -181,40 +142,27 @@ namespace FmodAudio
 
         public Sound GetSubSound(int index)
         {
-            if (Subsounds != null)
-            {
-                return Subsounds[index];
-            }
-
             int total = SubSoundCount;
 
             if ((uint)index >= (uint)total)
                 throw new ArgumentOutOfRangeException(nameof(index));
             
-            library.Sound_GetSubSound(Handle, index, out IntPtr handle).CheckResult();
+            library.Sound_GetSubSound(Handle, index, out SoundHandle handle).CheckResult();
 
-            return new Sound(SystemObject, handle, false)
-            {
-                Parent = this
-            };
+            return handle;
         }
 
-        public unsafe string Name
+        public string Name
         {
             get
             {
-                if (name == null)
-                {
-                    const int buflen = FmodSystem.MaxInteropNameStringLength;
+                const int buflen = Fmod.MaxInteropNameStringLength;
 
-                    byte* buf = stackalloc byte[buflen];
+                byte* buf = stackalloc byte[buflen];
 
-                    library.Sound_GetName(Handle, buf, buflen).CheckResult();
+                library.Sound_GetName(Handle, buf, buflen).CheckResult();
 
-                    name = FmodHelpers.PtrToString(buf, buflen);
-                }
-
-                return name;
+                return FmodHelpers.BufferToString(buf, buflen);
             }
         }
 
@@ -240,13 +188,8 @@ namespace FmodAudio
             library.Sound_GetTag(Handle, name, index, out tag).CheckResult();
         }
 
-        public void GetOpenState(out OpenState openstate, out uint percentbuffered, out bool starving, out bool diskbusy)
+        public void GetOpenState(out OpenState openstate, out uint percentbuffered, out FmodBool starving, out FmodBool diskbusy)
         {
-            openstate = default;
-            percentbuffered = default;
-            starving = default;
-            diskbusy = default;
-
             library.Sound_GetOpenState(Handle, out openstate, out percentbuffered, out starving, out diskbusy).CheckResult();
         }
 
@@ -269,7 +212,7 @@ namespace FmodAudio
             if (blength == 0)
                 return 0;
 
-            if (buffer == null)
+            if (buffer == default)
                 throw new ArgumentNullException(nameof(buffer));
 
             return ReadDataInternal((void*)buffer, (uint)blength);
@@ -293,22 +236,19 @@ namespace FmodAudio
             library.Sound_SeekData(Handle, pcm).CheckResult();
         }
 
-        public SoundGroup? SoundGroup
+        public SoundGroup SoundGroup
         {
             get
             {
-                library.Sound_GetSoundGroup(Handle, out IntPtr handle).CheckResult();
+                SoundGroupHandle handle;
+                library.Sound_GetSoundGroup(Handle, &handle).CheckResult();
 
-                return handle == default ? null : (SoundGroup.FromHandle(handle) ?? new SoundGroup(SystemObject, handle, false));
+                return handle;
             }
 
             set
             {
-                var handle = value != null ? value.Handle : IntPtr.Zero;
-
-                library.Sound_SetSoundGroup(Handle, handle).CheckResult();
-
-                soundGroup = value;
+                library.Sound_SetSoundGroup(Handle, value).CheckResult();
             }
         }
 
@@ -322,56 +262,48 @@ namespace FmodAudio
             }
         }
 
-        public SyncPoint GetSyncPoint(int index)
+        public SyncPointHandle GetSyncPoint(int index)
         {
-            library.Sound_GetSyncPoint(Handle, index, out IntPtr handle).CheckResult();
+            library.Sound_GetSyncPoint(Handle, index, out SyncPointHandle handle).CheckResult();
 
-            return new SyncPoint(this, handle);
+            return handle;
         }
         
-        public unsafe void GetSyncPointInfo(SyncPoint point, TimeUnit unit, out string name, out uint offset)
+        public unsafe void GetSyncPointInfo(SyncPointHandle point, TimeUnit unit, out string name, out uint offset)
         {
-            const int buflen = FmodSystem.MaxInteropNameStringLength;
+            const int buflen = Fmod.MaxInteropNameStringLength;
             
-            if(point == null)
+            if (point.IsNull())
             {
                 throw new ArgumentNullException(nameof(point));
-            }
-            else if(point.ParentSound != this)
-            {
-                throw new ArgumentException("SyncPoint is not of this Sound object.");
             }
 
             byte* buffer = stackalloc byte[buflen];
 
-            library.Sound_GetSyncPointInfo(Handle, point.Handle, buffer, buflen, out offset, unit).CheckResult();
+            library.Sound_GetSyncPointInfo(Handle, point, buffer, buflen, out offset, unit).CheckResult();
 
-            name = FmodHelpers.PtrToString(buffer, buflen);
+            name = FmodHelpers.BufferToString(buffer, buflen);
         }
 
-        public unsafe SyncPoint CreateSyncPoint(string name, TimeUnit unit, uint offset)
+        public unsafe SyncPointHandle CreateSyncPoint(string name, TimeUnit unit, uint offset)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            library.Sound_AddSyncPoint(Handle, offset, unit, name, out IntPtr handle).CheckResult();
-            return new SyncPoint(this, handle);
+            library.Sound_AddSyncPoint(Handle, offset, unit, name, out SyncPointHandle handle).CheckResult();
+            return handle;
         }
 
-        public void DeleteSyncPoint(SyncPoint point)
+        public void DeleteSyncPoint(SyncPointHandle point)
         {
-            if (point == null)
+            if (point.IsNull())
             {
                 throw new ArgumentNullException(nameof(point));
             }
-            else if (point.ParentSound != this)
-            {
-                throw new ArgumentException("SyncPoint is not of this Sound object.");
-            }
 
-            library.Sound_DeleteSyncPoint(Handle, point.Handle).CheckResult();
+            library.Sound_DeleteSyncPoint(Handle, point).CheckResult();
         }
 
         // Functions also in Channel class but here they are the 'default' to save having to change it in Channel all the time.
@@ -453,20 +385,45 @@ namespace FmodAudio
             }
         }
 
-        internal override unsafe IntPtr UserData
+        public unsafe IntPtr UserData
         {
             get
             {
                 IntPtr userData;
-                Fmod.UserDataMethods.Sound_GetUserData(Handle, &userData).CheckResult();
+                library.Sound_GetUserData(Handle, &userData).CheckResult();
 
                 return userData;
             }
 
             set
             {
-                Fmod.UserDataMethods.Sound_SetUserData(Handle, value).CheckResult();
+                library.Sound_SetUserData(Handle, value).CheckResult();
             }
+        }
+
+        public static bool operator ==(Sound l, Sound r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(Sound l, Sound r)
+        {
+            return l.Handle != r.Handle;
+        }
+
+        public override int GetHashCode()
+        {
+            return Handle.GetHashCode();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Sound sound && this.Equals(sound);
+        }
+
+        public bool Equals(Sound sound)
+        {
+            return Handle == sound.Handle;
         }
 
         public sealed class SoundLock
@@ -535,18 +492,6 @@ namespace FmodAudio
             private static void ThrowInvalid()
             {
                 throw new InvalidOperationException("Sound Lock no longer valid");
-            }
-        }
-
-        public sealed class SyncPoint
-        {
-            public Sound ParentSound { get; }
-            internal IntPtr Handle;
-
-            internal SyncPoint(Sound parent, IntPtr handle)
-            {
-                ParentSound = parent;
-                Handle = handle;
             }
         }
     }

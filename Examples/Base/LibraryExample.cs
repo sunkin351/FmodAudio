@@ -1,3 +1,4 @@
+#pragma warning disable IDE0057, CA1816
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +30,6 @@ namespace Examples.Base
             ConsoleUpdateStart = 0;
 
             System = Fmod.CreateSystem();
-            TestVersion(System);
         }
 
         public abstract void Run();
@@ -78,7 +78,8 @@ namespace Examples.Base
 
         public virtual void Dispose()
         {
-            System?.Dispose();
+            if (System != default)
+                System.Dispose();
         }
 
         protected void RegisterCommand(ConsoleKey key, Action action)
@@ -156,15 +157,16 @@ namespace Examples.Base
             Span<char> buffer = stackalloc char[50];
 
             PreText.AsSpan().CopyTo(buffer);
+            int length = PreText.Length;
 
-            int count = RenderTime(ms, buffer.Slice(PreText.Length));
+            length += RenderTime(ms, buffer.Slice(length));
 
-            buffer[PreText.Length + count] = '/';
-            count += 1;
+            buffer[length] = '/';
+            length += 1;
 
-            count += RenderTime(totalms, buffer.Slice(PreText.Length + count));
+            length += RenderTime(totalms, buffer.Slice(length));
 
-            DrawText(buffer.Slice(0, PreText.Length + count));
+            DrawText(buffer.Slice(0, length));
         }
 
         protected ref struct BufferedStringBuilder
@@ -193,10 +195,12 @@ namespace Examples.Base
                     contentLength += availableRoom;
                     return availableRoom;
                 }
-
-                input.CopyTo(Buffer.Slice(contentLength));
-                contentLength += input.Length;
-                return input.Length;
+                else
+                {
+                    input.CopyTo(Buffer.Slice(contentLength));
+                    contentLength += input.Length;
+                    return input.Length;
+                }
             }
 
             public bool WriteToBuffer(char input)
@@ -228,6 +232,8 @@ namespace Examples.Base
             public void Clear() => contentLength = 0;
 
             public ReadOnlySpan<char> CurrentContent => Buffer.Slice(0, contentLength);
+
+            public int Written => contentLength;
         }
     }
 }

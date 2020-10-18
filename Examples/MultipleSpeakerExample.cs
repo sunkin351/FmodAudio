@@ -230,9 +230,12 @@ namespace Examples
 
         public override void Dispose()
         {
-            sound1?.Dispose();
-            sound2?.Dispose();
+            if (sound1 != default)
+                sound1.Dispose();
 
+            if (sound2 != default)
+                sound2.Dispose();
+            
             base.Dispose();
         }
 

@@ -1,40 +1,38 @@
-﻿#pragma warning disable IDE0059
+﻿#pragma warning disable IDE0059, CS0660, CS0661
 
 using System;
-using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
-    using Interop;
+    using Base;
 
-    public class Geometry : HandleBase
+    public readonly struct Geometry : IDisposable
     {
-        internal static unsafe Geometry FromHandle(IntPtr handle)
+        public static implicit operator Geometry(GeometryHandle handle)
         {
-            IntPtr value;
-            Fmod.UserDataMethods.Geometry_GetUserData(handle, &value).CheckResult();
-
-            if (value != default)
-            {
-                var gchandle = (GCHandle)value;
-
-                Debug.Assert(gchandle.IsAllocated && gchandle.Target is Geometry);
-
-                return (Geometry)gchandle.Target;
-            }
-
-            return new Geometry(handle, false);
+            return new Geometry(handle);
         }
 
-        private readonly NativeLibrary library = Fmod.Library;
-
-        internal Geometry(IntPtr handle, bool ownsHandle = true) : base(handle, ownsHandle)
+        public static implicit operator GeometryHandle(Geometry geometry)
         {
+            return geometry.Handle;
         }
 
-        protected override void ReleaseImpl()
+        private static readonly FmodLibrary library = Fmod.Library;
+        private readonly GeometryHandle Handle;
+
+        internal Geometry(GeometryHandle handle)
+        {
+            Handle = handle;
+        }
+
+        public void Dispose()
+        {
+            Release();
+        }
+
+        public void Release()
         {
             library.Geometry_Release(Handle).CheckResult();
         }
@@ -89,7 +87,7 @@ namespace FmodAudio
             library.Geometry_SetPolygonAttributes(Handle, index, directOcclusion, reverbOcclusion, doubleSided).CheckResult();
         }
 
-        public void GetPolygonAttributes(int index, out float directOcclusion, out float reverbOcclusion, out bool doubleSided)
+        public void GetPolygonAttributes(int index, out float directOcclusion, out float reverbOcclusion, out FmodBool doubleSided)
         {
             library.Geometry_GetPolygonAttributes(Handle, index, out directOcclusion, out reverbOcclusion, out doubleSided).CheckResult();
         }
@@ -98,7 +96,7 @@ namespace FmodAudio
         {
             get
             {
-                library.Geometry_GetActive(Handle, out bool value).CheckResult();
+                library.Geometry_GetActive(Handle, out FmodBool value).CheckResult();
                 return value;
             }
 
@@ -197,19 +195,29 @@ namespace FmodAudio
             return data;
         }
 
-        internal override unsafe IntPtr UserData
+        public unsafe IntPtr UserData
         {
             get
             {
                 IntPtr value;
-                Fmod.UserDataMethods.Geometry_GetUserData(Handle, &value).CheckResult();
+                library.Geometry_GetUserData(Handle, &value).CheckResult();
                 return value;
             }
 
             set
             {
-                Fmod.UserDataMethods.Geometry_SetUserData(Handle, value).CheckResult();
+                library.Geometry_SetUserData(Handle, value).CheckResult();
             }
+        }
+
+        public static bool operator ==(Geometry l, Geometry r)
+        {
+            return l.Handle == r.Handle;
+        }
+
+        public static bool operator !=(Geometry l, Geometry r)
+        {
+            return l.Handle != r.Handle;
         }
     }
 }

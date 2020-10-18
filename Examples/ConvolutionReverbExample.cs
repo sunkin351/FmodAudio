@@ -1,16 +1,17 @@
 ﻿using FmodAudio;
-using FmodAudio.Dsp;
+using FmodAudio.DigitalSignalProcessing;
 using System;
 using System.Runtime.InteropServices;
 
 namespace Examples
 {
     using Base;
+    using FmodAudio.Base;
 
-    public class ConvolutionReverbExample : Example
+    public unsafe class ConvolutionReverbExample : Example
     {
         private ChannelGroup reverbGroup, mainGroup;
-        private DSP reverbUnit;
+        private Dsp reverbUnit;
         private Sound sound;
 
         private IntPtr IRData;
@@ -63,7 +64,7 @@ namespace Examples
             const int ReverbParamIR = 0;
             const int ReverbParamDry = 2;
 
-            reverbUnit.SetParameterData(ReverbParamIR, irData, (uint)irDataLength);
+            reverbUnit.SetParameterData(ReverbParamIR, irData.ToPointer(), (uint)irDataLength);
             reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
 
             tmpsound.Release();
@@ -75,9 +76,9 @@ namespace Examples
         {
             Channel channel = System.PlaySound(sound, mainGroup, true);
 
-            DSP channelHead = channel.GetDSP(ChannelControlDSPIndex.DspHead);
+            var channelHead = channel.GetDSP(ChannelControlDSPIndex.DspHead);
 
-            DSPConnection reverbConnection = reverbUnit.AddInput(channelHead, DSPConnectionType.Send);
+            DspConnection reverbConnection = reverbUnit.AddInput(channelHead, DSPConnectionType.Send);
 
             channel.Paused = false;
 
@@ -107,10 +108,12 @@ namespace Examples
 
         public override void Dispose()
         {
-            sound?.Dispose();
+            if (sound != default)
+                sound.Dispose();
+
             mainGroup?.Dispose();
 
-            if (reverbUnit != null && reverbGroup != null)
+            if (reverbUnit != default && reverbGroup != null)
             {
                 reverbGroup.RemoveDSP(reverbUnit);
                 reverbGroup.Dispose();
@@ -118,8 +121,9 @@ namespace Examples
             }
             else
             {
-                reverbGroup?.Dispose();
-                reverbUnit?.Dispose();
+                if (reverbGroup != null) reverbGroup.Dispose();
+
+                if (reverbUnit != default) reverbUnit.Dispose();
             }
 
             base.Dispose();

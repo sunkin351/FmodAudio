@@ -1,299 +1,147 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace FmodAudio
 {
-    using Dsp;
-    using Interop;
+    using Base;
 
-    public abstract class ChannelControl : HandleBase
+    public unsafe abstract class ChannelControl
     {
-        protected readonly NativeLibrary library;
-        public FmodSystem SystemObject { get; }
+        protected readonly FmodLibrary library = Fmod.Library;
 
-        protected ChannelControl(FmodSystem sys, IntPtr handle, bool ownsHandle) : base(handle, ownsHandle)
+        protected readonly IntPtr Handle;
+
+        protected ChannelControl(ChannelHandle handle)
         {
-            SystemObject = sys;
-            library = sys.library;
+            Debug.Assert(this is Channel);
+            Handle = handle.Handle;
         }
 
-        internal ChannelControl(FmodSystem sys, IntPtr handle, Memory.SaferPointer customRolloff) : this(sys, handle, true)
+        protected ChannelControl(ChannelGroupHandle handle)
         {
-            CustomRolloff = customRolloff;
+            Debug.Assert(this is ChannelGroup);
+            Handle = handle.Handle;
         }
 
         #region General Control Functionality for Channels and ChannelGroups
 
-        public void Stop()
-        {
-            library.ChannelGroup_Stop(Handle).CheckResult();
-        }
+        public abstract void Stop();
 
-        public bool Paused
-        {
-            get
-            {
-                library.ChannelGroup_GetPaused(Handle, out bool value).CheckResult();
+        public abstract bool Paused { get; set; }
 
-                return value;
-            }
+        public abstract float Volume { get; set; }
 
-            set
-            {
-                library.ChannelGroup_SetPaused(Handle, value).CheckResult();
-            }
-        }
+        public abstract bool VolumeRamp { get; set; }
 
-        public float Volume
-        {
-            get
-            {
-                library.ChannelGroup_GetVolume(Handle, out float value).CheckResult();
+        public abstract float Audibility { get; }
 
-                return value;
-            }
+        public abstract float Pitch { get; set; }
 
-            set
-            {
-                library.ChannelGroup_SetVolume(Handle, value).CheckResult();
-            }
-        }
+        public abstract bool Mute { get; set; }
 
-        public bool VolumeRamp
-        {
-            get
-            {
-                library.ChannelGroup_GetVolumeRamp(Handle, out bool value).CheckResult();
+        public abstract void GetReverbProperties(int instance, out float wet);
 
-                return value;
-            }
+        public abstract void SetReverbProperties(int instance, float wet);
 
-            set
-            {
-                library.ChannelGroup_SetVolumeRamp(Handle, value).CheckResult();
-            }
-        }
+        public abstract float LowPassGain { get; set; }
 
-        public float Audibility
-        {
-            get
-            {
-                library.ChannelGroup_GetAudibility(Handle, out float value).CheckResult();
+        public abstract Mode Mode { get; set; }
 
-                return value;
-            }
-        }
+        public abstract void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
 
-        public float Pitch
-        {
-            get
-            {
-                library.ChannelGroup_GetPitch(Handle, out float value).CheckResult();
+        public abstract bool IsPlaying { get; }
 
-                return value;
-            }
-
-            set
-            {
-                library.ChannelGroup_SetPitch(Handle, value).CheckResult();
-            }
-        }
-
-        public bool Mute
-        {
-            get
-            {
-                library.ChannelGroup_GetMute(Handle, out bool value).CheckResult();
-
-                return value;
-            }
-
-            set
-            {
-                library.ChannelGroup_SetMute(Handle, value).CheckResult();
-            }
-        }
-
-        public void GetReverbProperties(int instance, out float wet)
-        {
-            library.ChannelGroup_GetReverbProperties(Handle, instance, out wet).CheckResult();
-        }
-
-        public void SetReverbProperties(int instance, float wet)
-        {
-            library.ChannelGroup_SetReverbProperties(Handle, instance, wet).CheckResult();
-        }
-
-        public float LowPassGain
-        {
-            get
-            {
-                library.ChannelGroup_GetLowPassGain(Handle, out float value).CheckResult();
-
-                return value;
-            }
-
-            set
-            {
-                library.ChannelGroup_SetLowPassGain(Handle, value).CheckResult();
-            }
-        }
-
-        public Mode Mode
-        {
-            get
-            {
-                library.ChannelGroup_GetMode(Handle, out Mode value).CheckResult();
-
-                return value;
-            }
-
-            set
-            {
-                library.ChannelGroup_SetMode(Handle, value).CheckResult();
-            }
-        }
-        
-        ChannelCallback Callback;
-
-        public void SetCallback(ChannelCallback callback)
-        {
-            if (callback == Callback)
-            {
-                return;
-            }
-
-            library.ChannelGroup_SetCallback(Handle, callback).CheckResult();
-
-            Callback = callback;
-        }
-
-        public bool IsPlaying
-        {
-            get
-            {
-                var res = library.ChannelGroup_IsPlaying(Handle, out bool value);
-
-                if (res != Result.Ok)
-                {
-                    if (res == Result.Err_Invalid_Handle)
-                        return false;
-
-                    res.CheckResult();
-                }
-
-                return value;
-            }
-        }
 
         #endregion
 
         #region Panning and Level adjustment
 
-        public void SetPan(float pan)
-        {
-            library.ChannelGroup_SetPan(Handle, pan).CheckResult();
-        }
+        public abstract void SetPan(float pan);
 
-        public void SetMixLevelsOutput(float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright)
-        {
-            library.ChannelGroup_SetMixLevelsOutput(Handle, frontleft, frontright, center, lfe, surroundleft, surroundright, backleft, backright).CheckResult();
-        }
+        public abstract void SetMixLevelsOutput(float frontleft, float frontright, float center, float lfe, float surroundleft, float surroundright, float backleft, float backright);
 
-        public unsafe void SetMixLevelsInput(Span<float> mixLevels)
-        {
-            Result res;
+        public abstract unsafe void SetMixLevelsInput(ReadOnlySpan<float> mixLevels);
 
-            fixed(float* levels = mixLevels)
-                res = library.ChannelGroup_SetMixLevelsInput(Handle, levels, mixLevels.Length);
-
-            res.CheckResult();
-        }
+        public abstract unsafe void SetMixMatrix(float* matrix, int outChannels, int inChannels, int inChannelHop = 0);
 
         public unsafe void SetMixMatrix(ReadOnlySpan<float> matrix, int outChannels, int inChannels, int inChannelHop = 0)
         {
-            Result res;
+            if (outChannels * inChannels > matrix.Length)
+                throw new ArgumentException("");
 
-            if(matrix.Length < (outChannels * inChannels))
+            fixed (float* pMatrix = matrix)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(outChannels)}, {nameof(inChannels)}", "matrix length needs to be at least 'outChannels * inChannels'");
+                SetMixMatrix(pMatrix, outChannels, inChannels, inChannelHop);
             }
-
-            fixed(float* mx = matrix)
-            {
-                res = library.ChannelGroup_SetMixMatrix(Handle, mx, outChannels, inChannels, inChannelHop);
-            }
-
-            res.CheckResult();
         }
 
-        public unsafe void GetMixMatrix(out float[] matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
+        public abstract unsafe void GetMixMatrix(float* matrix, int* outChannels, int* inChannels, int inChannelHop = 0);
+
+        public unsafe bool TryGetMixMatrix(Span<float> matrix, out int outChannels, out int inChannels, int inChannelHop = 0)
         {
             int Out, In;
 
-            library.ChannelGroup_GetMixMatrix(Handle, null, &Out, &In, inChannelHop).CheckResult();
+            GetMixMatrix(null, &Out, &In, inChannelHop);
 
-            var tmp = new float[Out * In];
-
-            fixed(float* mat = tmp)
+            if (matrix.Length < Out * In)
             {
-                library.ChannelGroup_GetMixMatrix(Handle, mat, &Out, &In, inChannelHop).CheckResult();
+                outChannels = 0;
+                inChannels = 0;
+                return false;
             }
 
-            matrix = tmp;
+            fixed(float* mat = matrix)
+            {
+                GetMixMatrix(mat, &Out, &In, inChannelHop);
+            }
+
             outChannels = Out;
             inChannels = In;
+            return true;
         }
 
         #endregion
 
         #region Clock based functionality
 
-        public void GetDSPClock(out ulong dspClock, out ulong parentClock)
-        {
-            library.ChannelGroup_GetDSPClock(Handle, out dspClock, out parentClock).CheckResult();
-        }
+        public abstract void GetDSPClock(out ulong dspClock, out ulong parentClock);
+
+        public abstract void SetDelay(ulong dspclock_start, ulong dspclock_end, FmodBool stopchannels);
 
         public void SetDelay(ulong dspclock_start, ulong dspclock_end, bool stopchannels = true)
         {
-            library.ChannelGroup_SetDelay(Handle, dspclock_start, dspclock_end, stopchannels).CheckResult();
+            SetDelay(dspclock_start, dspclock_end, (FmodBool)stopchannels);
         }
 
-        public void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out bool stopchannels)
-        {
-            library.ChannelGroup_GetDelay(Handle, out dspclock_start, out dspclock_end, out stopchannels).CheckResult();
-        }
+        public abstract void GetDelay(out ulong dspclock_start, out ulong dspclock_end, out FmodBool stopchannels);
 
         public void GetDelay(out ulong dspclock_start, out ulong dspclock_end)
         {
             GetDelay(out dspclock_start, out dspclock_end, out _);
         }
 
-        public void AddFadePoint(ulong dspClock, float volume)
-        {
-            library.ChannelGroup_AddFadePoint(Handle, dspClock, volume).CheckResult();
-        }
+        public abstract void AddFadePoint(ulong dspClock, float volume);
 
-        public void SetFadePointRamp(ulong dspClock, float volume)
-        {
-            library.ChannelGroup_SetFadePointRamp(Handle, dspClock, volume).CheckResult();
-        }
+        public abstract void SetFadePointRamp(ulong dspClock, float volume);
 
-        public void RemoveFadePoints(ulong dspClockStart, ulong dspClockEnd)
-        {
-            library.ChannelGroup_RemoveFadePoints(Handle, dspClockStart, dspClockEnd).CheckResult();
-        }
+        public abstract void RemoveFadePoints(ulong dspClockStart, ulong dspClockEnd);
 
-        public unsafe void GetFadePoints(out ulong[] dspClocks, out float[] volumes)
+        public abstract unsafe void GetFadePoints(uint* count, ulong* dspClocks, float* volumes);
+
+        public unsafe bool TryGetFadePoints(out ulong[]? dspClocks, out float[]? volumes)
         {
-            dspClocks = null;
-            volumes = null;
+            Unsafe.SkipInit(out dspClocks);
+            Unsafe.SkipInit(out volumes);
 
             uint pointCount = 0;
-            library.ChannelGroup_GetFadePoints(Handle, &pointCount, null, null).CheckResult();
+            GetFadePoints(&pointCount, null, null);
 
             if (pointCount == 0)
-                return;
+            {
+                return false;
+            }
 
             var clocks = new ulong[pointCount];
             var vols = new float[pointCount];
@@ -301,238 +149,76 @@ namespace FmodAudio
             fixed(ulong* t0 = clocks)
             fixed(float* t1 = vols)
             {
-                library.ChannelGroup_GetFadePoints(Handle, &pointCount, t0, t1).CheckResult();
+                GetFadePoints(&pointCount, t0, t1);
             }
 
             dspClocks = clocks;
             volumes = vols;
+            return true;
         }
 
         #endregion
 
         #region DSP Effects
 
-        public DSP GetDSP(int index)
-        {
-            library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
+        public abstract DspHandle GetDSP(int index);
 
-            return DSP.FromHandle(handle);
-        }
+        public abstract DspHandle GetDSP(ChannelControlDSPIndex index);
 
-        public DSP GetDSP(ChannelControlDSPIndex index)
-        {
-            library.ChannelGroup_GetDSP(Handle, index, out IntPtr handle).CheckResult();
+        public abstract void AddDSP(int index, DspHandle dsp);
 
-            return DSP.FromHandle(handle);
-        }
+        public abstract void AddDSP(ChannelControlDSPIndex index, DspHandle dsp);
 
-        public void AddDSP(int index, DSP dsp)
-        {
-            if (dsp is null)
-                throw new ArgumentNullException(nameof(dsp));
+        public abstract void RemoveDSP(DspHandle dsp);
 
-            library.ChannelGroup_AddDSP(Handle, index, dsp.Handle).CheckResult();
-        }
+        public abstract int DspCount { get; }
 
-        public void AddDSP(ChannelControlDSPIndex index, DSP dsp)
-        {
-            if (dsp is null)
-                throw new ArgumentNullException(nameof(dsp));
+        public abstract void SetDSPIndex(DspHandle dsp, int index);
 
-            library.ChannelGroup_AddDSP(Handle, index, dsp.Handle).CheckResult();
-        }
-
-        public void RemoveDSP(DSP dsp)
-        {
-            if (dsp is null)
-                throw new ArgumentNullException(nameof(dsp));
-
-            library.ChannelGroup_RemoveDSP(Handle, dsp.Handle).CheckResult();
-        }
-
-        public int DSPCount
-        {
-            get
-            {
-                library.ChannelGroup_GetNumDSPs(Handle, out int value).CheckResult();
-                return value;
-            }
-        }
-
-        public void SetDSPIndex(DSP dsp, int index)
-        {
-            if (dsp is null)
-                throw new ArgumentNullException(nameof(dsp));
-
-            library.ChannelGroup_SetDSPIndex(Handle, dsp.Handle, index).CheckResult();
-        }
-
-        public int GetDSPIndex(DSP dsp)
-        {
-            if (dsp is null)
-                throw new ArgumentNullException(nameof(dsp));
-
-            library.ChannelGroup_GetDSPIndex(Handle, dsp.Handle, out int index).CheckResult();
-            return index;
-        }
+        public abstract int GetDSPIndex(DspHandle dsp);
 
         #endregion
 
         #region 3D Effects
 
-        public void Set3DAttributes(in Vector3 pos, in Vector3 vel, in Vector3 altPanPos)
-        {
-            library.ChannelGroup_Set3DAttributes(Handle, in pos, in vel, in altPanPos).CheckResult();
-        }
+        public abstract void Set3DAttributes(in Vector3 pos, in Vector3 vel, in Vector3 altPanPos);
 
-        public void Get3DAttributes(out Vector3 pos, out Vector3 vel, out Vector3 altPanPos)
-        {
-            library.ChannelGroup_Get3DAttributes(Handle, out pos, out vel, out altPanPos).CheckResult();
-        }
+        public abstract void Get3DAttributes(out Vector3 pos, out Vector3 vel, out Vector3 altPanPos);
 
-        public void Set3DMinMaxDistance(float minDistance, float maxDistance)
-        {
-            library.ChannelGroup_Set3DMinMaxDistance(Handle, minDistance, maxDistance).CheckResult();
-        }
+        public abstract void Set3DMinMaxDistance(float minDistance, float maxDistance);
 
-        public void Get3DMinMaxDistance(out float minDistance, out float maxDistance)
-        {
-            library.ChannelGroup_Get3DMinMaxDistance(Handle, out minDistance, out maxDistance).CheckResult();
-        }
+        public abstract void Get3DMinMaxDistance(out float minDistance, out float maxDistance);
 
-        public void Set3DConeSettings(float insideConeAngle, float outsideConeAngle, float outsideVolume)
-        {
-            library.ChannelGroup_Set3DConeSettings(Handle, insideConeAngle, outsideConeAngle, outsideVolume).CheckResult();
-        }
+        public abstract void Set3DConeSettings(float insideConeAngle, float outsideConeAngle, float outsideVolume);
 
-        public void Get3DConeSettings(out float insideConeAngle, out float outsideConeAngle, out float outsideVolume)
-        {
-            library.ChannelGroup_Get3DConeSettings(Handle, out insideConeAngle, out outsideConeAngle, out outsideVolume).CheckResult();
-        }
+        public abstract void Get3DConeSettings(out float insideConeAngle, out float outsideConeAngle, out float outsideVolume);
 
-        public void Set3DConeOrientation(in Vector3 orientation)
-        {
-            library.ChannelGroup_Set3DConeOrientation(Handle, in orientation).CheckResult();
-        }
+        public abstract void Set3DConeOrientation(in Vector3 orientation);
 
-        public void Get3DConeOrientation(out Vector3 orientation)
-        {
-            library.ChannelGroup_Get3DConeOrientation(Handle, out orientation).CheckResult();
-        }
+        public abstract void Get3DConeOrientation(out Vector3 orientation);
 
-        private Memory.SaferPointer CustomRolloff = null;
+        public abstract unsafe void Get3DCustomRolloff(out Vector3* points, out int count);
 
-        public void Set3DCustomRolloff(ReadOnlySpan<Vector3> rolloff)
-        {
-            if (this is Channel)
-                throw new NotSupportedException();
+        public abstract unsafe void Set3DCustomRolloff(Vector3* points, int count);
 
-            var ptr = FmodHelpers.AllocateCustomRolloff(rolloff);
-            int count = 0;
+        public abstract void Set3DOcclusion(float directOcclusion, float reverbOcclusion);
 
-            if (ptr != null)
-            {
-                count = rolloff.Length;
-            }
-            else if (CustomRolloff == null)
-            {
-                return;
-            }
-
-            library.ChannelGroup_Set3DCustomRolloff(Handle, ptr, count).CheckResult();
-
-            CustomRolloff = ptr;
-        }
-
-        public unsafe ReadOnlySpan<Vector3> Get3DCustomRolloff()
-        {
-            library.ChannelGroup_Get3DCustomRolloff(Handle, out IntPtr points, out int pointCount).CheckResult();
-
-            if (points == IntPtr.Zero)
-                return default;
-
-            return new ReadOnlySpan<Vector3>((void*)points, pointCount);
-        }
-
-        public void Set3DOcclusion(float directOcclusion, float reverbOcclusion)
-        {
-            library.ChannelGroup_Set3DOcclusion(Handle, directOcclusion, reverbOcclusion).CheckResult();
-        }
-
-        public void Get3DOcclusion(out float directOcclusion, out float reverbOcclusion)
-        {
-            library.ChannelGroup_Get3DOcclusion(Handle, out directOcclusion, out reverbOcclusion).CheckResult();
-        }
+        public abstract void Get3DOcclusion(out float directOcclusion, out float reverbOcclusion);
 
         /// <summary>
         /// value is the Spread Angle.
         /// </summary>
-        public float Spread
-        {
-            get
-            {
-                library.ChannelGroup_Get3DSpread(Handle, out float Angle).CheckResult();
+        public abstract float Spread { get; set; }
 
-                return Angle;
-            }
-            set
-            {
-                library.ChannelGroup_Set3DSpread(Handle, value).CheckResult();
-            }
-        }
+        public abstract float Level3D { get; set; }
 
-        public float Level3D
-        {
-            get
-            {
-                library.ChannelGroup_Get3DLevel(Handle, out float level).CheckResult();
+        public abstract float DopplerLevel3D { get; set; }
 
-                return level;
-            }
-            set
-            {
-                library.ChannelGroup_Set3DLevel(Handle, value).CheckResult();
-            }
-        }
+        public abstract void Set3DDistanceFilter(FmodBool custom, float customLevel, float centerFreq);
 
-        public float DopplerLevel3D
-        {
-            get
-            {
-                library.ChannelGroup_Get3DDopplerLevel(Handle, out float level).CheckResult();
+        public abstract void Get3DDistanceFilter(out FmodBool custom, out float customLevel, out float centerFreq);
 
-                return level;
-            }
-            set
-            {
-                library.ChannelGroup_Set3DDopplerLevel(Handle, value).CheckResult();
-            }
-        }
-
-        public void Set3DDistanceFilter(bool custom, float customLevel, float centerFreq)
-        {
-            library.ChannelGroup_Set3DDistanceFilter(Handle, custom, customLevel, centerFreq).CheckResult();
-        }
-
-        public void Get3DDistanceFilter(out bool custom, out float customLevel, out float centerFreq)
-        {
-            library.ChannelGroup_Get3DDistanceFilter(Handle, out custom, out customLevel, out centerFreq).CheckResult();
-        }
-
-        internal override unsafe IntPtr UserData
-        {
-            get
-            {
-                IntPtr value;
-                Fmod.UserDataMethods.ChannelGroup_GetUserData(Handle, &value).CheckResult();
-
-                return value;
-            }
-            set
-            {
-                Fmod.UserDataMethods.ChannelGroup_SetUserData(Handle, value).CheckResult();
-            }
-        }
+        public abstract unsafe IntPtr UserData { get; set; }
 
         #endregion
     }

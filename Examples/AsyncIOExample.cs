@@ -1,14 +1,15 @@
-﻿using FmodAudio;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Runtime.InteropServices;
+using System.Threading;
+using FmodAudio;
 
 namespace Examples
 {
     using Base;
+    using FmodAudio.Base;
 
     public unsafe class AsyncIOExample : Example
     {
@@ -26,10 +27,10 @@ namespace Examples
         {
             RegisterCommand(ConsoleKey.D1, () =>
             {
-                if (sound != null)
+                if (sound != default)
                 {
                     sound.Release();
-                    sound = null;
+                    sound = default;
                     Log("Released Sound");
                 }
             });
@@ -45,14 +46,14 @@ namespace Examples
 
             System.SetStreamBufferSize(32768, TimeUnit.RAWBytes);
 
-            System.SetFileSystem(MyOpen, MyClose, MyRead, MySeek, MyAsyncRead, MyAsyncCancel, 2048); //Experimental
+            //System.SetFileSystem(MyOpen, MyClose, MyRead, MySeek, MyAsyncRead, MyAsyncCancel, 2048); //Experimental
 
             sound = System.CreateStream(MediaPath("wave.mp3"), Mode.Loop_Normal | Mode._2D | Mode.IgnoreTags);
         }
 
         public override void Run()
         {
-            var channel = System.PlaySound(sound);
+            Channel channel = System.PlaySound(sound);
 
             do
             {
@@ -60,7 +61,7 @@ namespace Examples
 
                 if (sound != null)
                 {
-                    sound.GetOpenState(out _, out _, out bool starving, out _);
+                    sound.GetOpenState(out _, out _, out FmodBool starving, out _);
 
                     if (starving)
                     {
@@ -89,7 +90,9 @@ namespace Examples
 
         public override void Dispose()
         {
-            sound?.Dispose(); //Dispose if not null
+            if (sound != default)
+                sound.Dispose(); //Dispose if not null
+            
             base.Dispose();
 
             ThreadContinue = false;
