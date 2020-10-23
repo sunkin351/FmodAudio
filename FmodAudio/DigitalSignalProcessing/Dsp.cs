@@ -4,7 +4,7 @@ using FmodAudio.Base;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
-    [EqualityGeneration]
+    [EqualityBoilerplate]
     public unsafe partial struct Dsp : IDisposable, IEquatable<Dsp>
     {
         public static implicit operator Dsp(DspHandle handle)

@@ -8,7 +8,7 @@ using FmodAudio.Base;
 namespace FmodAudio
 {
     [EqualityBoilerplate]
-    public readonly struct Geometry : IDisposable
+    public readonly partial struct Geometry : IDisposable, IEquatable<Geometry>
     {
         public static implicit operator Geometry(GeometryHandle handle)
         {
@@ -18,6 +18,16 @@ namespace FmodAudio
         public static implicit operator GeometryHandle(Geometry geometry)
         {
             return geometry.Handle;
+        }
+
+        public bool Equals(Geometry other)
+        {
+            return Handle == other.Handle;
+        }
+
+        public override int GetHashCode()
+        {
+            return Handle.GetHashCode();
         }
 
         private static readonly FmodLibrary library = Fmod.Library;
@@ -209,16 +219,6 @@ namespace FmodAudio
             {
                 library.Geometry_SetUserData(Handle, value).CheckResult();
             }
-        }
-
-        public static bool operator ==(Geometry l, Geometry r)
-        {
-            return l.Handle == r.Handle;
-        }
-
-        public static bool operator !=(Geometry l, Geometry r)
-        {
-            return l.Handle != r.Handle;
         }
     }
 }
