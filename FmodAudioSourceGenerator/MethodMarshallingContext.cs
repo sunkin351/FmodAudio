@@ -46,7 +46,7 @@ namespace FmodAudioSourceGenerator
                 WrapperSymbols.Add(symbol);
             }
 
-            FmodBoolType = state.Context.Compilation.GetTypeByMetadataName("FmodAudio.Base.FmodBool");
+            FmodBoolType = state.Compilation.GetTypeByMetadataName("FmodAudio.Base.FmodBool");
         }
 
         public FunctionPointerTypeSyntax GenerateFunctionPointerType(IMethodSymbol method)
@@ -129,8 +129,14 @@ namespace FmodAudioSourceGenerator
                 )
             );
 
+            var revisedParameterList = SyntaxFactory.ParameterList(
+                SyntaxFactory.SeparatedList(
+                    syntax.ParameterList.Parameters.Select(param => param.WithDefault(null))
+                )
+            );
+
             return SyntaxFactory.MethodDeclaration(default, syntax.Modifiers, syntax.ReturnType, default,
-                                                   syntax.Identifier, default, syntax.ParameterList, default, null,
+                                                   syntax.Identifier, default, revisedParameterList, default, null,
                                                    SyntaxFactory.ArrowExpressionClause(invoke),
                                                    SyntaxFactory.Token(SyntaxKind.SemicolonToken));
         }

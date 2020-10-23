@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace FmodAudioSourceGenerator
 {
-    internal class VTableCreationState
+    internal class VTableCreationState : GeneratorState
     {
         private static readonly MemberAccessExpressionSyntax NativeLibrary_GetExport = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("NativeLibrary"), SyntaxFactory.IdentifierName("GetExport"));
         private static readonly QualifiedNameSyntax NamespaceName = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName("FmodAudio"), SyntaxFactory.IdentifierName("Base"));
@@ -24,34 +24,78 @@ namespace FmodAudioSourceGenerator
                 SyntaxFactory.QualifiedName(
                     SyntaxFactory.QualifiedName(
                         SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Runtime")),
+                        SyntaxFactory.IdentifierName("Runtime")
+                    ),
                     SyntaxFactory.IdentifierName("InteropServices")
                 )
             )
         };
 
-        internal GeneratorExecutionContext Context;
-        internal readonly SyntaxReceiver Receiver;
-
-        private readonly Dictionary<SyntaxTree, SemanticModel> SemanticModels = new Dictionary<SyntaxTree, SemanticModel>();
+        internal readonly VTableSyntaxReceiver Receiver;
 
         private readonly INamedTypeSymbol VTableAttributeClass, WrapperTypeAttributeClass, InteropMethodAttributeClass;
 
-        public VTableCreationState(in GeneratorExecutionContext context, SyntaxReceiver receiver)
+        public VTableCreationState(in GeneratorExecutionContext context, VTableSyntaxReceiver receiver) : base(in context)
         {
-            Context = context;
             Receiver = receiver;
 
-            var compilation = context.Compilation;
+            VTableAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.VTableAttribute");
 
-            VTableAttributeClass = compilation.GetTypeByMetadataName("FmodAudio.Base.VTableAttribute");
+            WrapperTypeAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.WrapperTypeAttribute");
 
-            WrapperTypeAttributeClass = compilation.GetTypeByMetadataName("FmodAudio.Base.WrapperTypeAttribute");
-
-            InteropMethodAttributeClass = compilation.GetTypeByMetadataName("FmodAudio.Base.InteropMethodAttribute");
+            InteropMethodAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.InteropMethodAttribute");
         }
 
-        public void GenerateSources()
+        protected override IEnumerable<(string FileNameHint, string SourceText)> AttributeSources
+        {
+            get
+            {
+                const string VTableAttrib =
+@"using System;
+
+namespace FmodAudio
+{
+    [AttributeUsage(AttributeTargets.Class)]
+    internal class VTableAttribute : Attribute
+    {
+    }
+}
+";
+
+                const string WrapperTypeAttribute =
+@"using System;
+
+namespace FmodAudio
+{
+    [AttributeUsage(AttributeTargets.Struct)]
+    internal class WrapperTypeAttribute : Attribute
+    {
+    }
+}
+";
+
+                const string InteropMethodAttribute =
+@"using System;
+
+namespace FmodAudio
+{
+    [AttributeUsage(AttributeTargets.Method)]
+    internal class InteropMethodAttribute : Attribute
+    {
+    }
+}
+";
+
+                return new[]
+                {
+                    ("VTableAttribute", VTableAttrib),
+                    ("WrapperTypeAttribute", WrapperTypeAttribute),
+                    ("InteropMethodAttribute", InteropMethodAttribute)
+                };
+            }
+        }
+
+        public override void GenerateSources()
         {
             var marshalContext = new MethodMarshallingContext(this, Receiver.WrapperTypes);
 
@@ -77,18 +121,7 @@ namespace FmodAudioSourceGenerator
 
         private SourceText ProcessVTableType(MethodMarshallingContext context, INamedTypeSymbol typeSymbol)
         {
-            bool CheckForAttribute(ImmutableArray<AttributeData> attributes)
-            {
-                for (int i = 0; i < attributes.Length; ++i)
-                {
-                    if (VTableAttributeClass.Equals(attributes[i].AttributeClass, SymbolEqualityComparer.Default))
-                        return true;
-                }
-
-                return false;
-            }
-
-            if (!CheckForAttribute(typeSymbol.GetAttributes()))
+            if (!typeSymbol.GetAttributes().Any(attrib => attrib.AttributeClass.Equals(VTableAttributeClass, SymbolEqualityComparer.Default)))
                 return null;
 
             var classSyntax = (ClassDeclarationSyntax)typeSymbol.DeclaringSyntaxReferences[0].GetSyntax();
@@ -109,7 +142,7 @@ namespace FmodAudioSourceGenerator
                 if (!IsTargetMethod(method))
                     continue;
 
-                if (LookForParameterProblems(method, ref Context))
+                if (LookForParameterProblems(method))
                     continue;
 
                 //Begin of syntax tree generation
@@ -120,11 +153,8 @@ namespace FmodAudioSourceGenerator
                     default,
                     FieldDeclarationModifiers,
                     SyntaxFactory.VariableDeclaration(funcPtrType,
-                        SyntaxFactory.SeparatedList(
-                            new[]
-                            {
-                                SyntaxFactory.VariableDeclarator(fieldName)
-                            }
+                        SyntaxFactory.SingletonSeparatedList(
+                            SyntaxFactory.VariableDeclarator(fieldName)
                         )
                     )
                 );
@@ -170,11 +200,8 @@ namespace FmodAudioSourceGenerator
                 SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.InternalKeyword)),
                 classSyntax.Identifier,
                 SyntaxFactory.ParameterList(
-                    SyntaxFactory.SeparatedList(
-                        new[]
-                        {
-                            SyntaxFactory.Parameter(default, default, SyntaxFactory.IdentifierName("IntPtr"), LibParamName.Identifier, null)
-                        }
+                    SyntaxFactory.SingletonSeparatedList(
+                        SyntaxFactory.Parameter(default, default, SyntaxFactory.IdentifierName("IntPtr"), LibParamName.Identifier, null)
                     )
                 ),
                 null,
@@ -191,7 +218,7 @@ namespace FmodAudioSourceGenerator
             var namespaceSyntax = SyntaxFactory.NamespaceDeclaration(
                 NamespaceName,
                 default, default,
-                SyntaxFactory.List(new[] { (MemberDeclarationSyntax)newDefinition })
+                SyntaxFactory.SingletonList<MemberDeclarationSyntax>(newDefinition)
             );
 
             UsingDirectiveManager usingsManager = new UsingDirectiveManager();
@@ -201,12 +228,10 @@ namespace FmodAudioSourceGenerator
 
             var compileUnit = SyntaxFactory.CompilationUnit(
                 default, SyntaxFactory.List(usingsManager.SortAndReturnUsingDirectives()),
-                default, SyntaxFactory.List<MemberDeclarationSyntax>(new[] { namespaceSyntax })
-            );
+                default, SyntaxFactory.SingletonList<MemberDeclarationSyntax>(namespaceSyntax)
+            ).NormalizeWhitespace();
 
-            var sourceString = compileUnit.NormalizeWhitespace().ToFullString();
-
-            return SourceText.From(sourceString, Encoding.UTF8);
+            return SourceText.From(compileUnit.ToFullString(), Encoding.UTF8);
         }
 
         private bool IsTargetMethod(IMethodSymbol method)
@@ -236,7 +261,7 @@ namespace FmodAudioSourceGenerator
             return true;
         }
 
-        private static bool LookForParameterProblems(IMethodSymbol method, ref GeneratorExecutionContext context)
+        private bool LookForParameterProblems(IMethodSymbol method)
         {
             bool problemFound = false;
 
@@ -244,7 +269,7 @@ namespace FmodAudioSourceGenerator
             {
                 if (param.RefKind != RefKind.None)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG02, param.Locations[0]));
+                    Context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG02, param.Locations[0]));
 
                     problemFound |= true;
                     continue;
@@ -254,7 +279,7 @@ namespace FmodAudioSourceGenerator
 
                 if (paramType.IsReferenceType)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG03, param.Locations[0]));
+                    Context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG03, param.Locations[0]));
 
                     problemFound |= true;
                     continue;
@@ -262,7 +287,7 @@ namespace FmodAudioSourceGenerator
 
                 if (!paramType.IsUnmanagedType)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG04, param.Locations[0]));
+                    Context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG04, param.Locations[0]));
 
                     problemFound |= true;
                     continue;
@@ -273,7 +298,7 @@ namespace FmodAudioSourceGenerator
             {
                 if (method.ReturnsByRef || method.ReturnsByRefReadonly)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG02, method.Locations[0]));
+                    Context.ReportDiagnostic(Diagnostic.Create(PrimarySourceGenerator.FASG02, method.Locations[0]));
                 }
             }
 
@@ -290,17 +315,6 @@ namespace FmodAudioSourceGenerator
             }
 
             return SyntaxFactory.ClassDeclaration(default, modifiers, syntax.Identifier, null, null, default, SyntaxFactory.List(members));
-        }
-
-        internal SemanticModel GetSemanticModel(SyntaxTree tree)
-        {
-            if (!SemanticModels.TryGetValue(tree, out var model))
-            {
-                model = Context.Compilation.GetSemanticModel(tree);
-                SemanticModels.Add(tree, model);
-            }
-
-            return model;
         }
     }
 }

@@ -11,12 +11,12 @@ namespace FmodAudioSourceGenerator
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            context.RegisterForSyntaxNotifications(() => new VTableSyntaxReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (!(context.SyntaxReceiver is SyntaxReceiver reciever))
+            if (!(context.SyntaxReceiver is VTableSyntaxReceiver reciever))
                 return;
 
             var state = new VTableCreationState(context, reciever);

@@ -59,7 +59,7 @@ namespace FmodAudioSourceGenerator
         {
             public bool Equals(UsingDirectiveSyntax x, UsingDirectiveSyntax y)
             {
-                return x.IsEquivalentTo(y);
+                return ReferenceEquals(x, y) || x.Name.ToString() == y.Name.ToString();
             }
 
             public int GetHashCode(UsingDirectiveSyntax obj)
