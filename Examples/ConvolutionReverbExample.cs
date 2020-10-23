@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Examples
 {
+    using System.Runtime.CompilerServices;
     using Base;
     using FmodAudio.Base;
 
@@ -14,7 +15,7 @@ namespace Examples
         private Dsp reverbUnit;
         private Sound sound;
 
-        private IntPtr IRData;
+        private short[] IRData;
 
         float wetVolume = 1f, dryVolume = 1f;
 
@@ -54,17 +55,15 @@ namespace Examples
 
             int irSoundLength = (int)tmpsound.GetLength(TimeUnit.PCM);
 
-            int irDataLength = (irSoundLength * irSoundChannels + 1) * sizeof(short);
+            //Allocate a pre-pinned array, tracked by the GC so we have no need to free it ourselves.
+            this.IRData = GC.AllocateArray<short>(irSoundLength * irSoundChannels + 1, pinned: true);
 
-            var irData = Marshal.AllocHGlobal(irDataLength);
-            IRData = irData;
-
-            tmpsound.ReadData(irData, irDataLength);
+            tmpsound.ReadData<short>(IRData);
 
             const int ReverbParamIR = 0;
             const int ReverbParamDry = 2;
 
-            reverbUnit.SetParameterData(ReverbParamIR, irData.ToPointer(), (uint)irDataLength);
+            reverbUnit.SetParameterData(ReverbParamIR, Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(IRData)), (uint)IRData.Length * sizeof(short));
             reverbUnit.SetParameterFloat(ReverbParamDry, -80f);
 
             tmpsound.Release();
@@ -127,12 +126,6 @@ namespace Examples
             }
 
             base.Dispose();
-
-            if (IRData != default)
-            {
-                Marshal.FreeHGlobal(IRData);
-                IRData = default;
-            }
         }
     }
 }
