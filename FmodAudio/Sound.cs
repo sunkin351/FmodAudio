@@ -11,7 +11,8 @@ using FmodAudio.Base;
 
 namespace FmodAudio
 {
-    public unsafe readonly struct Sound : IDisposable, IEquatable<Sound>
+    [EqualityBoilerplate]
+    public unsafe readonly partial struct Sound : IDisposable, IEquatable<Sound>
     {
         public static implicit operator Sound(SoundHandle handle)
         {
@@ -401,29 +402,14 @@ namespace FmodAudio
             }
         }
 
-        public static bool operator ==(Sound l, Sound r)
+        public bool Equals(Sound sound)
         {
-            return l.Handle == r.Handle;
-        }
-
-        public static bool operator !=(Sound l, Sound r)
-        {
-            return l.Handle != r.Handle;
+            return Handle == sound.Handle;
         }
 
         public override int GetHashCode()
         {
             return Handle.GetHashCode();
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is Sound sound && this.Equals(sound);
-        }
-
-        public bool Equals(Sound sound)
-        {
-            return Handle == sound.Handle;
         }
 
         public sealed class SoundLock

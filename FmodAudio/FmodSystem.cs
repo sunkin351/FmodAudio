@@ -5,12 +5,13 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+using FmodAudio.Base;
+using FmodAudio.DigitalSignalProcessing;
+
 namespace FmodAudio
 {
-    using Base;
-    using DigitalSignalProcessing;
-
-    public unsafe partial struct FmodSystem : IDisposable
+    [EqualityBoilerplate]
+    public unsafe partial struct FmodSystem : IDisposable, IEquatable<FmodSystem>
     {
         public static implicit operator FmodSystem(SystemHandle handle)
         {
@@ -22,14 +23,14 @@ namespace FmodAudio
             return system.Handle;
         }
 
-        public static bool operator ==(FmodSystem l, FmodSystem r)
+        public bool Equals(FmodSystem other)
         {
-            return l.Handle == r.Handle;
+            return Handle == other.Handle;
         }
 
-        public static bool operator !=(FmodSystem l, FmodSystem r)
+        public override int GetHashCode()
         {
-            return l.Handle != r.Handle;
+            return Handle.GetHashCode();
         }
 
         /// <summary>

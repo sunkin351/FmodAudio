@@ -1,11 +1,12 @@
 ﻿#pragma warning disable CS0660, CS0661
 
 using System;
+using FmodAudio.Base;
 
 namespace FmodAudio
 {
-    using Base;
-    public unsafe struct SoundGroup : IDisposable
+    [EqualityBoilerplate]
+    public unsafe readonly partial struct SoundGroup : IDisposable, IEquatable<SoundGroup>
     {
         public static implicit operator SoundGroup(SoundGroupHandle handle)
         {
@@ -15,6 +16,16 @@ namespace FmodAudio
         public static implicit operator SoundGroupHandle(SoundGroup soundGroup)
         {
             return soundGroup.Handle;
+        }
+
+        public bool Equals(SoundGroup other)
+        {
+            return Handle == other.Handle;
+        }
+
+        public override int GetHashCode()
+        {
+            return Handle.GetHashCode();
         }
 
         private static readonly FmodLibrary library = Fmod.Library;
@@ -152,16 +163,6 @@ namespace FmodAudio
         public void Stop()
         {
             library.SoundGroup_Stop(Handle).CheckResult();
-        }
-
-        public static bool operator ==(SoundGroup l, SoundGroup r)
-        {
-            return l.Handle == r.Handle;
-        }
-
-        public static bool operator !=(SoundGroup l, SoundGroup r)
-        {
-            return l.Handle != r.Handle;
         }
     }
 }

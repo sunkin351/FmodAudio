@@ -3,10 +3,11 @@
 using System;
 using System.Numerics;
 
+using FmodAudio.Base;
+
 namespace FmodAudio
 {
-    using Base;
-
+    [EqualityBoilerplate]
     public readonly struct Geometry : IDisposable
     {
         public static implicit operator Geometry(GeometryHandle handle)

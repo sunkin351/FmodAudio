@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace FmodAudio
 {
-    [StructLayout(LayoutKind.Sequential)]
     public readonly struct FmodVersion : IComparable<FmodVersion>, IEquatable<FmodVersion>
     {
         private readonly uint EncodedVersion;

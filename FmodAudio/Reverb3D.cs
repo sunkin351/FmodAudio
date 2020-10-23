@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
 
+using FmodAudio.Base;
+
 namespace FmodAudio
 {
-    using Base;
-
-    public readonly struct Reverb3D : IDisposable
+    [EqualityBoilerplate]
+    public readonly partial struct Reverb3D : IDisposable, IEquatable<Reverb3D>
     {
         public static implicit operator Reverb3D(Reverb3DHandle handle)
         {
@@ -19,6 +20,16 @@ namespace FmodAudio
         public static implicit operator Reverb3DHandle(Reverb3D reverb)
         {
             return reverb.Handle;
+        }
+
+        public bool Equals(Reverb3D other)
+        {
+            return Handle == other.Handle;
+        }
+
+        public override int GetHashCode()
+        {
+            return Handle.GetHashCode();
         }
 
         private static readonly FmodLibrary library = Fmod.Library;
@@ -86,16 +97,6 @@ namespace FmodAudio
             {
                 library.Reverb3D_SetUserData(Handle, value).CheckResult();
             }
-        }
-
-        public static bool operator ==(Reverb3D l, Reverb3D r)
-        {
-            return l.Handle == r.Handle;
-        }
-
-        public static bool operator !=(Reverb3D l, Reverb3D r)
-        {
-            return l.Handle != r.Handle;
         }
     }
 }

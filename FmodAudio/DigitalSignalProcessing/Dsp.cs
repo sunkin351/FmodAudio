@@ -4,7 +4,8 @@ using FmodAudio.Base;
 
 namespace FmodAudio.DigitalSignalProcessing
 {
-    public unsafe struct Dsp : IDisposable, IEquatable<Dsp>
+    [EqualityGeneration]
+    public unsafe partial struct Dsp : IDisposable, IEquatable<Dsp>
     {
         public static implicit operator Dsp(DspHandle handle)
         {
@@ -16,19 +17,14 @@ namespace FmodAudio.DigitalSignalProcessing
             return dsp.Handle;
         }
 
-        public static bool operator ==(Dsp l, Dsp r)
+        public bool Equals(Dsp other)
         {
-            return l.Handle == r.Handle;
+            return Handle == other.Handle;
         }
 
-        public static bool operator !=(Dsp l, Dsp r)
+        public override int GetHashCode()
         {
-            return l.Handle != r.Handle;
-        }
-
-        public bool Equals(Dsp handle)
-        {
-            return this == handle;
+            return Handle.GetHashCode();
         }
 
         private static readonly FmodLibrary library = Fmod.Library;
