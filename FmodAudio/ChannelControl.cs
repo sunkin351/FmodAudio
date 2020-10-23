@@ -50,7 +50,7 @@ namespace FmodAudio
 
         public abstract Mode Mode { get; set; }
 
-        public abstract void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public abstract void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, void*, void*, void> callback);
 
         public abstract bool IsPlaying { get; }
 
@@ -198,9 +198,9 @@ namespace FmodAudio
 
         public abstract void Get3DConeOrientation(out Vector3 orientation);
 
-        public abstract unsafe void Get3DCustomRolloff(out Vector3* points, out int count);
+        public abstract unsafe void Get3DCustomRolloff(out RolloffPoint* points, out int count);
 
-        public abstract unsafe void Set3DCustomRolloff(Vector3* points, int count);
+        public abstract unsafe void Set3DCustomRolloff(RolloffPoint* points, int count);
 
         public abstract void Set3DOcclusion(float directOcclusion, float reverbOcclusion);
 

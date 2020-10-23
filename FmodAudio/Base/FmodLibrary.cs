@@ -1128,14 +1128,14 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Sound_Set3DCustomRolloff(SoundHandle sound, Vector3* points, int pointCount);
+        public partial Result Sound_Set3DCustomRolloff(SoundHandle sound, RolloffPoint* points, int pointCount);
 
         [InteropMethod]
-        public partial Result Sound_Get3DCustomRolloff(SoundHandle sound, Vector3** points, int* pointCount);
+        public partial Result Sound_Get3DCustomRolloff(SoundHandle sound, RolloffPoint** points, int* pointCount);
 
-        public Result Sound_Get3DCustomRolloff(SoundHandle sound, out Vector3* points, out int pointCount)
+        public Result Sound_Get3DCustomRolloff(SoundHandle sound, out RolloffPoint* points, out int pointCount)
         {
-            fixed (Vector3** pPoints = &points)
+            fixed (RolloffPoint** pPoints = &points)
             fixed (int* pPointCount = &pointCount)
             {
                 return Sound_Get3DCustomRolloff(sound, pPoints, pPointCount);
@@ -1854,10 +1854,10 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_SetCallback(ChannelGroupHandle channelGroup, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public partial Result ChannelGroup_SetCallback(ChannelGroupHandle channelGroup, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, void*, void*, void> callback);
 
         [InteropMethod]
-        public partial Result Channel_SetCallback(ChannelHandle channel, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback);
+        public partial Result Channel_SetCallback(ChannelHandle channel, delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, void*, void*, void> callback);
 
         [InteropMethod]
         public partial Result ChannelGroup_SetPan(ChannelGroupHandle channelGroup, float pan);
@@ -2242,17 +2242,17 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result ChannelGroup_Set3DCustomRolloff(ChannelGroupHandle channelGroup, Vector3* points, int numpoints);
+        public partial Result ChannelGroup_Set3DCustomRolloff(ChannelGroupHandle channelGroup, RolloffPoint* points, int numpoints);
 
         [InteropMethod]
-        public partial Result Channel_Set3DCustomRolloff(ChannelHandle channel, Vector3* points, int numpoints);
+        public partial Result Channel_Set3DCustomRolloff(ChannelHandle channel, RolloffPoint* points, int numpoints);
 
         [InteropMethod]
-        public partial Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, Vector3** points, int* numpoints);
+        public partial Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, RolloffPoint** points, int* numpoints);
 
-        public Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, out Vector3* points, out int pointCount)
+        public Result ChannelGroup_Get3DCustomRolloff(ChannelGroupHandle channelGroup, out RolloffPoint* points, out int pointCount)
         {
-            fixed (Vector3** pPoints = &points)
+            fixed (RolloffPoint** pPoints = &points)
             fixed (int* pPointCount = &pointCount)
             {
                 return ChannelGroup_Get3DCustomRolloff(channelGroup, pPoints, pPointCount);
@@ -2260,11 +2260,11 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result Channel_Get3DCustomRolloff(ChannelHandle channel, Vector3** points, int* numpoints);
+        public partial Result Channel_Get3DCustomRolloff(ChannelHandle channel, RolloffPoint** points, int* numpoints);
 
-        public Result Channel_Get3DCustomRolloff(ChannelHandle channel, out Vector3* points, out int pointCount)
+        public Result Channel_Get3DCustomRolloff(ChannelHandle channel, out RolloffPoint* points, out int pointCount)
         {
-            fixed (Vector3** pPoints = &points)
+            fixed (RolloffPoint** pPoints = &points)
             fixed (int* pPointCount = &pointCount)
             {
                 return Channel_Get3DCustomRolloff(channel, pPoints, pPointCount);

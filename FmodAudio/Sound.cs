@@ -116,17 +116,12 @@ namespace FmodAudio
             library.Sound_Get3DConeSettings(Handle, out insideconeangle, out outsideconeangle, out outsidevolume).CheckResult();
         }
         
-        public void GetCustomRolloff3D(out Vector3* points, out int count)
+        public void Get3DCustomRolloff(out RolloffPoint* points, out int count)
         {
             library.Sound_Get3DCustomRolloff(Handle, out points, out count).CheckResult();
         }
 
-        public void Get3DCustomRolloff(out Vector3* points, out int count)
-        {
-            library.Sound_Get3DCustomRolloff(Handle, out points, out count).CheckResult();
-        }
-
-        public void Set3DCustomRolloff(Vector3* points, int count)
+        public void Set3DCustomRolloff(RolloffPoint* points, int count)
         {
             library.Sound_Set3DCustomRolloff(Handle, points, count).CheckResult();
         }
@@ -194,6 +189,11 @@ namespace FmodAudio
             library.Sound_GetOpenState(Handle, out openstate, out percentbuffered, out starving, out diskbusy).CheckResult();
         }
 
+        /// <summary>
+        /// Reads data from this sound object into the provided buffer
+        /// </summary>
+        /// <param name="buffer">Buffer to read the data into</param>
+        /// <returns>The number of bytes read</returns>
         public unsafe uint ReadData<T>(Span<T> buffer) where T: unmanaged
         {
             if (buffer.IsEmpty)
@@ -205,6 +205,12 @@ namespace FmodAudio
             }
         }
 
+        /// <summary>
+        /// Reads data from this sound object into the provided buffer
+        /// </summary>
+        /// <param name="buffer"> Buffer to read the data into </param>
+        /// <param name="blength"> Length of the buffer in bytes </param>
+        /// <returns>The number of bytes read</returns>
         public unsafe uint ReadData(IntPtr buffer, int blength)
         {
             if (blength < 0)
@@ -219,12 +225,6 @@ namespace FmodAudio
             return ReadDataInternal((void*)buffer, (uint)blength);
         }
 
-        /// <summary>
-        /// Reads data from this sound object into the provided buffer
-        /// </summary>
-        /// <param name="buffer"> Buffer to read the data into </param>
-        /// <param name="blength"> Length of the buffer in bytes </param>
-        /// <returns>The number of bytes read</returns>
         private unsafe uint ReadDataInternal(void* buffer, uint blength)
         {
             library.Sound_ReadData(Handle, buffer, blength, out uint read).CheckResult();

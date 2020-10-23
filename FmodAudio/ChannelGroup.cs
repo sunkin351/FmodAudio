@@ -247,7 +247,7 @@ namespace FmodAudio
             }
         }
 
-        public override unsafe void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, IntPtr, IntPtr, void> callback)
+        public override unsafe void SetCallback(delegate* unmanaged<IntPtr, ChannelControlType, ChannelControlCallbackType, void*, void*, void> callback)
         {
             library.ChannelGroup_SetCallback(Handle, callback).CheckResult();
         }
@@ -403,12 +403,12 @@ namespace FmodAudio
             library.ChannelGroup_Get3DConeOrientation(Handle, out orientation).CheckResult();
         }
 
-        public override unsafe void Get3DCustomRolloff(out Vector3* points, out int count)
+        public override unsafe void Get3DCustomRolloff(out RolloffPoint* points, out int count)
         {
             library.ChannelGroup_Get3DCustomRolloff(Handle, out points, out count).CheckResult();
         }
 
-        public override unsafe void Set3DCustomRolloff(Vector3* points, int count)
+        public override unsafe void Set3DCustomRolloff(RolloffPoint* points, int count)
         {
             library.ChannelGroup_Set3DCustomRolloff(Handle, points, count).CheckResult();
         }

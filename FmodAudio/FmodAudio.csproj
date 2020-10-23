@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/sunkin351/FmodAudio</RepositoryUrl>
     <RepositoryType></RepositoryType>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the fmod native binaries from their website. https://www.fmod.com/download</Description>
+    <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the Fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
     <PackageReleaseNotes>- This release is a massive rework of the codebase, and is not backwards compatible with previous versions.
 - This release uses C# Function Pointers, made available in the .NET 5 SDK, and as such, this library will from here on be .NET 5.0+ exclusive. (It also uses a few other features that can only be found in .NET 5.0+)
