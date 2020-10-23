@@ -2,42 +2,22 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SourceGeneratorTests
+namespace FmodAudioSourceGenerator.Tests
 {
     public static class TestFileStrings
     {
-        public const string VTableAttribute = @"
-using System;
-
-namespace FmodAudio.Base
-{
-    [AttributeUsage(AttributeTargets.Class)]
-    public class VTableAttribute : Attribute
-    {
-    }
-    
-    [AttributeUsage(AttributeTargets.Struct)]
-    internal class WrapperTypeAttribute : Attribute
-    {
-    }
-
-    [AttributeUsage(AttributeTargets.Method)]
-    internal class InteropMethodAttribute : Attribute
-    {
-    }
-}
-";
-
-        public const string SimpleTestFile = @"
-using System;
+        public const string SimpleTestFile =
+@"using System;
 using System.Runtime.InteropServices;
 
 namespace FmodAudio.Base
 {
-    [WrapperType]
-    public struct SystemHandle
+    [WrapperType, EqualityBoilerplate]
+    public partial struct SystemHandle : IEquatable<SystemHandle>
     {
         public IntPtr Handle { get; }
+
+        public bool Equals(SystemHandle other) => Handle == other.Handle;
     }
 
     [VTable]
@@ -55,7 +35,6 @@ namespace FmodAudio.Base
         [InteropMethod]
         public partial int System_Release(SystemHandle system);
     }
-}
-";
+}";
     }
 }

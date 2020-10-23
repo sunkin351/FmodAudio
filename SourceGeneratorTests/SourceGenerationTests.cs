@@ -1,11 +1,10 @@
 using System.Linq;
 using System.Reflection;
-using FmodAudioSourceGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace SourceGeneratorTests
+namespace FmodAudioSourceGenerator.Tests
 {
     public class SourceGenerationTests
     {
@@ -15,14 +14,14 @@ namespace SourceGeneratorTests
 
         public SourceGenerationTests()
         {
-            var sources = new[] { TestFileStrings.VTableAttribute, TestFileStrings.SimpleTestFile };
+            var sources = new[] { TestFileStrings.SimpleTestFile };
 
             compilation = CSharpCompilation.Create("TestCompilation",
                 sources.Select(source => CSharpSyntaxTree.ParseText(source, options)),
                 new[] { MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location) },
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
 
-            generators = new ISourceGenerator[] { new PrimarySourceGenerator() };
+            generators = new ISourceGenerator[] { new PrimarySourceGenerator(), new EqualitySourceGenerator() };
         }
 
         [Fact]
