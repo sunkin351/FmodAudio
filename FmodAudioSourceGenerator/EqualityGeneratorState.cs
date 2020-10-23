@@ -138,7 +138,20 @@ namespace FmodAudio
                 typeMembers.Add(doesNotEqualOperator);
                 typeMembers.Add(equalsOverride);
 
-                TypeDeclarationSyntax newDecl = type.WithAttributeLists(default).WithBaseList(null).WithMembers(SyntaxFactory.List(typeMembers));
+                TypeDeclarationSyntax newDecl;
+
+                if (type is ClassDeclarationSyntax classDecl)
+                {
+                    newDecl = SyntaxFactory.ClassDeclaration(default, classDecl.Modifiers, classDecl.Identifier, classDecl.TypeParameterList, null, default, SyntaxFactory.List(typeMembers));
+                }
+                else if (type is StructDeclarationSyntax structDecl)
+                {
+                    newDecl = SyntaxFactory.StructDeclaration(default, structDecl.Modifiers, structDecl.Identifier, structDecl.TypeParameterList, null, default, SyntaxFactory.List(typeMembers));
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected declaration type");
+                }
 
                 var CUNode = SyntaxFactory.CompilationUnit(
                     default,
