@@ -22,9 +22,9 @@ namespace Examples
                 },
                 new SelectionUI.ExampleInfo()
                 {
-                    Name = "Async IO Example (Broken)",
+                    Name = "Async IO Example",
                     ExampleType = typeof(AsyncIOExample),
-                    Enabled = false
+                    Enabled = true
                 },
                 new SelectionUI.ExampleInfo()
                 {

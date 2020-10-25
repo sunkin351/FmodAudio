@@ -1,25 +1,177 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
+
+using Examples.Base;
+
 using FmodAudio;
+using FmodAudio.Base;
 
 namespace Examples
 {
-    using Base;
-    using FmodAudio.Base;
+    internal class FileHandleManager
+    {
+        private readonly LinkedList<Item> ItemList = new();
+
+        private readonly ConcurrentDictionary<long, FileStream> Handles = new();
+        private long FileHandleInc = 1;
+
+        public FileHandleManager()
+        {
+        }
+
+        public IntPtr CreateHandle(FileStream stream)
+        {
+            long handle = Interlocked.Increment(ref FileHandleInc);
+
+            Handles.TryAdd(handle, stream);
+
+            return (IntPtr)handle;
+        }
+
+        public bool DisposeHandle(IntPtr handle)
+        {
+            if (Handles.TryRemove((long)handle, out var stream))
+            {
+                stream.Dispose();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryGetStream(IntPtr handle, out FileStream stream)
+        {
+            return Handles.TryGetValue((long)handle, out stream);
+        }
+
+        public void CreateAsyncOperation(AsyncReadInfoPointer asyncInfo)
+        {
+            var cancelationSource = new CancellationTokenSource();
+
+            LinkedListNode<Item> node;
+
+            lock (ItemList)
+            {
+                node = ItemList.AddLast(new Item
+                {
+                    InfoPtr = asyncInfo,
+                    CancelationSource = cancelationSource
+                });
+            }
+
+            var token = cancelationSource.Token;
+
+            var asyncOp = Task.Run(async () =>
+            {
+                if (token.IsCancellationRequested)
+                {
+                    asyncInfo.Done(Result.Err_File_DiskEjected);
+                    goto RemoveOperation;
+                }
+
+                if (!TryGetStream(asyncInfo.Handle, out var stream))
+                {
+                    asyncInfo.Done(Result.Err_Invalid_Handle);
+                    goto RemoveOperation;
+                }
+
+                try
+                {
+                    stream.Seek(asyncInfo.Offset, SeekOrigin.Begin);
+
+                    if (token.IsCancellationRequested)
+                    {
+                        asyncInfo.Done(Result.Err_File_DiskEjected);
+
+                        goto RemoveOperation;
+                    }
+
+                    asyncInfo.BytesRead = (uint)await stream.ReadAsync(asyncInfo.GetMemoryManager().Memory, token);
+
+                    asyncInfo.Done(Result.Ok);
+                }
+                catch (OperationCanceledException)
+                {
+                    asyncInfo.Done(Result.Err_File_DiskEjected);
+                }
+                catch
+                {
+                    asyncInfo.Done(Result.Err_Internal);
+                }
+
+            RemoveOperation:
+                RemoveAsyncOperation(asyncInfo);
+            });
+
+            node.ValueRef.AsyncOperation = asyncOp;
+        }
+
+        public bool CancelAsyncOperation(AsyncReadInfoPointer asyncInfo)
+        {
+            lock (ItemList)
+            {
+                var node = this.FindItem(asyncInfo);
+
+                if (node != null)
+                {
+                    node.ValueRef.CancelationSource.Cancel();
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        private unsafe LinkedListNode<Item>? FindItem(AsyncReadInfoPointer ptr)
+        {
+            var node = ItemList.First;
+
+            if (node != null)
+            {
+                do
+                {
+                    ref Item item = ref node.ValueRef;
+
+                    if (item.InfoPtr.GetPointer() == ptr.GetPointer())
+                    {
+                        return node;
+                    }
+                }
+                while ((node = node.Next) != null);
+            }
+
+            return null;
+        }
+
+        private void RemoveAsyncOperation(AsyncReadInfoPointer asyncInfo)
+        {
+            lock (ItemList)
+            {
+                var node = FindItem(asyncInfo);
+
+                this.ItemList.Remove(node);
+            }
+        }
+
+        private struct Item
+        {
+            public AsyncReadInfoPointer InfoPtr;
+            public Task AsyncOperation;
+            public CancellationTokenSource CancelationSource;
+        }
+    }
 
     public unsafe class AsyncIOExample : Example
     {
         //Static variables
-        private static readonly object SyncPoint = new object();
-        private static readonly LinkedList<IntPtr> AsyncReads = new LinkedList<IntPtr>();
-        private static readonly Dictionary<long, FileStream> Handles = new Dictionary<long, FileStream>();
-        private static long FileHandleInc = 1;
-        private static bool ThreadContinue = true;
-        private static readonly Thread AsyncThread = new Thread(ProcessThread);
+        private static FileHandleManager Manager = new();
 
         private Sound sound;
 
@@ -40,13 +192,11 @@ namespace Examples
         {
             base.Initialize();
 
-            AsyncThread.Start();
-
             System.Init(32, InitFlags.Normal);
 
             System.SetStreamBufferSize(32768, TimeUnit.RAWBytes);
 
-            //System.SetFileSystem(MyOpen, MyClose, MyRead, MySeek, MyAsyncRead, MyAsyncCancel, 2048); //Experimental
+            System.SetFileSystem(&MyOpen, &MyClose, &MyRead, &MySeek, &MyAsyncRead, &MyAsyncCancel, 2048);
 
             sound = System.CreateStream(MediaPath("wave.mp3"), Mode.Loop_Normal | Mode._2D | Mode.IgnoreTags);
         }
@@ -59,7 +209,7 @@ namespace Examples
             {
                 OnUpdate();
 
-                if (sound != null)
+                if (sound != default)
                 {
                     sound.GetOpenState(out _, out _, out FmodBool starving, out _);
 
@@ -94,16 +244,12 @@ namespace Examples
                 sound.Dispose(); //Dispose if not null
             
             base.Dispose();
-
-            ThreadContinue = false;
-
-            AsyncThread.Join();
         }
 
         const int BufferLength = 5;
         private static readonly LinkedList<string> LogBuffer = new LinkedList<string>();
 
-        static void Log(string line)
+        internal static void Log(string line)
         {
             lock (LogBuffer)
             {
@@ -116,7 +262,7 @@ namespace Examples
             }
         }
 
-        void DrawLog()
+        private void DrawLog()
         {
             lock (LogBuffer)
             {
@@ -127,34 +273,15 @@ namespace Examples
             }
         }
         
-        static IntPtr AllocateHandle(FileStream stream)
-        {
-            long tmp = Interlocked.Increment(ref FileHandleInc);
-            lock (Handles)
-            {
-                Handles.Add(tmp, stream);
-            }
-            return new IntPtr(tmp);
-        }
-
-        static bool GetStream(IntPtr handle, out FileStream stream)
-        {
-            lock(Handles)
-                return Handles.TryGetValue((long)handle, out stream);
-        }
-
-        static void ReleaseHandle(IntPtr handle)
-        {
-            lock(Handles)
-                Handles.Remove((long)handle);
-        }
-
-        static unsafe Result MyOpen(IntPtr Filename, uint* filesize, IntPtr* handle, IntPtr userdata)
+        [UnmanagedCallersOnly]
+        private static unsafe Result MyOpen(byte* Filename, uint* filesize, IntPtr* handle, IntPtr userdata)
         {
             *filesize = 0;
-            *handle = IntPtr.Zero;
+            *handle = default;
 
-            string name = Marshal.PtrToStringUTF8(Filename);
+            Log("Call to MyOpen()");
+
+            string name = FmodHelpers.PtrToStringUnknownSize(Filename);
 
             FileStream stream;
             try
@@ -172,35 +299,43 @@ namespace Examples
             
             *filesize = (uint)stream.Length;
 
-            *handle = AllocateHandle(stream);
+            *handle = Manager.CreateHandle(stream);
 
             return Result.Ok;
         }
 
-        static Result MyClose(IntPtr handle, IntPtr userdata)
+        [UnmanagedCallersOnly]
+        private static Result MyClose(IntPtr handle, IntPtr userdata)
         {
-            if (!GetStream(handle, out var stream))
-            {
-                return Result.Err_Invalid_Handle;
-            }
+            Log("Call to MyClose()");
 
-            stream.Dispose();
-
-            ReleaseHandle(handle);
-
-            return Result.Ok;
+            return Manager.DisposeHandle(handle) ? Result.Ok : Result.Err_Invalid_Handle;
         }
 
-        static Result MyRead(IntPtr handle, IntPtr buffer, uint sizeBytes, uint* bytesRead, IntPtr userdata)
+        [UnmanagedCallersOnly]
+        private static Result MyRead(IntPtr handle, byte* buffer, uint sizeBytes, uint* bytesRead, IntPtr userdata)
         {
             *bytesRead = 0;
 
-            if (!GetStream(handle, out var stream))
+            Log("Call to MyRead()");
+
+            if (!Manager.TryGetStream(handle, out var stream))
             {
                 return Result.Err_Invalid_Handle;
             }
-            
-            *bytesRead = (uint)stream.Read(new Span<byte>(buffer.ToPointer(), (int)sizeBytes));
+
+            try
+            {
+                *bytesRead = (uint)stream.Read(new Span<byte>(buffer, (int)sizeBytes));
+            }
+            catch (EndOfStreamException)
+            {
+                return Result.Err_File_EndOfData;
+            }
+            catch
+            {
+                return Result.Err_Internal;
+            }
 
             if (*bytesRead < sizeBytes)
             {
@@ -212,9 +347,12 @@ namespace Examples
             }
         }
 
-        static Result MySeek(IntPtr handle, uint pos, IntPtr userdata)
+        [UnmanagedCallersOnly]
+        private static Result MySeek(IntPtr handle, uint pos, IntPtr userdata)
         {
-            if (!GetStream(handle, out var stream))
+            Log("Call to MySeek()");
+
+            if (!Manager.TryGetStream(handle, out var stream))
             {
                 return Result.Err_Invalid_Handle;
             }
@@ -231,87 +369,28 @@ namespace Examples
             return Result.Ok;
         }
 
-        static Result MyAsyncRead(AsyncReadInfo* info, IntPtr userdata)
+        [UnmanagedCallersOnly]
+        private static Result MyAsyncRead(AsyncReadInfo* info, IntPtr userdata)
         {
-            Debug.Assert(info != null);
-            lock(SyncPoint) //Alternatively, you can use the AsyncReads object as the syncpoint
+            Log("Call to MyAsyncRead()");
+
+            try
             {
-                Debug.Assert(!AsyncReads.Contains((IntPtr)info));
-                AsyncReads.AddLast((IntPtr)info);
+                Manager.CreateAsyncOperation(new AsyncReadInfoPointer(info));
+                return Result.Ok;
             }
-
-            return Result.Ok;
-        }
-
-        static unsafe Result MyAsyncCancel(AsyncReadInfo* info, IntPtr userdata)
-        {
-            Debug.Assert(info != null);
-            lock (SyncPoint)
+            catch
             {
-                //Find the pending IO Request and remove it
-                var tmp = AsyncReads.Find((IntPtr)info);
-                if (tmp != null)
-                {
-                    AsyncReads.Remove(tmp);
-
-                    //Signal FMOD to wake up, this operation has been cancelled
-                    info->Done(Result.Err_File_DiskEjected);
-                    return Result.Err_File_DiskEjected;
-                }
-            }
-            //IO request not found, it must have completed already
-            return Result.Ok;
-        }
-
-        static void ProcessThread()
-        {
-            while (ThreadContinue)
-            {
-                IntPtr info = IntPtr.Zero;
-                lock(SyncPoint)
-                {
-                    if (AsyncReads.Count > 0)
-                    {
-                        info = AsyncReads.First.Value;
-                        AsyncReads.RemoveFirst();
-                    }
-                }
-
-                if (info != IntPtr.Zero)
-                {
-                    AsyncReadInfo* ptr = (AsyncReadInfo*)info;
-
-                    Debug.Assert(ptr->Buffer != IntPtr.Zero, "The FMOD library failed to provide a buffer for the file data");
-
-                    if (!GetStream(ptr->Handle, out var stream))
-                    {
-                        ptr->Done(Result.Err_Invalid_Handle);
-                        continue;
-                    }
-
-                    try
-                    {
-                        stream.Seek(ptr->Offset, SeekOrigin.Begin);
-
-                        var buffer = new Span<byte>(ptr->Buffer.ToPointer(), (int)ptr->SizeBytes);
-
-                        ptr->BytesRead = (uint)stream.Read(buffer);
-                    }
-                    catch
-                    {
-                        ptr->Done(Result.Err_Internal);
-                        //TODO Implement Error Logging
-                        continue;
-                    }
-
-                    ptr->Done(Result.Ok);
-                }
-                else
-                {
-                    Sleep(10); //Example only: Use your native filesystem synchronisation to wait for more requests
-                }
+                return Result.Err_Internal;
             }
         }
-        
+
+        [UnmanagedCallersOnly]
+        private static unsafe Result MyAsyncCancel(AsyncReadInfo* info, IntPtr userdata)
+        {
+            Log("Call to MyAsyncCancel()");
+
+            return Manager.CancelAsyncOperation(new AsyncReadInfoPointer(info)) ? Result.Err_File_DiskEjected : Result.Ok;
+        }
     }
 }
