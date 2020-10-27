@@ -1,17 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
+
+using Examples.Base;
+
 using FmodAudio;
+using FmodAudio.Base;
 using FmodAudio.DigitalSignalProcessing;
 
 namespace Examples
 {
-    using System.Runtime.InteropServices;
-    using Base;
-
     public unsafe class CustomDSPExample : Example
     {
         #region Dsp Implementation
@@ -25,7 +28,8 @@ namespace Examples
             private static readonly ParameterDescription[] paramDescriptions = new ParameterDescription[]
             {
                 new DataParameterDescription("wave data", null, ParameterDataType.User),
-                new FloatParameterDescription("volume", "%", 0, 1, 1)
+                new FloatParameterDescription("volume", "%", 0, 1, 1),
+                new IntParameterDescription("channels", "#", 1, 10, 2)
             };
 
             private static ParameterDescriptionList paramList = new ParameterDescriptionList(paramDescriptions);
@@ -46,6 +50,7 @@ namespace Examples
                 ShouldIProcess = &_myShouldIProcess,
                 GetParamFloat = &_myGetParameterFloat,
                 SetParamFloat = &_mySetParameterFloat,
+                GetParamInt = &_myGetParameterInt,
                 GetParamData = &_myGetParameterData
             };
 
@@ -145,7 +150,7 @@ namespace Examples
                 if (managedState is null)
                     return Result.Err_Internal;
 
-                *data = Unsafe.AsPointer(ref managedState.buffer[0]); //Safe because the array is already pinned
+                *data = Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(managedState.buffer)); //Safe because the array is already pinned
                 *length = (uint)(managedState.channels * managedState.lengthSamples);
 
                 return Result.Ok;
@@ -161,7 +166,7 @@ namespace Examples
 
                 var managedState = GetManagedState(state);
 
-                *value = managedState.Volume;
+                *value = managedState.volumeLinear;
                 return Result.Ok;
             }
 
@@ -175,7 +180,22 @@ namespace Examples
 
                 var managedState = GetManagedState(state);
 
-                managedState.Volume = value;
+                managedState.volumeLinear = Math.Clamp(value, 0, 1);
+
+                return Result.Ok;
+            }
+
+            [UnmanagedCallersOnly]
+            private static Result _myGetParameterInt(DspState* state, int index, int* value, byte* valueStr)
+            {
+                if (index != 2)
+                {
+                    return Result.Err_Invalid_Param;
+                }
+
+                var managedState = GetManagedState(state);
+
+                *value = managedState.channels;
 
                 return Result.Ok;
             }
@@ -201,16 +221,6 @@ namespace Examples
             }
 
             public ReadOnlySpan<float> Data => this.buffer.AsSpan(0, this.lengthSamples * this.channels);
-
-            public float Volume
-            {
-                get => this.volumeLinear;
-                set => this.volumeLinear = Math.Clamp(value, 0f, 1f);
-            }
-
-            public int Channels => this.channels;
-
-            public int LengthSamples => this.lengthSamples;
 
             // A little look into C# intrinsics, .NET Core 3+ only
             private static void AdjustVolumeAllSamples(float* inbuffer, float* outbuffer, int length, float volume)
@@ -334,7 +344,6 @@ namespace Examples
             channel.Paused = false;
 
             System.GetDSPBufferSize(out var sampleLen, out _);
-            dsp.GetChannelFormat(out _, out var channels, out _);
 
             do
             {
@@ -345,6 +354,7 @@ namespace Examples
                 bool bypass = dsp.Bypass;
                 var volume = dsp.GetParameterFloat(1);
                 var ptr = dsp.GetParameterData(0, out var len);
+                var channels = dsp.GetParameterInt(2);
 
                 var data = new ReadOnlySpan<float>(ptr, (int)len);
 
@@ -391,7 +401,7 @@ namespace Examples
             if (sound != default)
                 sound.Dispose();
 
-            if ((FmodAudio.Base.DspHandle)dsp != default)
+            if (dsp != default)
             {
                 masterGroup.RemoveDSP(dsp);
                 dsp.Dispose();
