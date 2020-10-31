@@ -556,16 +556,11 @@ namespace FmodAudio
             }
 
             SoundHandle handle;
-
-            fixed(byte* dataPtr = FmodHelpers.ToUTF8NullTerminated(Filename))
-            {
-                library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, true), info, &handle).CheckResult();
-            }
-
+            library.System_CreateSound(Handle, Filename, mode, info, &handle);
             return handle;
         }
 
-        public unsafe SoundHandle CreateSound(ReadOnlySpan<byte> data, Mode mode, CreateSoundInfo info)
+        public unsafe Sound CreateSound(ReadOnlySpan<byte> data, Mode mode, CreateSoundInfo info)
         {
             if (info == null)
             {
@@ -579,7 +574,7 @@ namespace FmodAudio
 
             if (data.Length < info.Length)
             {
-                throw new ArgumentException("data length less than length specified in CreateSoundInfo structure.");
+                throw new ArgumentOutOfRangeException(nameof(data) + ".Length", "data length less than length specified in CreateSoundInfo structure.");
             }
 
             SoundHandle handle;
@@ -589,6 +584,13 @@ namespace FmodAudio
                 library.System_CreateSound(Handle, dataPtr, MemoryBits(mode, false), info, &handle).CheckResult();
             }
 
+            return handle;
+        }
+
+        public unsafe Sound CreateSound(byte* ptr, Mode mode, CreateSoundInfo? info)
+        {
+            SoundHandle handle;
+            library.System_CreateSound(Handle, ptr, mode, info, &handle).CheckResult();
             return handle;
         }
 
@@ -609,7 +611,7 @@ namespace FmodAudio
 
             SoundHandle handle;
 
-            library.System_CreateSound(Handle, null, mode, info, &handle).CheckResult();
+            library.System_CreateSound(Handle, (byte*)null, mode, info, &handle).CheckResult();
 
             return handle;
         }
@@ -622,9 +624,7 @@ namespace FmodAudio
         public unsafe DspHandle CreateDSP(in DspDescriptionStruct description)
         {
             DspHandle handle;
-            fixed (DspDescriptionStruct* pDescription = &description)
-                library.System_CreateDSP(Handle, pDescription, &handle).CheckResult();
-
+            library.System_CreateDSP(Handle, in description, &handle).CheckResult();
             return handle;
         }
 

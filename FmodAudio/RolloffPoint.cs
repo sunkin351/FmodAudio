@@ -1,4 +1,6 @@
-﻿namespace FmodAudio
+﻿#pragma warning disable CS0414
+
+namespace FmodAudio
 {
     /// <summary>
     /// Represents a 3D Rolloff point

@@ -291,7 +291,9 @@ namespace FmodAudio.DigitalSignalProcessing
         public unsafe float GetParameterFloat(int index)
         {
             CheckParamIndex(index);
-            library.DSP_GetParameterFloat(Handle, index, out float value).CheckResult();
+
+            float value;
+            library.DSP_GetParameterFloat(Handle, index, &value).CheckResult();
             return value;
         }
 
@@ -307,7 +309,9 @@ namespace FmodAudio.DigitalSignalProcessing
         public unsafe bool GetParameterBool(int index)
         {
             CheckParamIndex(index);
-            library.DSP_GetParameterBool(Handle, index, out FmodBool value).CheckResult();
+
+            FmodBool value;
+            library.DSP_GetParameterBool(Handle, index, &value).CheckResult();
             return value;
         }
 

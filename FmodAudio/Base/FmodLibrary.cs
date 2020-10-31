@@ -640,6 +640,22 @@ namespace FmodAudio.Base
             }
         }
 
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, CreateSoundInfoStruct* info, SoundHandle* sound)
+        {
+            fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
+            {
+                return System_CreateSound(system, pName, mode, info, sound);
+            }
+        }
+
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, CreateSoundInfoStruct* info, out SoundHandle sound)
+        {
+            fixed (SoundHandle* pSound = &sound)
+            {
+                return System_CreateSound(system, name, mode, info, pSound);
+            }
+        }
+
         public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, SoundHandle* sound)
         {
             fixed (CreateSoundInfoStruct* pInfo = &info)
@@ -650,10 +666,25 @@ namespace FmodAudio.Base
 
         public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, out SoundHandle sound)
         {
-            fixed (CreateSoundInfoStruct* pInfo = &info)
             fixed (SoundHandle* pSound = &sound)
             {
-                return System_CreateSound(system, nameOrData, mode, pInfo, pSound);
+                return System_CreateSound(system, nameOrData, mode, ref info, pSound);
+            }
+        }
+
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, ref CreateSoundInfoStruct info, SoundHandle* sound)
+        {
+            fixed (CreateSoundInfoStruct* pInfo = &info)
+            {
+                return System_CreateSound(system, name, mode, pInfo, sound);
+            }
+        }
+
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, ref CreateSoundInfoStruct info, out SoundHandle sound)
+        {
+            fixed (SoundHandle* pSound = &sound)
+            {
+                return System_CreateSound(system, name, mode, ref info, pSound);
             }
         }
 
@@ -667,7 +698,7 @@ namespace FmodAudio.Base
             return System_CreateSound(system, nameOrData, mode, ref info.Struct, sound);
         }
 
-        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo info, out SoundHandle sound)
+        public Result System_CreateSound(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo? info, out SoundHandle sound)
         {
             if (info is null)
             {
@@ -677,58 +708,30 @@ namespace FmodAudio.Base
             return System_CreateSound(system, nameOrData, mode, ref info.Struct, out sound);
         }
 
-        [InteropMethod]
-        public partial Result System_CreateStream(SystemHandle system, byte* name_or_data, Mode mode, CreateSoundInfoStruct* exinfo, SoundHandle* sound);
-
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfoStruct* info, out SoundHandle sound)
-        {
-            fixed (SoundHandle* pSound = &sound)
-            {
-                return System_CreateStream(system, nameOrData, mode, info, pSound);
-            }
-        }
-
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, SoundHandle* sound)
-        {
-            fixed (CreateSoundInfoStruct* pInfo = &info)
-            {
-                return System_CreateStream(system, nameOrData, mode, pInfo, sound);
-            }
-        }
-
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, ref CreateSoundInfoStruct info, out SoundHandle sound)
-        {
-            fixed (CreateSoundInfoStruct* pInfo = &info)
-            fixed (SoundHandle* pSound = &sound)
-            {
-                return System_CreateStream(system, nameOrData, mode, pInfo, pSound);
-            }
-        }
-
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo info, SoundHandle* sound)
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, CreateSoundInfo? info, SoundHandle* sound)
         {
             if (info is null)
             {
-                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfoStruct*)null, sound);
+                return System_CreateSound(system, name, mode, (CreateSoundInfoStruct*)null, sound);
             }
 
-            return System_CreateStream(system, nameOrData, mode, ref info.Struct, sound);
+            return System_CreateSound(system, name, mode, ref info.Struct, sound);
         }
 
-        public Result System_CreateStream(SystemHandle system, byte* nameOrData, Mode mode, CreateSoundInfo info, out SoundHandle sound)
+        public Result System_CreateSound(SystemHandle system, string name, Mode mode, CreateSoundInfo? info, out SoundHandle sound)
         {
             if (info is null)
             {
-                return System_CreateStream(system, nameOrData, mode, (CreateSoundInfoStruct*)null, out sound);
+                return System_CreateSound(system, name, mode, (CreateSoundInfoStruct*)null, out sound);
             }
 
-            return System_CreateStream(system, nameOrData, mode, ref info.Struct, out sound);
+            return System_CreateSound(system, name, mode, ref info.Struct, out sound);
         }
 
         [InteropMethod]
         public partial Result System_CreateDSP(SystemHandle system, DspDescriptionStruct* description, DspHandle* dsp);
 
-        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, DspHandle* dsp)
+        public Result System_CreateDSP(SystemHandle system, in DspDescriptionStruct description, DspHandle* dsp)
         {
             fixed (DspDescriptionStruct* pDescription = &description)
             {
@@ -736,12 +739,11 @@ namespace FmodAudio.Base
             }
         }
 
-        public Result System_CreateDSP(SystemHandle system, ref DspDescriptionStruct description, out DspHandle dsp)
+        public Result System_CreateDSP(SystemHandle system, in DspDescriptionStruct description, out DspHandle dsp)
         {
-            fixed (DspDescriptionStruct* pDescription = &description)
             fixed (DspHandle* pDsp = &dsp)
             {
-                return System_CreateDSP(system, pDescription, pDsp);
+                return System_CreateDSP(system, in description, pDsp);
             }
         }
 
@@ -777,10 +779,9 @@ namespace FmodAudio.Base
 
         public Result System_CreateChannelGroup(SystemHandle system, string name, out ChannelGroupHandle channelGroup)
         {
-            fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             fixed (ChannelGroupHandle* pChannelGroup = &channelGroup)
             {
-                return System_CreateChannelGroup(system, pName, pChannelGroup);
+                return System_CreateChannelGroup(system, name, pChannelGroup);
             }
         }
 
@@ -805,10 +806,9 @@ namespace FmodAudio.Base
 
         public Result System_CreateSoundGroup(SystemHandle system, string name, out SoundGroupHandle soundGroup)
         {
-            fixed (byte* pName = FmodHelpers.ToUTF8NullTerminated(name))
             fixed (SoundGroupHandle* pSoundGroup = &soundGroup)
             {
-                return System_CreateSoundGroup(system, pName, pSoundGroup);
+                return System_CreateSoundGroup(system, name, pSoundGroup);
             }
         }
 
@@ -2848,6 +2848,11 @@ namespace FmodAudio.Base
             {
                 return DSP_GetParameterBool(dsp, index, pValue, valuestr, valuestrlen);
             }
+        }
+
+        public Result DSP_GetParameterBool(DspHandle dsp, int index, FmodBool* value)
+        {
+            return DSP_GetParameterBool(dsp, index, value, null, 0);
         }
 
         public Result DSP_GetParameterBool(DspHandle dsp, int index, out FmodBool value)
