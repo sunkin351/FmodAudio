@@ -1,11 +1,13 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
+
+using Examples.Base;
+
+using FmodAudio;
 
 namespace Examples
 {
-    using Base;
-    using FmodAudio;
-
     static class Program
     {
         private static readonly SelectionUI UI;
@@ -107,7 +109,12 @@ namespace Examples
         {
             ConsoleHelpers.Initialize();
 
-            Fmod.SetLibraryLocation(@"D:\Programming\FMOD2\api\core\lib\x64");
+            //Path to the native library location can be given as the first argument for this example application
+            //Alternatively, the OS can attempt to find it in the default locations (OS Specific)
+            if (args.Length >= 1 && VerifyPath(args[0]))
+            {
+                Fmod.SetLibraryLocation(args[0]);
+            }
 
             while (true)
             {
@@ -120,6 +127,20 @@ namespace Examples
 
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
             }
+        }
+
+        private static bool VerifyPath(string path)
+        {
+            var invalidPathChars = Path.GetInvalidPathChars();
+
+            if (path.IndexOfAny(invalidPathChars) >= 0)
+            {
+                Console.WriteLine("Invalid path characters found. Default OS search paths will be searched.");
+                Console.ReadLine();
+                return false;
+            }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
