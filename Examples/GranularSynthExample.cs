@@ -94,7 +94,7 @@ namespace Examples
 
                 Sleep(10);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()

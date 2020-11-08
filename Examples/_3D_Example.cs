@@ -119,7 +119,7 @@ namespace Examples
                 
                 Sleep(InterfaceUpdateTime - 1);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()

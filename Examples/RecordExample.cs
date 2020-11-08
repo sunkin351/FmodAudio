@@ -3,17 +3,19 @@ using System;
 
 namespace Examples
 {
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Base;
     using FmodAudio.Base;
 
     public class RecordExample : Example
     {
-        const int DriverIndex = 0;
         const int Drift_MS = 1;
         const int Latency_MS = 50;
 
+        int DriverIndex;
         uint LastRecordPos;
-        uint MinRecordDelta;
+        uint MinRecordDelta = uint.MaxValue;
         uint LastPlayPos;
         int nativeRate;
         bool dspEnabled = false;
@@ -35,22 +37,15 @@ namespace Examples
 
         public override void Initialize()
         {
-            LastRecordPos = 0;
-            MinRecordDelta = uint.MaxValue;
-            LastPlayPos = 0;
-
             base.Initialize();
 
             System.Init(32);
 
-            System.GetRecordDriverCount(out _, out int numDrivers);
-
-            if (numDrivers == 0)
+            if (!ChooseRecordDevice(out var recordDriverInfo, out DriverIndex))
             {
-                throw new Exception("No recording devices found/plugged in!  Aborting.");
+                ShouldEndExample = true;
+                return;
             }
-
-            RecordDriverInfo recordDriverInfo = System.GetRecordDriverInfo(DriverIndex);
 
             nativeRate = recordDriverInfo.SystemRate;
 
@@ -144,11 +139,11 @@ namespace Examples
                     int playbackRate = nativeRate;
                     if (actualLatency < (int)(adjustedLatency - driftThreshold))
                     {
-                        playbackRate = nativeRate - (nativeRate / 50); //Play position is catching up to the record position, slow playback down by 2%
+                        playbackRate -= (nativeRate / 50); //Play position is catching up to the record position, slow playback down by 2%
                     }
                     else if (actualLatency > (int)(adjustedLatency + driftThreshold))
                     {
-                        playbackRate = nativeRate + (nativeRate / 50); //Play position is falling behind the record position, speed playback up by 2%
+                        playbackRate += (nativeRate / 50); //Play position is falling behind the record position, speed playback up by 2%
                     }
 
                     channel.Frequency = playbackRate;
@@ -173,7 +168,7 @@ namespace Examples
 
                 Sleep(10);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()
@@ -192,6 +187,87 @@ namespace Examples
             }
 
             base.Dispose();
+        }
+
+        private bool ChooseRecordDevice([NotNullWhen(true)] out RecordDriverInfo? driverInfo, out int driverIndex)
+        {
+            driverInfo = null;
+            driverIndex = -1;
+
+            System.GetRecordDriverCount(out int driverCount, out int connectedCount);
+
+            if (driverCount == 0)
+            {
+                ConsoleHelpers.Draw("No recording devices found!");
+                Sleep(5000);
+                return false;
+            }
+
+            if (connectedCount == 0)
+            {
+                throw new Exception("No connected recording devices");
+            }
+
+            List<RecordDriverInfo> list = new List<RecordDriverInfo>(driverCount);
+
+            for (int i = 0; i < driverCount; ++i)
+            {
+                list.Add(System.GetRecordDriverInfo(i));
+            }
+
+            ConsoleHelpers.Draw("Select a record device:");
+
+            Span<char> buffer = stackalloc char[ConsoleHelpers.ColumnCount];
+
+            buffer[1] = '[';
+            buffer[3] = ']';
+
+            int selection = 0;
+
+            while (true)
+            {
+                ConsoleHelpers.SetCursorRow(1);
+
+                for (int i = 0; i < driverCount; ++i)
+                {
+                    var info = list[i];
+
+                    if (i == selection)
+                    {
+                        buffer[2] = info.State == DriverState.Connected ? '-' : 'x';
+                    }
+                    else
+                    {
+                        buffer[2] = char.MinValue;
+                    }
+
+                    ReadOnlySpan<char> name = info.DriverName;
+                    var nameBuffer = buffer.Slice(5);
+
+                    if (!name.TryCopyTo(nameBuffer))
+                    {
+                        name.Slice(0, nameBuffer.Length).CopyTo(nameBuffer);
+                    }
+
+                    ConsoleHelpers.Draw(buffer);
+                }
+
+                switch (Console.ReadKey(true).Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        selection = Math.Clamp(selection - 1, 0, driverCount - 1);
+                        break;
+                    case ConsoleKey.DownArrow:
+                        selection = Math.Clamp(selection + 1, 0, driverCount - 1);
+                        break;
+                    case ConsoleKey.Enter:
+                        driverInfo = list[selection];
+                        driverIndex = selection;
+                        return true;
+                    case ConsoleKey.Escape:
+                        return false;
+                }
+            }
         }
     }
 }

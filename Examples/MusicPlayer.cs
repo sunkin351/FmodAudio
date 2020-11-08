@@ -81,7 +81,7 @@ namespace Examples
 
                 Sleep(10);
             }
-            while (!ShouldExit && channel.IsPlaying);
+            while (!ShouldEndExample && channel.IsPlaying);
         }
 
         public override void Dispose()
@@ -102,8 +102,6 @@ namespace Examples
             ConsoleHelpers.SetCursorRow(4);
 
             Console.Write(":> ");
-
-            var Out = Console.Out;
 
             var path = Console.ReadLine();
 

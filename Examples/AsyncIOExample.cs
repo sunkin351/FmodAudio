@@ -171,7 +171,7 @@ namespace Examples
     public unsafe class AsyncIOExample : Example
     {
         //Static variables
-        private static FileHandleManager Manager = new();
+        private static readonly FileHandleManager Manager = new();
 
         private Sound sound;
 
@@ -235,7 +235,7 @@ namespace Examples
 
                 Sleep(50);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()

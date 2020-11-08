@@ -180,7 +180,7 @@ namespace Examples
 
                 Sleep(50);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()

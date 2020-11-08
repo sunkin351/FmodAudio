@@ -106,7 +106,7 @@ namespace Examples
 
                 Sleep(50);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
             
             master.RemoveDSP(dspLowpass);
             master.RemoveDSP(dspHighpass);

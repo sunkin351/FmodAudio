@@ -77,7 +77,7 @@ namespace Examples
 
                 Sleep(50);
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
 
             //A little fade out over 2 seconds
             float pitch = 1.0f, vol = 1.0f;

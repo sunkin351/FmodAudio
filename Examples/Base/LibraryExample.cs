@@ -15,7 +15,7 @@ namespace Examples.Base
 
         private readonly Dictionary<ConsoleKey, Action> Commands = new Dictionary<ConsoleKey, Action>();
 
-        protected bool ShouldExit { get; private set; }
+        public bool ShouldEndExample { get; protected set; }
 
         private int ConsoleUpdateStart;
 
@@ -26,7 +26,7 @@ namespace Examples.Base
 
         public virtual void Initialize()
         {
-            ShouldExit = false;
+            ShouldEndExample = false;
             ConsoleUpdateStart = 0;
 
             System = Fmod.CreateSystem();
@@ -103,7 +103,7 @@ namespace Examples.Base
 
                 if (info.Key == ConsoleKey.Escape)
                 {
-                    ShouldExit = true;
+                    ShouldEndExample = true;
                     return;
                 }
 

@@ -107,14 +107,14 @@ namespace Examples
 
         private static void Main(string[] args)
         {
-            ConsoleHelpers.Initialize();
-
             //Path to the native library location can be given as the first argument for this example application
             //Alternatively, the OS can attempt to find it in the default locations (OS Specific)
             if (args.Length >= 1 && VerifyPath(args[0]))
             {
                 Fmod.SetLibraryLocation(args[0]);
             }
+
+            ConsoleHelpers.Initialize();
 
             while (true)
             {
@@ -156,7 +156,11 @@ namespace Examples
             try
             {
                 example.Initialize();
-                example.Run();
+
+                if (!example.ShouldEndExample)
+                {
+                    example.Run();
+                }
             }
             catch (Exception e)
             {

@@ -108,7 +108,7 @@ namespace Examples
                 DrawText($"Channels Playing: {channelsPlaying}");
 
             }
-            while (!ShouldExit);
+            while (!ShouldEndExample);
         }
 
         public override void Dispose()

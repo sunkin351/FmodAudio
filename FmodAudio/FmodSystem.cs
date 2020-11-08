@@ -99,21 +99,6 @@ namespace FmodAudio
 
         #endregion
 
-        #region UtilityFunctions
-        
-        internal static void ReportErrorAndCrash(Result res)
-        {
-            if (res == Result.Ok)
-                return;
-
-            Console.WriteLine($"Unexpected Error Crash: {res} caught while releasing FmodAudio Resource in destructor.");
-            Console.WriteLine($"Details: {FmodHelpers.GetErrorMessage(res)}");
-
-            Environment.Exit(-255);
-        }
-
-        #endregion
-
         #region Plugin-Support
 
         public unsafe void SetPluginPath(string path)
