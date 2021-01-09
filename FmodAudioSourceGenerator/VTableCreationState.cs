@@ -192,6 +192,31 @@ namespace FmodAudio
                 );
             }
 
+            var libraryHandleProperty = SyntaxFactory.PropertyDeclaration(
+                default,
+                SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)),
+                SyntaxFactory.IdentifierName("IntPtr"),
+                default,
+                SyntaxFactory.Identifier("LibraryHandle"),
+                SyntaxFactory.AccessorList(
+                    SyntaxFactory.SingletonList(
+                        SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                    )
+                )
+            );
+
+            var libHandleSetStatement = SyntaxFactory.ExpressionStatement(
+                SyntaxFactory.AssignmentExpression(
+                    SyntaxKind.SimpleAssignmentExpression,
+                    SyntaxFactory.IdentifierName("LibraryHandle"),
+                    LibParamName
+                )
+            );
+
+            ClassMembers.Add(libraryHandleProperty);
+            ConstructorStatements.Add(libHandleSetStatement);
+
             if (Context.CancellationToken.IsCancellationRequested)
                 return null;
 
