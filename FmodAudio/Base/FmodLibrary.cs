@@ -11,14 +11,6 @@ namespace FmodAudio.Base
     [VTable]
     public unsafe sealed partial class FmodLibrary
     {
-        [NotNull]
-        private readonly Fmod.NativeLibraryHandle? Handle;
-
-        internal FmodLibrary(Fmod.NativeLibraryHandle handle) : this(handle.DangerousGetHandle())
-        {
-            Handle = handle;
-        }
-
         #region Global Functions
         /// <summary>
         /// Specifies a method for FMOD to allocate memory.

@@ -102,28 +102,9 @@ namespace FmodAudio
 
         #region Native loading and System instantiation
 
-        internal class NativeLibraryHandle : SafeHandle
-        {
-            public NativeLibraryHandle(IntPtr handle) : base(default, true)
-            {
-                this.handle = handle;
-            }
-
-            protected override bool ReleaseHandle()
-            { 
-                NativeLibrary.Free(handle);
-                handle = default;
-                return true;
-            }
-
-            public override bool IsInvalid => handle == default;
-        }
-
         private static readonly Lazy<FmodLibrary> nativeLibrary = new Lazy<FmodLibrary>(() =>
         {
-            var libHandle = new NativeLibraryHandle(NativeLibrary.Load(location ?? DefaultLibraryName));
-
-            return new FmodLibrary(libHandle);
+            return new FmodLibrary(NativeLibrary.Load(location ?? DefaultLibraryName));
         });
 
         public static FmodLibrary Library => nativeLibrary.Value;
