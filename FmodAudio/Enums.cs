@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace FmodAudio
 {
@@ -1331,6 +1331,7 @@ namespace FmodAudio
         /// <summary>
         /// Called from <see cref="FmodSystem.Update"/> when an output device has been lost due to control panel parameter changes and FMOD cannot automatically recover.
         /// </summary>
+        [Obsolete(Fmod.Deprecation_Message)]
         DeviceLost = 0x00000002,
 
         /// <summary>
@@ -1344,8 +1345,9 @@ namespace FmodAudio
         ThreadCreated = 0x00000008,
 
         /// <summary>
-        /// Called when a bad connection was made with DSP::addInput. Usually called from mixer thread because that is where the connections are made.
+        /// Called when a bad connection was made with <see cref="DigitalSignalProcessing.Dsp.AddInput"/>. Usually called from mixer thread because that is where the connections are made.
         /// </summary>
+        [Obsolete(Fmod.Deprecation_Message)]
         BadDSPConnection = 0x00000010,
 
         /// <summary>
@@ -1387,6 +1389,16 @@ namespace FmodAudio
         /// Called from System::update when the enumerated list of recording devices has changed.
         /// </summary>
         RecordListChanged = 0x00001000,
+
+        /// <summary>
+        /// Called from the feeder thread after audio was consumed from the ring buffer, but not enough to allow another mix to run.
+        /// </summary>
+        BufferedNoMix = 0x00002000,
+
+        /// <summary>
+        /// Called from <see cref="FmodSystem.Update"/> when an output device is re-initialized.
+        /// </summary>
+        DeviceReinitialize = 0x00004000,
 
         /// <summary>
         /// Pass this mask to System.SetCallback() to receive all callback types.

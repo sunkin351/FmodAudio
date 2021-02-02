@@ -197,6 +197,15 @@ namespace FmodAudio
             return ptr;
         }
 
+        public DspDescriptionStruct* GetDspInfoByType(DSPType type)
+        {
+            DspDescriptionStruct* ptr;
+
+            library.System_GetDSPInfoByType(Handle, type, &ptr).CheckResult();
+
+            return ptr;
+        }
+
         public PluginHandle RegisterCodec(ref Codec.CodecDescriptionStruct description, uint priority = 0)
         {
             PluginHandle handle = default;

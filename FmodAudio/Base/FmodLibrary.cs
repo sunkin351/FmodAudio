@@ -396,6 +396,17 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
+        public partial Result System_GetDSPInfoByType(SystemHandle system, DSPType type, DspDescriptionStruct** description);
+
+        public Result System_GetDSPInfoByType(SystemHandle system, DSPType type, out DspDescriptionStruct* description)
+        {
+            fixed (DspDescriptionStruct** pDescription = &description)
+            {
+                return System_GetDSPInfoByType(system, type, pDescription);
+            }
+        }
+
+        [InteropMethod]
         public partial Result System_RegisterCodec(SystemHandle system, CodecDescriptionStruct* description, PluginHandle* handle, uint priority);
 
         public Result System_RegisterCodec(SystemHandle system, ref CodecDescriptionStruct description, PluginHandle* handle, uint priority)
