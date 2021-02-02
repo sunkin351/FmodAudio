@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace FmodAudio
 {
@@ -330,7 +330,7 @@ namespace FmodAudio
         Thread_Unsafe = 0x00100000,
 
         /// <summary>
-        /// Slower, but adds level metering for every single DSP unit in the graph.  Use DSP::setMeteringEnabled to turn meters off individually.
+        /// Slower, but adds level metering for every single DSP unit in the graph.  Use <see cref="DigitalSignalProcessing.Dsp.SetMeteringEnabled"/> to turn meters off individually.
         /// </summary>
         Profile_Meter_All = 0x00200000,
 
@@ -345,12 +345,12 @@ namespace FmodAudio
         Normal = 0x00000000,
 
         /// <summary>
-        /// Stream file buffer, size controllable with System::setStreamBufferSize.
+        /// Stream file buffer, size controllable with <see cref="FmodSystem.SetStreamBufferSize"/>.
         /// </summary>
         Stream_File = 0x00000001,
 
         /// <summary>
-        /// Stream decode buffer, size controllable with FMOD_CREATESOUNDEXINFO::decodebuffersize.
+        /// Stream decode buffer, size controllable with <see cref="CreateSoundInfoStruct.DecodeBufferSize"/>.
         /// </summary>
         Stream_Decode = 0x00000002,
 
@@ -544,30 +544,75 @@ namespace FmodAudio
 
     public enum OpenState : int
     {
-        Ready = 0,       /* Opened and ready to play */
-        Loading,         /* Initial load in progress */
-        Error,           /* Failed to open - file not found, out of memory etc.  See return value of Sound::getOpenState for what happened. */
-        Connecting,      /* Connecting to remote host (internet sounds only) */
-        Buffering,       /* Buffering data */
-        Seeking,         /* Seeking to subsound and re-flushing stream buffer. */
-        Playing,         /* Ready and playing, but not possible to release at this time without stalling the main thread. */
-        SetPosition,     /* Seeking within a stream to a different position. */
+        /// <summary>
+        /// Opened and ready to play
+        /// </summary>
+        Ready = 0,
+        /// <summary>
+        /// Initial load in progress
+        /// </summary>
+        Loading,         /*  */
+        /// <summary>
+        /// Failed to open - file not found, out of memory etc.  See return value of <see cref="Sound.GetOpenState"/> for what happened.
+        /// </summary>
+        Error,           /*  */
+        /// <summary>
+        /// Connecting to remote host (internet sounds only)
+        /// </summary>
+        Connecting,
+        /// <summary>
+        /// Buffering data
+        /// </summary>
+        Buffering,       /*  */
+        /// <summary>
+        /// Seeking to subsound and re-flushing stream buffer.
+        /// </summary>
+        Seeking,         /*  */
+        /// <summary>
+        /// Ready and playing, but not possible to release at this time without stalling the main thread.
+        /// </summary>
+        Playing,         /*  */
+        /// <summary>
+        /// Seeking within a stream to a different position.
+        /// </summary>
+        SetPosition,     /*  */
 
-        Max,             /* Maximum number of open state types. */
+        /// <summary>
+        /// Maximum number of open state types.
+        /// </summary>
+        Max,             /*  */
     }
 
     /// <summary>
-    /// These output types are used with System::setOutput / System::getOutput, to choose which output method to use.
+    /// These output types are used with <see cref="FmodSystem.Output"/>, to choose which output method to use.
     /// </summary>
     public enum OutputType : int
     {
-        Autodetect,      /* Picks the best output mode for the platform. This is the default. */
+        /// <summary>
+        /// Picks the best output mode for the platform. This is the default.
+        /// </summary>
+        Autodetect,      /*  */
 
-        Unknown,         /* All - 3rd party plugin, unknown. This is for use with System::getOutput only. */
-        NoSound,         /* All - Perform all mixing but discard the final output. */
-        WavWriter,       /* All - Writes output to a .wav file. */
-        NoSound_NRT,     /* All - Non-realtime version of FMOD_OUTPUTTYPE_NOSOUND. User can drive mixer with System::update at whatever rate they want. */
-        WavWriter_NRT,   /* All - Non-realtime version of FMOD_OUTPUTTYPE_WAVWRITER. User can drive mixer with System::update at whatever rate they want. */
+        /// <summary>
+        /// All - 3rd party plugin, unknown. This is for use with <see cref="FmodSystem.get_Output"/> only.
+        /// </summary>
+        Unknown,         /*  */
+        /// <summary>
+        /// All - Perform all mixing but discard the final output.
+        /// </summary>
+        NoSound,         /*  */
+        /// <summary>
+        /// All - Writes output to a .wav file.
+        /// </summary>
+        WavWriter,       /*  */
+        /// <summary>
+        /// All - Non-realtime version of FMOD_OUTPUTTYPE_NOSOUND. User can drive mixer with <see cref="FmodSystem.Update"/> at whatever rate they want.
+        /// </summary>
+        NoSound_NRT,     /*  */
+        /// <summary>
+        /// All - Non-realtime version of FMOD_OUTPUTTYPE_WAVWRITER. User can drive mixer with <see cref="FmodSystem.Update"/> at whatever rate they want.
+        /// </summary>
+        WavWriter_NRT,   /*  */
 
         WASAPI,          /* Win/WinStore/XboxOne - Windows Audio Session API.           (Default on Windows Vista and above, Xbox One and Windows Store Applications) */
         ASIO,            /* Win                  - Low latency ASIO 2.0. */
@@ -951,7 +996,7 @@ namespace FmodAudio
         Err_Unimplemented,
 
         /// <summary>
-        /// This command failed because System::init or System::setDriver was not called.
+        /// This command failed because <see cref="FmodSystem.Init"/> or <see cref="FmodSystem.set_CurrentDriver"/> was not called.
         /// </summary>
         Err_Uninitialized,
 
@@ -1376,17 +1421,17 @@ namespace FmodAudio
         ThreadDestroyed = 0x00000200,
 
         /// <summary>
-        /// Called at start of System.Update() function.
+        /// Called at start of <see cref="FmodSystem.Update"/> function.
         /// </summary>
         PreUpdate = 0x00000400,
 
         /// <summary>
-        /// Called at end of System::update function.
+        /// Called at end of <see cref="FmodSystem.Update"/> function.
         /// </summary>
         PostUpdate = 0x00000800,
 
         /// <summary>
-        /// Called from System::update when the enumerated list of recording devices has changed.
+        /// Called from <see cref="FmodSystem.Update"/> when the enumerated list of recording devices has changed.
         /// </summary>
         RecordListChanged = 0x00001000,
 
@@ -1446,24 +1491,58 @@ namespace FmodAudio
 
     public enum SoundGroupBehavior : int
     {
-        Fail,              /* Any sound played that puts the sound count over the SoundGroup::setMaxAudible setting, will simply fail during System::playSound. */
-        Mute,              /* Any sound played that puts the sound count over the SoundGroup::setMaxAudible setting, will be silent, then if another sound in the group stops the sound that was silent before becomes audible again. */
-        StealLowest,       /* Any sound played that puts the sound count over the SoundGroup::setMaxAudible setting, will steal the quietest / least important sound playing in the group. */
+        /// <summary>
+        /// Any sound played that puts the sound count over the <see cref="SoundGroup.MaxAudible"/> setting,
+        /// will simply fail during <see cref="FmodSystem.PlaySound(Base.SoundHandle, Base.ChannelGroupHandle, bool)"/>.
+        /// </summary>
+        Fail,
+        /// <summary>
+        /// Any sound played that puts the sound count over the <see cref="SoundGroup.MaxAudible"/> setting, will be silent, then if another sound in the group stops the sound that was silent before becomes audible again.
+        /// </summary>
+        Mute,
+        /// <summary>
+        /// Any sound played that puts the sound count over the <see cref="SoundGroup.MaxAudible"/> setting, will steal the quietest / least important sound playing in the group.
+        /// </summary>
+        StealLowest,
 
-        MAX,               /* Maximum number of sound group behaviors. */
+        Max,               /* Maximum number of sound group behaviors. */
     }
 
     [Flags]
     public enum TimeUnit : uint
     {
-        MS = 0x00000001,  /* Milliseconds. */
-        PCM = 0x00000002,  /* PCM Samples, related to milliseconds * samplerate / 1000. */
-        PCMBytes = 0x00000004,  /* Bytes, related to PCM samples * channels * datawidth (ie 16bit = 2 bytes). */
-        RAWBytes = 0x00000008,  /* Raw file bytes of (compressed) sound data (does not include headers).  Only used by Sound::getLength and Channel::getPosition. */
-        PCMFraction = 0x00000010,  /* Fractions of 1 PCM sample.  Unsigned int range 0 to 0xFFFFFFFF.  Used for sub-sample granularity for DSP purposes. */
-        ModOrder = 0x00000100,  /* MOD/S3M/XM/IT.  Order in a sequenced module format.  Use Sound::getFormat to determine the format. */
-        ModRow = 0x00000200,  /* MOD/S3M/XM/IT.  Current row in a sequenced module format.  Cannot use with Channel::setPosition.  Sound::getLength will return the number if rows in the currently playing or seeked to pattern. */
-        ModPattern = 0x00000400,  /* MOD/S3M/XM/IT.  Current pattern in a sequenced module format.  Cannot use with Channel::setPosition.  Sound::getLength will return the number of patterns in the song and Channel::getPosition will return the currently playing pattern. */
+        /// <summary>
+        /// Milliseconds
+        /// </summary>
+        MS = 0x00000001,
+        /// <summary>
+        /// PCM Samples, related to milliseconds * samplerate / 1000.
+        /// </summary>
+        PCM = 0x00000002,
+        /// <summary>
+        /// Bytes, related to PCM samples * channels * datawidth (ie 16bit = 2 bytes).
+        /// </summary>
+        PCMBytes = 0x00000004,  /*  */
+        /// <summary>
+        /// Raw file bytes of (compressed) sound data (does not include headers).  Only used by <see cref="Sound.GetLength(TimeUnit)"/> and <see cref="Channel.GetPosition(TimeUnit)"/>.
+        /// </summary>
+        RAWBytes = 0x00000008,  /*  */
+        /// <summary>
+        /// Fractions of 1 PCM sample.  Unsigned int range 0 to 0xFFFFFFFF.  Used for sub-sample granularity for DSP purposes.
+        /// </summary>
+        PCMFraction = 0x00000010,  /*  */
+        /// <summary>
+        /// MOD/S3M/XM/IT.  Order in a sequenced module format.  Use <see cref="Sound.GetFormat(out SoundType, out SoundFormat, out int, out int)"/> to determine the format.
+        /// </summary>
+        ModOrder = 0x00000100,  /*  */
+        /// <summary>
+        /// MOD/S3M/XM/IT.  Current row in a sequenced module format.  Cannot use with <see cref="Channel.SetPosition"/>.  <see cref="Sound.GetLength"/> will return the number if rows in the currently playing or seeked to pattern.
+        /// </summary>
+        ModRow = 0x00000200,  /*  */
+        /// <summary>
+        /// MOD/S3M/XM/IT.  Current pattern in a sequenced module format.  Cannot use with <see cref="Channel.SetPosition"/>.  <see cref="Sound.GetLength"/> will return the number of patterns in the song and <see cref="Channel.GetPosition"/> will return the currently playing pattern.
+        /// </summary>
+        ModPattern = 0x00000400,  /*  */
     }
 }
 
