@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -12,11 +12,10 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the Fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>- This release is a massive rework of the codebase, and is not backwards compatible with previous versions.
-- This release uses C# Function Pointers, made available in the .NET 5 SDK, and as such, this library will from here on be .NET 5.0+ exclusive. (It also uses a few other features that can only be found in .NET 5.0+)
-- This release frees User Data pointers for FmodAudio users to use again, by defining library types as stateless typed handles. (Mostly, Channel/ChannelGroup/ChannelControl are still classes, but stateless too)
-- This release fixes a bug where on platforms other than windows, the library would look for the native library with an incorrect file name by default.
-- This release removes UserDefinedDsp as function pointers make defining a DSP yourself rather trivial, and you'll probably want control of all the details anyway.</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to support Fmod 2.1.7
+ - Add FmodSystem.GetDspInfoByType() and corresponding function in FmodLibrary
+ - Add SystemCallbackType.BufferedNoMix
+ - Add SystemCallbackType.DeviceReinitialize</PackageReleaseNotes>
   <Nullable>enable</Nullable>
   </PropertyGroup>
 
