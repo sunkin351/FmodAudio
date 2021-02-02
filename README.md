@@ -13,7 +13,7 @@ Alternatively you can now join a Discord server for FmodAudio, and talk with me 
 
 If you wish to contribute, see `CONTRIBUTING.md`
 
-# FmodAudio 2.0.0 will be released to Nuget following .NET 5's official release date.
+# FmodAudio 2.0.0 has been released to Nuget
 
 How to use FmodAudio
 --------------------
