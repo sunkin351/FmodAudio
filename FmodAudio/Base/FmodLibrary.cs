@@ -1,11 +1,9 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-
+using FmodAudio.Base.SGAttributes;
 using FmodAudio.Codec;
 using FmodAudio.DigitalSignalProcessing;
 using FmodAudio.Output;
-using FmodAudio.Base.SGAttributes;
 
 namespace FmodAudio.Base
 {
@@ -395,7 +393,7 @@ namespace FmodAudio.Base
             }
         }
 
-        [InteropMethod]
+        [InteropMethod(true)]
         public partial Result System_GetDSPInfoByType(SystemHandle system, DSPType type, DspDescriptionStruct** description);
 
         public Result System_GetDSPInfoByType(SystemHandle system, DSPType type, out DspDescriptionStruct* description)
