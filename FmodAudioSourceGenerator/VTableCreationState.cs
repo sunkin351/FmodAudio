@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -31,67 +31,28 @@ namespace FmodAudioSourceGenerator
             )
         };
 
+        private static readonly TypeSyntax HandleType = SyntaxFactory.IdentifierName("IntPtr");
+
         internal readonly VTableSyntaxReceiver Receiver;
 
-        private readonly INamedTypeSymbol VTableAttributeClass, WrapperTypeAttributeClass, InteropMethodAttributeClass;
+        private readonly INamedTypeSymbol /*VTableAttributeClass, WrapperTypeAttributeClass,*/ InteropMethodAttributeClass;
 
         public VTableCreationState(in GeneratorExecutionContext context, VTableSyntaxReceiver receiver) : base(in context)
         {
             Receiver = receiver;
 
-            VTableAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.VTableAttribute");
+            //VTableAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.VTableAttribute");
 
-            WrapperTypeAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.WrapperTypeAttribute");
+            //WrapperTypeAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.WrapperTypeAttribute");
 
-            InteropMethodAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.InteropMethodAttribute");
+            InteropMethodAttributeClass = this.Compilation.GetTypeByMetadataName("FmodAudio.Base.SGAttributes.InteropMethodAttribute");
         }
 
         protected override IEnumerable<(string FileNameHint, string SourceText)> AttributeSources
         {
             get
             {
-                const string VTableAttrib =
-@"using System;
-
-namespace FmodAudio
-{
-    [AttributeUsage(AttributeTargets.Class)]
-    internal class VTableAttribute : Attribute
-    {
-    }
-}
-";
-
-                const string WrapperTypeAttribute =
-@"using System;
-
-namespace FmodAudio
-{
-    [AttributeUsage(AttributeTargets.Struct)]
-    internal class WrapperTypeAttribute : Attribute
-    {
-    }
-}
-";
-
-                const string InteropMethodAttribute =
-@"using System;
-
-namespace FmodAudio
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    internal class InteropMethodAttribute : Attribute
-    {
-    }
-}
-";
-
-                return new[]
-                {
-                    ("VTableAttribute", VTableAttrib),
-                    ("WrapperTypeAttribute", WrapperTypeAttribute),
-                    ("InteropMethodAttribute", InteropMethodAttribute)
-                };
+                return Enumerable.Empty<(string, string)>();
             }
         }
 
@@ -99,31 +60,21 @@ namespace FmodAudio
         {
             var marshalContext = new MethodMarshallingContext(this, Receiver.WrapperTypes);
 
-            foreach (var vTable in Receiver.VTableCandidates)
+            var symbol = Compilation.GetTypeByMetadataName("FmodAudio.Base.FmodLibrary");
+
+            if (symbol is null)
+                return;
+
+            var source = ProcessVTableType(marshalContext, symbol);
+
+            if (source != null)
             {
-                var model = GetSemanticModel(vTable.SyntaxTree);
-
-                var symbol = model.GetDeclaredSymbol(vTable);
-
-                var source = ProcessVTableType(marshalContext, symbol);
-
-                if (Context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (source != null)
-                {
-                    Context.AddSource(symbol.Name + "_Generated", source);
-                }
+                Context.AddSource(symbol.Name + "_Generated", source);
             }
         }
 
         private SourceText ProcessVTableType(MethodMarshallingContext context, INamedTypeSymbol typeSymbol)
         {
-            if (!typeSymbol.GetAttributes().Any(attrib => attrib.AttributeClass.Equals(VTableAttributeClass, SymbolEqualityComparer.Default)))
-                return null;
-
             var classSyntax = (ClassDeclarationSyntax)typeSymbol.DeclaringSyntaxReferences[0].GetSyntax();
 
             Debug.Assert(classSyntax.Modifiers.Any(SyntaxKind.PartialKeyword));
@@ -192,19 +143,7 @@ namespace FmodAudio
                 );
             }
 
-            var libraryHandleProperty = SyntaxFactory.PropertyDeclaration(
-                default,
-                SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)),
-                SyntaxFactory.IdentifierName("IntPtr"),
-                default,
-                SyntaxFactory.Identifier("LibraryHandle"),
-                SyntaxFactory.AccessorList(
-                    SyntaxFactory.SingletonList(
-                        SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
-                    )
-                )
-            );
+            var libraryHandleProperty = SyntaxFactory.ParseMemberDeclaration("public IntPtr LibraryHandle { get; }");
 
             var libHandleSetStatement = SyntaxFactory.ExpressionStatement(
                 SyntaxFactory.AssignmentExpression(
@@ -226,7 +165,7 @@ namespace FmodAudio
                 classSyntax.Identifier,
                 SyntaxFactory.ParameterList(
                     SyntaxFactory.SingletonSeparatedList(
-                        SyntaxFactory.Parameter(default, default, SyntaxFactory.IdentifierName("IntPtr"), LibParamName.Identifier, null)
+                        SyntaxFactory.Parameter(default, default, HandleType, LibParamName.Identifier, null)
                     )
                 ),
                 null,

@@ -5,10 +5,10 @@ using System.Numerics;
 using FmodAudio.Codec;
 using FmodAudio.DigitalSignalProcessing;
 using FmodAudio.Output;
+using FmodAudio.Base.SGAttributes;
 
 namespace FmodAudio.Base
 {
-    [VTable]
     public unsafe sealed partial class FmodLibrary
     {
         #region Global Functions

@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS0660, CS0661
 using System;
+using FmodAudio.Base.SGAttributes;
 
 namespace FmodAudio.Base
 {
