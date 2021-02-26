@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -14,7 +14,9 @@ namespace FmodAudioSourceGenerator
 {
     internal class VTableCreationState : GeneratorState
     {
-        private static readonly MemberAccessExpressionSyntax NativeLibrary_GetExport = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("NativeLibrary"), SyntaxFactory.IdentifierName("GetExport"));
+        private static readonly MemberAccessExpressionSyntax NativeLibrary_GetExport = (MemberAccessExpressionSyntax)SyntaxFactory.ParseExpression("NativeLibrary.GetExport");
+        private static readonly MemberAccessExpressionSyntax NativeLibrary_TryGetExport = (MemberAccessExpressionSyntax)SyntaxFactory.ParseExpression("NativeLibrary.TryGetExport");
+        
         private static readonly QualifiedNameSyntax NamespaceName = SyntaxFactory.QualifiedName(SyntaxFactory.IdentifierName("FmodAudio"), SyntaxFactory.IdentifierName("Base"));
         private static readonly SyntaxTokenList FieldDeclarationModifiers = SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword));
         private static readonly IdentifierNameSyntax LibParamName = SyntaxFactory.IdentifierName("libHandle");
@@ -79,8 +81,12 @@ namespace FmodAudioSourceGenerator
 
             Debug.Assert(classSyntax.Modifiers.Any(SyntaxKind.PartialKeyword));
 
-            List<StatementSyntax> ConstructorStatements = new List<StatementSyntax>();
+            List<StatementSyntax> ConstructorStatements = new List<StatementSyntax>()
+            {
+                SyntaxFactory.ParseStatement("IntPtr Export;")
+            };
             List<MemberDeclarationSyntax> ClassMembers = new List<MemberDeclarationSyntax>();
+            var exportVariableExpression = SyntaxFactory.IdentifierName("Export");
 
             foreach (var member in typeSymbol.GetMembers())
             {
@@ -90,7 +96,7 @@ namespace FmodAudioSourceGenerator
                 if (!(member is IMethodSymbol method))
                     continue;
 
-                if (!IsTargetMethod(method))
+                if (!IsTargetMethod(method, out bool shouldGuard))
                     continue;
 
                 if (LookForParameterProblems(method))
@@ -112,34 +118,66 @@ namespace FmodAudioSourceGenerator
 
                 ClassMembers.Add(fieldDeclaration);
 
-                var invoke = SyntaxFactory.InvocationExpression(
-                    NativeLibrary_GetExport,
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(
-                            new[]
-                            {
-                                SyntaxFactory.Argument(LibParamName),
-                                SyntaxFactory.Argument(
-                                    SyntaxFactory.LiteralExpression(
-                                        SyntaxKind.StringLiteralExpression,
-                                        SyntaxFactory.Literal("FMOD_" + method.Name)
-                                    )
+                var exportNameExpression = SyntaxFactory.LiteralExpression(
+                    SyntaxKind.StringLiteralExpression,
+                    SyntaxFactory.Literal("FMOD_" + method.Name)
+                );
+
+                StatementSyntax statement;
+
+                if (shouldGuard)
+                {
+                    statement = SyntaxFactory.IfStatement(
+                        SyntaxFactory.InvocationExpression(
+                            NativeLibrary_TryGetExport,
+                            SyntaxFactory.ArgumentList(
+                                SyntaxFactory.SeparatedList(
+                                    new ArgumentSyntax[]
+                                    {
+                                        SyntaxFactory.Argument(LibParamName),
+                                        SyntaxFactory.Argument(exportNameExpression),
+                                        SyntaxFactory.Argument(null, SyntaxFactory.Token(SyntaxKind.OutKeyword), exportVariableExpression)
+                                    }
                                 )
-                            }
+                            )
+                        ),
+                        SyntaxFactory.ExpressionStatement(
+                            SyntaxFactory.AssignmentExpression(
+                                SyntaxKind.SimpleAssignmentExpression,
+                                SyntaxFactory.IdentifierName(fieldName),
+                                SyntaxFactory.CastExpression(funcPtrType, exportVariableExpression)
+                            )
                         )
-                    )
-                );
+                    );
+                }
+                else
+                {
+                    var invoke = SyntaxFactory.InvocationExpression(
+                        NativeLibrary_GetExport,
+                        SyntaxFactory.ArgumentList(
+                            SyntaxFactory.SeparatedList(
+                                new[]
+                                {
+                                    SyntaxFactory.Argument(LibParamName),
+                                    SyntaxFactory.Argument(exportNameExpression)
+                                }
+                            )
+                        )
+                    );
 
-                var assignment = SyntaxFactory.AssignmentExpression(
-                    SyntaxKind.SimpleAssignmentExpression,
-                    SyntaxFactory.IdentifierName(fieldName),
-                    SyntaxFactory.CastExpression(funcPtrType, invoke)
-                );
+                    var assignment = SyntaxFactory.AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        SyntaxFactory.IdentifierName(fieldName),
+                        SyntaxFactory.CastExpression(funcPtrType, invoke)
+                    );
 
-                ConstructorStatements.Add(SyntaxFactory.ExpressionStatement(assignment));
+                    statement = SyntaxFactory.ExpressionStatement(assignment);
+                }
+
+                ConstructorStatements.Add(statement);
 
                 ClassMembers.Add(
-                    context.ImplementMethod(method, fieldName)
+                    context.ImplementMethod(method, fieldName, shouldGuard)
                 );
             }
 
@@ -198,12 +236,23 @@ namespace FmodAudioSourceGenerator
             return SourceText.From(compileUnit.ToFullString(), Encoding.UTF8);
         }
 
-        private bool IsTargetMethod(IMethodSymbol method)
+        private bool IsTargetMethod(IMethodSymbol method, out bool ShouldGuard)
         {
+            ShouldGuard = false;
+
             if (method.MethodKind != MethodKind.Ordinary
-                || method.IsImplicitlyDeclared
-                || !method.GetAttributes().Any(attribData => InteropMethodAttributeClass.Equals(attribData.AttributeClass, SymbolEqualityComparer.Default)))
+                || method.IsImplicitlyDeclared)
                 return false;
+
+            AttributeData data = method.GetAttributes().FirstOrDefault(attribData => InteropMethodAttributeClass.Equals(attribData.AttributeClass, SymbolEqualityComparer.Default));
+
+            if (data is null)
+                return false;
+
+            if (data.ConstructorArguments.Length > 0)
+            {
+                ShouldGuard = (bool)data.ConstructorArguments[0].Value;
+            }
 
             var references = method.DeclaringSyntaxReferences;
 

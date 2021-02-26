@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -94,7 +94,7 @@ namespace FmodAudioSourceGenerator
             );
         }
 
-        public MethodDeclarationSyntax ImplementMethod(IMethodSymbol method, string fieldName)
+        public MethodDeclarationSyntax ImplementMethod(IMethodSymbol method, string fieldName, bool guard)
         {
             var args = new List<ArgumentSyntax>(method.Parameters.Length);
             var syntax = (MethodDeclarationSyntax)method.DeclaringSyntaxReferences[0].GetSyntax();
@@ -121,8 +121,10 @@ namespace FmodAudioSourceGenerator
                 args.Add(SyntaxFactory.Argument(expression));
             }
 
+            var fieldIdentifier = SyntaxFactory.IdentifierName(fieldName);
+
             var invoke = SyntaxFactory.InvocationExpression(
-                SyntaxFactory.IdentifierName(fieldName),
+                fieldIdentifier,
                 SyntaxFactory.ArgumentList(
                     SyntaxFactory.SeparatedList(args)
                 )
@@ -134,10 +136,30 @@ namespace FmodAudioSourceGenerator
                 )
             );
 
+            StatementSyntax statement = method.ReturnType.SpecialType == SpecialType.System_Void
+                    ? (StatementSyntax)SyntaxFactory.ExpressionStatement(invoke)
+                    : SyntaxFactory.ReturnStatement(invoke);
+
+            if (guard)
+            {
+                statement = SyntaxFactory.IfStatement(
+                    SyntaxFactory.BinaryExpression(
+                        SyntaxKind.NotEqualsExpression,
+                        fieldIdentifier,
+                        SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)
+                    ),
+                    statement,
+                    SyntaxFactory.ElseClause(
+                        SyntaxFactory.ParseStatement($"throw new MissingMethodException(\"FMOD_{method.Name} was not found while loading Fmod. Consider upgrading to the version of Fmod containing this function.\");")
+                    )
+                );
+            }
+
+            var body = SyntaxFactory.Block(SyntaxFactory.SingletonList(statement));
+
             return SyntaxFactory.MethodDeclaration(default, syntax.Modifiers, syntax.ReturnType, default,
-                                                   syntax.Identifier, default, revisedParameterList, default, null,
-                                                   SyntaxFactory.ArrowExpressionClause(invoke),
-                                                   SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+                                                   syntax.Identifier, default, revisedParameterList, default, body, null,
+                                                   default);
         }
 
         private TypeSyntax LookupHandleType(INamedTypeSymbol symbol)
