@@ -74,7 +74,7 @@ namespace FmodAudio
         /// </summary>
         /// <param name="path">
         ///     Can Specify either a path directly to the library file (allows you to specify a different file name),
-        ///     or a path to the directory containing the library file (File name MUST be "fmod.dll", "fmod.so", or "fmod.dylib" depending on the platform).
+        ///     or a path to the directory containing the library file (File name MUST be "fmod.dll", "libfmod.so", or "libfmod.dylib" depending on the platform).
         /// </param>
         public static void SetLibraryLocation(string path)
         {
