@@ -117,6 +117,9 @@ namespace FmodAudio.Base
                 return File_GetDiskBusy(pBusy);
             }
         }
+
+        [InteropMethod(true)]
+        public partial Result Thread_SetAttributes(FmodThreadType threadType, ulong threadAffinity, int priority, uint stackSize);
         #endregion
 
         #region System Functions

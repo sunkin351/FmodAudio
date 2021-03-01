@@ -1544,5 +1544,22 @@ namespace FmodAudio
         /// </summary>
         ModPattern = 0x00000400,  /*  */
     }
+
+    public enum FmodThreadType : int
+    {
+        Mixer = 0,
+        Feeder,
+        Stream,
+        File,
+        NonBlocking,
+        Record,
+        Geometry,
+        Profiler,
+        Studio_Update,
+        Studio_Load_Bank,
+        Studio_Load_Sample,
+        Convolution1,
+        Convolution2
+    }
 }
 
