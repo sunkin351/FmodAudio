@@ -7,7 +7,7 @@ namespace FmodAudio
     /// <summary>
     /// TODO Continue adapting this class for interop
     /// </summary>
-    public class AdvancedSettings
+    public unsafe class AdvancedSettings
     {
         internal Structure Struct;
 
@@ -38,7 +38,7 @@ namespace FmodAudio
         /// <summary>
         /// Unmanaged type char**, an array of strings. It is recommended to use the UTF8 encoding. Length must be equal to ASIOChannelCount
         /// </summary>
-        public IntPtr ASIOChannelList
+        public byte** ASIOChannelList
         {
             get => Struct.ASIOChannelList; set => Struct.ASIOChannelList = value;
         }
@@ -46,7 +46,7 @@ namespace FmodAudio
         /// <summary>
         /// Unmanaged type Speaker*, an array of the FmodAudio.Speaker Enumeration
         /// </summary>
-        public IntPtr ASIOSpeakerList
+        public Speaker* ASIOSpeakerList
         {
             get => Struct.ASIOSpeakerList; set => Struct.ASIOSpeakerList = value;
         }
@@ -73,6 +73,8 @@ namespace FmodAudio
 
         public DSPResampler ResamplerMethod { get => Struct.resamplerMethod; set => Struct.resamplerMethod = value; }
 
+        public uint CommmandQueueSize { get => Struct.commandQueueSize; set => Struct.commandQueueSize = value; }
+
         public uint RandomSeed { get => Struct.randomSeed; set => Struct.randomSeed = value; }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -87,8 +89,8 @@ namespace FmodAudio
             public int maxFADPCMCodecs;            /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_CREATECOMPRESSEDSAMPLE only.  This number will determine how many FADPCM channels can be played simultaneously. Default = 32. */
             public int maxPCMCodecs;               /* [r/w] Optional. Specify 0 to ignore. For use with PS3 only.                          PCM    codecs consume 12,672 bytes per instance and this number will determine how many streams and PCM voices can be played simultaneously. Default = 16. */
             public int ASIONumChannels;            /* [r/w] Optional. Specify 0 to ignore. Number of channels available on the ASIO device. */
-            public IntPtr ASIOChannelList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to an array of strings (number of entries defined by ASIONumChannels) with ASIO channel names. */
-            public IntPtr ASIOSpeakerList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to a list of speakers that the ASIO channels map to.  This can be called after System::init to remap ASIO output. */
+            public byte** ASIOChannelList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to an array of strings (number of entries defined by ASIONumChannels) with ASIO channel names. */
+            public Speaker* ASIOSpeakerList;            /* [r/w] Optional. Specify 0 to ignore. Pointer to a list of speakers that the ASIO channels map to.  This can be called after System::init to remap ASIO output. */
             public float vol0virtualvol;             /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_INIT_VOL0_BECOMES_VIRTUAL.  If this flag is used, and the volume is below this, then the sound will become virtual.  Use this value to raise the threshold to a different point where a sound goes virtual. */
             public uint defaultDecodeBufferSize;    /* [r/w] Optional. Specify 0 to ignore. For streams. This determines the default size of the double buffer (in milliseconds) that a stream uses.  Default = 400ms */
             public ushort profilePort;                /* [r/w] Optional. Specify 0 to ignore. For use with FMOD_INIT_PROFILE_ENABLE.  Specify the port to listen on for connections by the profiler application. */
@@ -100,6 +102,7 @@ namespace FmodAudio
             public uint stackSizeNonBlocking;       /* [r/w] Optional. Specify 0 to ignore. Specify the stack size for the FMOD_NONBLOCKING loading thread.  Useful for custom codecs that use excess stack.  Default 65,536 (64kb) */
             public uint stackSizeMixer;             /* [r/w] Optional. Specify 0 to ignore. Specify the stack size for the FMOD mixer thread.  Useful for custom dsps that use excess stack.  Default 49,152 (48kb) */
             public DSPResampler resamplerMethod;            /* [r/w] Optional. Specify 0 to ignore. Resampling method used with fmod's software mixer.  See FMOD_DSP_RESAMPLER for details on methods. */
+            public uint commandQueueSize;
             public uint randomSeed;                 /* [r/w] Optional. Specify 0 to ignore. Seed value that FMOD will use to initialize its internal random number generators. */
         }
     }
