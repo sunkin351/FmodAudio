@@ -90,8 +90,7 @@ namespace FmodAudioSourceGenerator
 
             foreach (var member in typeSymbol.GetMembers())
             {
-                if (Context.CancellationToken.IsCancellationRequested)
-                    return null;
+                Context.CancellationToken.ThrowIfCancellationRequested();
 
                 if (!(member is IMethodSymbol method))
                     continue;
@@ -194,8 +193,7 @@ namespace FmodAudioSourceGenerator
             ClassMembers.Add(libraryHandleProperty);
             ConstructorStatements.Add(libHandleSetStatement);
 
-            if (Context.CancellationToken.IsCancellationRequested)
-                return null;
+            Context.CancellationToken.ThrowIfCancellationRequested();
 
             var constructor = SyntaxFactory.ConstructorDeclaration(
                 default,
@@ -244,7 +242,7 @@ namespace FmodAudioSourceGenerator
                 || method.IsImplicitlyDeclared)
                 return false;
 
-            AttributeData data = method.GetAttributes().FirstOrDefault(attribData => InteropMethodAttributeClass.Equals(attribData.AttributeClass, SymbolEqualityComparer.Default));
+            AttributeData data = method.GetAttributes().FirstOrDefault(attribData => attribData.AttributeClass.Equals(InteropMethodAttributeClass, SymbolEqualityComparer.Default));
 
             if (data is null)
                 return false;

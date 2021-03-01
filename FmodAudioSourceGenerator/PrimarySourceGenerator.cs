@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 
 namespace FmodAudioSourceGenerator
 {
@@ -24,7 +25,13 @@ namespace FmodAudioSourceGenerator
             if (context.CancellationToken.IsCancellationRequested)
                 return;
 
-            state.GenerateSources();
+            try
+            {
+                state.GenerateSources();
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

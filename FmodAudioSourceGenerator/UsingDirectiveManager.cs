@@ -35,7 +35,7 @@ namespace FmodAudioSourceGenerator
 
         public void AddUsing(UsingDirectiveSyntax directive)
         {
-            set.Add(directive.NormalizeWhitespace());
+            set.Add(directive);
         }
 
         public void AddUsings<T>(T directives) where T: IEnumerable<UsingDirectiveSyntax>
@@ -59,7 +59,7 @@ namespace FmodAudioSourceGenerator
         {
             public bool Equals(UsingDirectiveSyntax x, UsingDirectiveSyntax y)
             {
-                return ReferenceEquals(x, y) || x.Name.ToString() == y.Name.ToString();
+                return Compare(x, y) == 0;
             }
 
             public int GetHashCode(UsingDirectiveSyntax obj)
@@ -149,9 +149,7 @@ namespace FmodAudioSourceGenerator
 
                 SimpleNameSyntax[] NamePartList(NameSyntax name)
                 {
-                    var sname = name as SimpleNameSyntax;
-
-                    if (sname != null)
+                    if (name is SimpleNameSyntax sname)
                     {
                         return new[] { sname };
                     }
