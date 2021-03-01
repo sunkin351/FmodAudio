@@ -2,10 +2,10 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Unicode;
 
@@ -253,7 +253,7 @@ namespace FmodAudio
 
         internal static unsafe byte[] FixedDataForString(string value, Encoding encoding)
         {
-            int count = encoding.GetByteCount(value);
+            int count = encoding.GetMaxByteCount(value.Length);
             var ptr = GC.AllocateArray<byte>(count + 1, pinned: true);
             encoding.GetBytes(value, ptr.AsSpan(0, count));
             return ptr;
@@ -261,24 +261,12 @@ namespace FmodAudio
 
         public static unsafe string PtrToStringUnknownSize(IntPtr buffer)
         {
-            return PtrToStringUnknownSize((byte*)buffer);
+            return Marshal.PtrToStringUTF8(buffer) ?? string.Empty;
         }
 
         public static unsafe string PtrToStringUnknownSize(byte* buffer)
         {
-            if (buffer != null)
-            {
-                ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(buffer, int.MaxValue);
-
-                int len = span.IndexOf((byte)0);
-                
-                if (len > 0)
-                {
-                    return BufferToString(span.Slice(0, len));
-                }
-            }
-
-            return string.Empty;
+            return PtrToStringUnknownSize((nint)buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
