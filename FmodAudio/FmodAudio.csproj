@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -12,10 +12,9 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the Fmod native binaries from their website. https://www.fmod.com/download</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Update to support Fmod 2.1.7
- - Add FmodSystem.GetDspInfoByType() and corresponding function in FmodLibrary
- - Add SystemCallbackType.BufferedNoMix
- - Add SystemCallbackType.DeviceReinitialize</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to support Fmod 2.1.8
+ - Backwords compatibility with down to 2.1.0 restored.
+ - Added SystemCallbackType.OutputUnderrun</PackageReleaseNotes>
   <Nullable>enable</Nullable>
   </PropertyGroup>
 
