@@ -1446,6 +1446,11 @@ namespace FmodAudio
         DeviceReinitialize = 0x00004000,
 
         /// <summary>
+        /// Called from the mixer thread when the device output attempts to read more samples than are available in the output buffer
+        /// </summary>
+        OutputUnderrun = 0x00008000,
+
+        /// <summary>
         /// Pass this mask to System.SetCallback() to receive all callback types.
         /// </summary>
         All = 0xFFFFFFFF

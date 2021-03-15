@@ -10,7 +10,7 @@ namespace FmodAudio
     {
         internal const string Deprecation_Message = "Newer versions of Fmod have deprecated this, and will eventually remove it entirely.";
 
-        public static FmodVersion BindingVersion => new FmodVersion(0x00020100);
+        public static FmodVersion BindingVersion => new FmodVersion(0x00020108);
 
         private static readonly FmodVersion MinimumSupportedVersion = new FmodVersion(0x00020100);
 
