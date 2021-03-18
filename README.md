@@ -1,19 +1,16 @@
 # FmodAudio
+[![NuGet Version](https://img.shields.io/nuget/v/FmodAudio)](https://nuget.org/packages/FmodAudio) [![Join FmodAudio's Discord](https://img.shields.io/badge/chat%20on-discord-7289DA)](https://discord.gg/cNcbHF5)
 
 Welcome to FmodAudio, a C# Wrapper for the FMOD audio library.
 
 This library has been written for .NET 5 and above.
 
-This library is downloadable as a nuget package. https://www.nuget.org/packages/FmodAudio
-
 In order to use this library, you will need to download the FMOD native binaries from https://www.fmod.com/download
 
 If you find a bug, or have a feature request, please file an issue on github, and I'll review it as soon as possible.
-Alternatively you can now join a Discord server for FmodAudio, and talk with me directly. https://Discord.gg/cNcbHF5
+Alternatively you can now join FmodAudio's Discord server, and talk with me directly. (Link Above)
 
 If you wish to contribute, see `CONTRIBUTING.md`
-
-# FmodAudio 2.0.0 has been released to Nuget
 
 How to use FmodAudio
 --------------------
