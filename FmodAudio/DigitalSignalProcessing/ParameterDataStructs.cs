@@ -47,7 +47,26 @@ namespace FmodAudio.DigitalSignalProcessing
         public int ChannelCount;
         private SpectrumArray _spectrum;
 
+        public ReadOnlySpan<float> this[int channel]
+        {
+            get => GetSpectrum(channel);
+        }
+
         public Span<IntPtr> Spectrum => MemoryMarshal.CreateSpan(ref _spectrum.FirstElement, 32);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<float> GetSpectrum(int channel)
+        {
+            if ((uint)channel >= (uint)ChannelCount)
+                ThrowHelper_OutOfRange(channel);
+
+            return new ReadOnlySpan<float>((float*)Unsafe.Add(ref _spectrum.FirstElement, channel), Length);
+        }
+
+        public void GetSpectrum(int channel, Span<float> buffer)
+        {
+            GetSpectrum(channel).CopyTo(buffer);
+        }
 
 #pragma warning disable CS0649
         private struct SpectrumArray
@@ -86,5 +105,10 @@ namespace FmodAudio.DigitalSignalProcessing
             public IntPtr Element31;
         }
 #pragma warning restore CS0649
+
+        private static void ThrowHelper_OutOfRange(int channel)
+        {
+            throw new ArgumentOutOfRangeException(nameof(channel), channel, "Channel must be between 0 and ChannelCount - 1");
+        }
     }
 }
