@@ -1566,5 +1566,18 @@ namespace FmodAudio
         Convolution1,
         Convolution2
     }
+
+    public enum PortType : int
+    {
+        Music,
+        Copyright_Music,
+        Voice,
+        Controller,
+        Personal,
+        Vibration,
+        Aux,
+
+        MAX
+    }
 }
 

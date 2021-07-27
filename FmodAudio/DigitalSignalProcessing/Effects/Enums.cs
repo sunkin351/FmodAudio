@@ -437,6 +437,25 @@ namespace FmodAudio.DigitalSignalProcessing.Effects
         _3DSoundSize,
         _3DMinExtent,
         OverallGain,
-        OutputGain
+        OutputGain,
+        AttenuationRange,
+        OverrideRange
+    }
+
+
+    public enum DspLoudnessMeter
+    {
+        State,
+        Weighing,
+        Info
+    }
+
+    public enum DspLoudnessMeterStateType
+    {
+        ResetIntegrated = -3,
+        ResetMaxPeak = -2,
+        ResetAll = -1,
+        Paused = 0,
+        Analyzing = 1
     }
 }

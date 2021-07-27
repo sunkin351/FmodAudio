@@ -4,9 +4,9 @@ using System.Text;
 
 namespace FmodAudio.Codec
 {
-    public struct CodecWaveFormat
+    public unsafe struct CodecWaveFormat
     {
-        public IntPtr Name;
+        public byte* Name;
         public SoundFormat Format;
         public int Channels;
         public int Frequency;

@@ -268,6 +268,9 @@ namespace FmodAudio
                         var size = FmodHelpers.RoundUpToPowerOf2(value.Length);
 
                         encryptionKeyMemory = GC.AllocateArray<byte>(size, true);
+
+                        //This is only safe because the array is pinned
+                        Struct.EncryptionKey = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(encryptionKeyMemory));
                     }
                     else
                     {
@@ -275,10 +278,6 @@ namespace FmodAudio
                     }
 
                     value.CopyTo(encryptionKeyMemory);
-
-                    //This is only safe because the array is pinned
-                    if (Struct.EncryptionKey == null)
-                        Struct.EncryptionKey = (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(encryptionKeyMemory));
                 }
             }
         }

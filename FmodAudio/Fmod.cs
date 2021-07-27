@@ -8,17 +8,26 @@ namespace FmodAudio
 {
     public static unsafe class Fmod
     {
+        #region Constants
         internal const string Deprecation_Message = "Newer versions of Fmod have deprecated this, and will eventually remove it entirely.";
 
-        public static FmodVersion BindingVersion => new FmodVersion(0x00020108);
-
-        private static readonly FmodVersion MinimumSupportedVersion = new FmodVersion(0x00020100);
-
-        public static uint PluginSDKVersion => 110;
+        internal const int HeaderVersion = 0x00020200;
 
         public const int MaxAllowedSystemObjects = 8;
 
         internal const int MaxInteropNameStringLength = 200;
+
+        public const int Dsp_GetParam_ValueStr_Length = 32;
+
+        public const uint PluginSDKVersion = 110;
+
+        public const uint CodecPluginVersion = 1;
+
+        public const uint OutputPluginVersion = 5;
+
+        #endregion
+
+        public static FmodVersion BindingVersion => new FmodVersion(HeaderVersion);
 
         /// <summary>
         /// Affects string interop marshalling. If the buffer turns out to be too small, this will decide whether to throw an exception, or continue with the truncated string.
@@ -189,22 +198,10 @@ namespace FmodAudio
         public unsafe static FmodSystem CreateSystem()
         {
             SystemHandle system;
-            FmodVersion version;
-
-            var library = Library;
 
             lock (CreationSyncObject)
             {
-                library.System_Create(&system).CheckResult();
-
-                library.System_GetVersion(system, &version).CheckResult();
-
-                if (version < MinimumSupportedVersion)
-                {
-                    library.System_Release(system).CheckResult();
-
-                    throw new InvalidOperationException("Native API version is " + version.ToString() + ", but only " + MinimumSupportedVersion.ToString() + " and above is supported by FmodAudio 2.0.");
-                }
+                Library.System_Create(&system).CheckResult();
             }
 
             return system;
@@ -219,9 +216,6 @@ namespace FmodAudio
                                           delegate* unmanaged<IntPtr, MemoryType, IntPtr, void> userfree,
                                           MemoryType memtypeflags)
             {
-                if (useralloc == null || userfree == null)
-                    throw new ArgumentNullException();
-
                 Library.Memory_Initialize(poolmem, poollen, useralloc, userrealloc, userfree, memtypeflags).CheckResult();
             }
 
@@ -233,44 +227,44 @@ namespace FmodAudio
 
         public static class Thread
         {
-            public const ulong Affinity_GroupDefault = 0x8000000000000000;
-            public const ulong Affinity_GroupA = 0x8000000000000001;
-            public const ulong Affinity_GroupB = 0x8000000000000002;
-            public const ulong Affinity_GroupC = 0x8000000000000003;
+            public const long Affinity_GroupDefault = 0x4000000000000000;
+            public const long Affinity_GroupA = 0x4000000000000001;
+            public const long Affinity_GroupB = 0x4000000000000002;
+            public const long Affinity_GroupC = 0x4000000000000003;
 
             //Default Affinity Values
-            public const ulong Affinity_Mixer               = Affinity_GroupA;
-            public const ulong Affinity_Feeder              = Affinity_GroupC;
-            public const ulong Affinity_Stream              = Affinity_GroupC;
-            public const ulong Affinity_File                = Affinity_GroupC;
-            public const ulong Affinity_NonBlocking         = Affinity_GroupC;
-            public const ulong Affinity_Record              = Affinity_GroupC;
-            public const ulong Affinity_Geometry            = Affinity_GroupC;
-            public const ulong Affinity_Profiler            = Affinity_GroupC;
-            public const ulong Affinity_Studio_Update       = Affinity_GroupB;
-            public const ulong Affinity_Studio_Load_Bank    = Affinity_GroupC;
-            public const ulong Affinity_Studio_Load_Sample  = Affinity_GroupC;
-            public const ulong Affinity_Studio_Convolution1 = Affinity_GroupC;
-            public const ulong Affinity_Studio_Convolution2 = Affinity_GroupC;
+            public const long Affinity_Mixer               = Affinity_GroupA;
+            public const long Affinity_Feeder              = Affinity_GroupC;
+            public const long Affinity_Stream              = Affinity_GroupC;
+            public const long Affinity_File                = Affinity_GroupC;
+            public const long Affinity_NonBlocking         = Affinity_GroupC;
+            public const long Affinity_Record              = Affinity_GroupC;
+            public const long Affinity_Geometry            = Affinity_GroupC;
+            public const long Affinity_Profiler            = Affinity_GroupC;
+            public const long Affinity_Studio_Update       = Affinity_GroupB;
+            public const long Affinity_Studio_Load_Bank    = Affinity_GroupC;
+            public const long Affinity_Studio_Load_Sample  = Affinity_GroupC;
+            public const long Affinity_Studio_Convolution1 = Affinity_GroupC;
+            public const long Affinity_Studio_Convolution2 = Affinity_GroupC;
 
-            // Core mask, valid up to 1 << 62
-            public const ulong Affinity_Core_All = 0;
-            public const ulong Affinity_Core_0  = (1 << 0);
-            public const ulong Affinity_Core_1  = (1 << 1);
-            public const ulong Affinity_Core_2  = (1 << 2);
-            public const ulong Affinity_Core_3  = (1 << 3);
-            public const ulong Affinity_Core_4  = (1 << 4);
-            public const ulong Affinity_Core_5  = (1 << 5);
-            public const ulong Affinity_Core_6  = (1 << 6);
-            public const ulong Affinity_Core_7  = (1 << 7);
-            public const ulong Affinity_Core_8  = (1 << 8);
-            public const ulong Affinity_Core_9  = (1 << 9);
-            public const ulong Affinity_Core_10 = (1 << 10);
-            public const ulong Affinity_Core_11 = (1 << 11);
-            public const ulong Affinity_Core_12 = (1 << 12);
-            public const ulong Affinity_Core_13 = (1 << 13);
-            public const ulong Affinity_Core_14 = (1 << 14);
-            public const ulong Affinity_Core_15 = (1 << 15);
+            // Core mask, valid up to 1 << 61
+            public const long Affinity_Core_All = 0;
+            public const long Affinity_Core_0  = (1 << 0);
+            public const long Affinity_Core_1  = (1 << 1);
+            public const long Affinity_Core_2  = (1 << 2);
+            public const long Affinity_Core_3  = (1 << 3);
+            public const long Affinity_Core_4  = (1 << 4);
+            public const long Affinity_Core_5  = (1 << 5);
+            public const long Affinity_Core_6  = (1 << 6);
+            public const long Affinity_Core_7  = (1 << 7);
+            public const long Affinity_Core_8  = (1 << 8);
+            public const long Affinity_Core_9  = (1 << 9);
+            public const long Affinity_Core_10 = (1 << 10);
+            public const long Affinity_Core_11 = (1 << 11);
+            public const long Affinity_Core_12 = (1 << 12);
+            public const long Affinity_Core_13 = (1 << 13);
+            public const long Affinity_Core_14 = (1 << 14);
+            public const long Affinity_Core_15 = (1 << 15);
 
             public const int Priority_Platform_Min = -32 * 1024;
             public const int Priority_Platform_Max =  32 * 1024;

@@ -41,5 +41,4 @@ namespace FmodAudio.DigitalSignalProcessing
         public readonly delegate* unmanaged<DspState*, SpeakerMode, float, float, float, float, float, int, float*, Result> SumSterioToSurroundMatrix;
         public readonly delegate* unmanaged<DspState*, Effects.DspPan3DRolloffType, float, float, float, float*, Result> GetRolloffGain;
     }
-
 }

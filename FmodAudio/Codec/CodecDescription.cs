@@ -8,6 +8,7 @@ namespace FmodAudio.Codec
 {
     public unsafe struct CodecDescriptionStruct
     {
+        public uint ApiVersion;
         public byte* Name;
         public FmodVersion Version;
         public FmodBool DefaultAsStream;

@@ -4,71 +4,73 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using FmodAudio.Base;
+
 namespace FmodAudio.Codec
 {
-    using FmodAudio.Base;
-
     public unsafe struct CodecState
     {
+        public nint PluginData;
+        public readonly CodecWaveFormat* WaveFormat;
+        public readonly CodecStateFunctions* Functions;
         public int SubsoundCount;
-        public CodecWaveFormat* WaveFormat;
-        public IntPtr PluginData;
 
-        public IntPtr FileHandle;
-        public uint FileSize;
 
-        private readonly delegate* unmanaged<IntPtr, byte*, uint, uint*, IntPtr, Result> fileRead;
-        private readonly delegate* unmanaged<IntPtr, uint, IntPtr, Result> fileSeek;
-        private readonly delegate* unmanaged<CodecState*, TagType, byte*, byte*, uint, TagDataType, int, Result> metaData;
-
-        public int WaveFormatVersion;
-
-        public uint FileRead(IntPtr fileHandle, byte* buffer, uint bufferLength, IntPtr userData)
+        public static void MetaData(CodecState* state, TagType tagType, byte* name, byte* data, uint dataLen, TagDataType dataType, FmodBool unique)
         {
-            uint bytesRead = 0;
-            fileRead(fileHandle, buffer, bufferLength, &bytesRead, userData).CheckResult();
-            return bytesRead;
+            state->Functions->Metadata(state, tagType, name, data, dataLen, dataType, unique.value).CheckResult();
         }
 
-        public uint FileRead(byte* buffer, uint bufferLength, IntPtr userData)
-        {
-            return FileRead(FileHandle, buffer, bufferLength, userData);
-        }
-
-        public uint FileRead(IntPtr fileHandle, Span<byte> buffer, IntPtr userData)
-        {
-            fixed (byte* bufferPtr = buffer)
-            {
-                return FileRead(fileHandle, bufferPtr, (uint)buffer.Length, userData);
-            }
-        }
-
-        public uint FileRead(Span<byte> buffer, IntPtr userData)
-        {
-            return FileRead(FileHandle, buffer, userData);
-        }
-
-        public void FileSeek(IntPtr fileHandle, uint pos, IntPtr userData)
-        {
-            fileSeek(fileHandle, pos, userData).CheckResult();
-        }
-
-        public void FileSeek(uint pos, IntPtr userData)
-        {
-            FileSeek(FileHandle, pos, userData);
-        }
-
-        public void MetaData(CodecState* state, TagType tagType, byte* name, byte* data, uint dataLen, TagDataType dataType, FmodBool unique)
-        {
-            metaData(state, tagType, name, data, dataLen, dataType, unique.value).CheckResult();
-        }
-
-        public void MetaData(CodecState* state, TagType tagType, string name, Span<byte> data, TagDataType dataType, FmodBool unique)
+        public static void MetaData(CodecState* state, TagType tagType, string name, Span<byte> data, TagDataType dataType, FmodBool unique)
         {
             fixed (byte* dataPtr = data, pName = FmodHelpers.ToUTF8NullTerminated(name))
             {
-                metaData(state, tagType, pName, dataPtr, (uint)data.Length, dataType, unique.value);
+                MetaData(state, tagType, pName, dataPtr, (uint)data.Length, dataType, unique);
             }
+        }
+
+        public static void* Allocate(CodecState* state, uint size, uint alignment)
+        {
+            return state->Functions->Alloc(size, alignment, null, 0);
+        }
+
+        public static void Free(CodecState* state, void* ptr)
+        {
+            state->Functions->Free(ptr, null, 0);
+        }
+
+        public static uint FileRead(CodecState* state, byte* buffer, uint bufferLength)
+        {
+            uint bytesRead = 0;
+            state->Functions->FileRead(state, buffer, bufferLength, &bytesRead).CheckResult();
+            return bytesRead;
+        }
+
+        public static uint FileRead(CodecState* state, Span<byte> buffer)
+        {
+            fixed (byte* bufferPtr = buffer)
+            {
+                return FileRead(state, bufferPtr, (uint)buffer.Length);
+            }
+        }
+
+        public static void FileSeek(CodecState* state, uint pos, CodecSeekMethod seekMethod)
+        {
+            state->Functions->FileSeek(state, pos, seekMethod).CheckResult();
+        }
+
+        public static uint FileTell(CodecState* state)
+        {
+            uint pos = 0;
+            state->Functions->FileTell(state, &pos).CheckResult();
+            return pos;
+        }
+
+        public static uint FileSize(CodecState* state)
+        {
+            uint size = 0;
+            state->Functions->FileSize(state, &size).CheckResult();
+            return size;
         }
     }
 }
