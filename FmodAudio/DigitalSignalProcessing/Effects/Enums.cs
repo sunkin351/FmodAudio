@@ -442,7 +442,6 @@ namespace FmodAudio.DigitalSignalProcessing.Effects
         OverrideRange
     }
 
-
     public enum DspLoudnessMeter
     {
         State,

@@ -80,6 +80,7 @@ namespace FmodAudio.DigitalSignalProcessing
 
         /// <summary>
         /// [w] Name of the unit to be displayed in the network.
+        /// Note: will only use the first 31 bytes of the 32-byte buffer. (Enforcing a null-terminated string)
         /// </summary>
         public string Name
         {

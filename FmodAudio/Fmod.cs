@@ -11,7 +11,7 @@ namespace FmodAudio
         #region Constants
         internal const string Deprecation_Message = "Newer versions of Fmod have deprecated this, and will eventually remove it entirely.";
 
-        internal const int HeaderVersion = 0x00020200;
+        internal const int HeaderVersion = 0x00020201;
 
         public const int MaxAllowedSystemObjects = 8;
 

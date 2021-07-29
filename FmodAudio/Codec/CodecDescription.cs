@@ -13,6 +13,7 @@ namespace FmodAudio.Codec
         public FmodVersion Version;
         public FmodBool DefaultAsStream;
         public TimeUnit TimeUnits;
+
         public delegate* unmanaged<CodecState*, Mode, CreateSoundInfoStruct*, Result> Open;
         public delegate* unmanaged<CodecState*, Result> Close;
         public delegate* unmanaged<CodecState*, void*, uint, uint*, Result> Read;
