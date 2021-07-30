@@ -11,7 +11,7 @@ namespace FmodAudio
         #region Constants
         internal const string Deprecation_Message = "Newer versions of Fmod have deprecated this, and will eventually remove it entirely.";
 
-        internal const int HeaderVersion = 0x00020201;
+        internal const int HeaderVersion = 0x00020202;
 
         public const int MaxAllowedSystemObjects = 8;
 
@@ -298,7 +298,7 @@ namespace FmodAudio
             public const uint StackSize_Mixer               = 80  * 1024;
             public const uint StackSize_Feeder              = 16  * 1024;
             public const uint StackSize_Stream              = 96  * 1024;
-            public const uint StackSize_File                = 48  * 1024;
+            public const uint StackSize_File                = 64  * 1024;
             public const uint StackSize_NonBlocking         = 112 * 1024;
             public const uint StackSize_Record              = 16  * 1024;
             public const uint StackSize_Geometry            = 48  * 1024;

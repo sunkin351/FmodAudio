@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <Version>2.2.1</Version>
+    <Version>2.2.2</Version>
     <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
@@ -14,11 +14,7 @@
 
 Library versions from 2.2.0 onward correspond to the version of Fmod that it's meant for.</Description>
     <NeutralLanguage></NeutralLanguage>
-    <PackageReleaseNotes>Added new definitions in namespace 'FmodAudio.DigitalSignalProcessing.Effects'
-- struct DspLoudnessMeter_InfoType
-- struct DspLoudnessMeter_WeightingType
-- enum DspLoudnessMeter
-- enum DspLoudnessMeterStateType
+    <PackageReleaseNotes>Fmod.Thread.StackSize_File increased to 64 kb
 
 Full revision log can be found on Fmod's website.</PackageReleaseNotes>
   <Nullable>enable</Nullable>
