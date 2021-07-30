@@ -123,8 +123,14 @@ namespace FmodAudio.Base
         #endregion
 
         #region System Functions
+
         [InteropMethod]
-        public partial Result System_Create(SystemHandle* System);
+        internal partial Result System_Create(SystemHandle* System, uint version);
+
+        public Result System_Create(SystemHandle* System)
+        {
+            return System_Create(System, Fmod.HeaderVersion);
+        }
 
         public Result System_Create(out SystemHandle system)
         {
@@ -612,13 +618,13 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_GetCPUUsage(SystemHandle system, float* dsp, float* stream, float* geometry, float* update, float* total);
+        public partial Result System_GetCPUUsage(SystemHandle system, CpuUsage* usage);
 
-        public Result System_GetCPUUsage(SystemHandle system, out float dsp, out float stream, out float geometry, out float update, out float total)
+        public Result System_GetCPUUsage(SystemHandle system, out CpuUsage usage)
         {
-            fixed (float* pDsp = &dsp, pStream = &stream, pGeometry = &geometry, pUpdate = &update, ptotal = &total)
+            fixed (CpuUsage* pUsage = &usage)
             {
-                return System_GetCPUUsage(system, pDsp, pStream, pGeometry, pUpdate, ptotal);
+                return System_GetCPUUsage(system, pUsage);
             }
         }
 
@@ -883,7 +889,7 @@ namespace FmodAudio.Base
         }
 
         [InteropMethod]
-        public partial Result System_AttachChannelGroupToPort(SystemHandle system, uint portType, ulong portIndex, ChannelGroupHandle channelGroup, bool passThru);
+        public partial Result System_AttachChannelGroupToPort(SystemHandle system, PortType portType, ulong portIndex, ChannelGroupHandle channelGroup, bool passThru);
 
         [InteropMethod]
         public partial Result System_DetachChannelGroupFromPort(SystemHandle system, ChannelGroupHandle channelGroup);

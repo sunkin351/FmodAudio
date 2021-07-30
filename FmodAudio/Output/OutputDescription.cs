@@ -5,8 +5,7 @@ namespace FmodAudio.Output
     public enum OutputMethod : int
     { 
         Mix_Direct = 0,
-        Polling = 1,
-        Mix_Buffered = 2
+        Mix_Buffered = 1
     }
 
     public unsafe struct OutputDescriptionStruct

@@ -223,11 +223,13 @@
 
     public enum ParameterDataType : int
     {
-        OverallGain = 1,
-        Attributes3D,
-        SideChain,
-        FFT,
-        Attributes3D_Multi,
-        User
+        User = 0,
+        OverallGain = -1,
+        Attributes3D = -2,
+        SideChain = -3,
+        FFT = -4,
+        Attributes3D_Multi = -5,
+        AttenuationRange = -6
     }
+
 }

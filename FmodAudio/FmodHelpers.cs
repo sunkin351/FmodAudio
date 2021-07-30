@@ -122,6 +122,7 @@ namespace FmodAudio
                 Result.Err_File_Bad => new FileLoadException(message, new FmodException(result)),
                 Result.Err_Unsupported => new InvalidOperationException(message),
                 Result.Err_Invalid_Param => new ArgumentException(message),
+                Result.Err_Header_Mismatch => new BindingMismatchException(message),
                 _ => new FmodException(result, message),
             };
         }
@@ -194,8 +195,10 @@ namespace FmodAudio
             if (str.IsEmpty)
                 return null;
 
+            //Extra charactor acts as the null terminator
+            //Overallocates
             int maxByteCount = str.Length * sizeof(char);
-            byte[] data = new byte[maxByteCount + 1]; //Extra charactor acts as the null terminator
+            byte[] data = new byte[maxByteCount + 1]; 
 
             var res = Utf8.FromUtf16(str, data.AsSpan(0, maxByteCount), out _, out _);
 
@@ -272,7 +275,7 @@ namespace FmodAudio
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull<T>(this T handle) where T: unmanaged, Base.IHandleType<IntPtr>
         {
-            return handle.Handle == default;
+            return (nint)handle.Handle == 0;
         }
 
         public static int RoundUpToPowerOf2(int x)

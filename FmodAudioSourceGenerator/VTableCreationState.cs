@@ -23,14 +23,8 @@ namespace FmodAudioSourceGenerator
         private static readonly UsingDirectiveSyntax[] RequiredUsings = new UsingDirectiveSyntax[]
         {
             SyntaxFactory.UsingDirective(
-                SyntaxFactory.QualifiedName(
-                    SyntaxFactory.QualifiedName(
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Runtime")
-                    ),
-                    SyntaxFactory.IdentifierName("InteropServices")
-                )
-            )
+                SyntaxFactory.ParseName("System.Runtime.InteropServices")
+            ),
         };
 
         private static readonly TypeSyntax HandleType = SyntaxFactory.IdentifierName("IntPtr");

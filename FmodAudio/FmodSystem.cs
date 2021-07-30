@@ -510,9 +510,9 @@ namespace FmodAudio
             library.System_GetChannelsPlaying(Handle, out channels, out realchannels).CheckResult();
         }
         
-        public void GetCPUUsage(out float dsp, out float stream, out float geometry, out float update, out float total)
+        public void GetCPUUsage(out CpuUsage usage)
         {
-            library.System_GetCPUUsage(Handle, out dsp, out stream, out geometry, out update, out total).CheckResult();
+            library.System_GetCPUUsage(Handle, out usage).CheckResult();
         }
 
         public void GetFileUsage(out long sampleBytesRead, out long streamBytesRead, out long otherBytesRead)
@@ -669,7 +669,7 @@ namespace FmodAudio
             return handle;
         }
 
-        public void AttachChannelGroupToPort(uint portType, ulong portIndex, ChannelGroupHandle channelGroup, bool passThrough = false)
+        public void AttachChannelGroupToPort(PortType portType, ulong portIndex, ChannelGroupHandle channelGroup, bool passThrough = false)
         {
             if (channelGroup.IsNull())
                 throw new ArgumentNullException(nameof(channelGroup));
