@@ -51,26 +51,22 @@ namespace FmodAudio
 
             if (OperatingSystem.IsWindows())
             {
-                name = "fmod.dll";
+                name = loggingEnabled ? "fmodL.dll" : "fmod.dll";
             }
-            else if (OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux() || OperatingSystem.IsAndroid())
             {
-                name = "libfmod.so";
+                name = loggingEnabled ? "libfmodL.so" : "libfmod.so";
             }
             else if (OperatingSystem.IsMacOS())
             {
-                name = "libfmod.dylib";
+                name = loggingEnabled ? "libfmodL.dylib" : "libfmod.dylib";
             }
             else
             {
+                // IOS will not be supported as it requires the static linking of all executable code. (As per IOS Store requirements)
+                // As such, this use case will not be directly supported as it is outside the scope of this library. (Requires dynamic linking)
+
                 throw new PlatformNotSupportedException();
-            }
-
-            if (loggingEnabled)
-            {
-                int idx = name.IndexOf('.');
-
-                name = string.Concat(name.AsSpan(0, idx), "L", name.AsSpan(idx));
             }
 
             return name;
