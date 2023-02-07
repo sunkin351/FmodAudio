@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>11.0</LangVersion>
     <Version>2.2.5</Version>
-    <Company />
     <Authors>Joshua Newcomb</Authors>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunkin351/FmodAudio</RepositoryUrl>
@@ -13,9 +12,8 @@
     <Description>Wrapper Library for the Fmod Core API in C#. This version requires .NET 5.0+. Use requires that you download the Fmod native binaries from their website. https://www.fmod.com/download
 
 Library versions from 2.2.0 onward correspond to the version of Fmod that it's meant for.</Description>
-    <NeutralLanguage></NeutralLanguage>
     <PackageReleaseNotes>FmodAudio: Directly Support Android OS</PackageReleaseNotes>
-  <Nullable>enable</Nullable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

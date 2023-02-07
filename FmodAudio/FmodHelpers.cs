@@ -149,30 +149,7 @@ namespace FmodAudio
                 buffer = buffer.Slice(0, size);
             }
 
-            if (buffer.Length <= 1024)
-            {
-                Span<char> tmp = stackalloc char[buffer.Length];
-
-                var res = Utf8.ToUtf16(buffer, tmp, out _, out int written);
-                Debug.Assert(res == OperationStatus.Done);
-
-                return new string(tmp.Slice(0, written));
-            }
-            else
-            {
-                var pool = ArrayPool<char>.Shared;
-
-                char[] arr = pool.Rent(buffer.Length);
-
-                var res = Utf8.ToUtf16(buffer, arr, out _, out int written);
-                Debug.Assert(res == OperationStatus.Done);
-
-                var ret = new string(arr, 0, written);
-
-                pool.Return(arr);
-
-                return ret;
-            }
+            return Encoding.UTF8.GetString(buffer);
         }
 
         public static unsafe string BufferToString(ReadOnlySpan<byte> buffer, Encoding encoding)

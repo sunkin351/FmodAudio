@@ -7,8 +7,7 @@ using FmodAudio.Base;
 
 namespace FmodAudio
 {
-    [EqualityBoilerplate]
-    public readonly partial struct Geometry : IDisposable, IEquatable<Geometry>
+    public readonly record struct Geometry : IDisposable, IEquatable<Geometry>
     {
         public static implicit operator Geometry(GeometryHandle handle)
         {

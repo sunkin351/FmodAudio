@@ -2,35 +2,34 @@
 
 using System;
 
-namespace FmodAudio
+namespace FmodAudio;
+
+public struct ErrorCallbackInfoNative
 {
-    public struct ErrorCallbackInfoNative
+    public Result Result;                           /* Error code result */
+    public ErrorCallbackInstanceType InstanceType;  /* Type of instance the error occurred on */
+    public nint Instance;                         /* Instance pointer */
+    public nint FunctionName;                     /* Function that the error occurred on */
+    public nint FunctionParams;                   /* Function parameters that the error ocurred on */
+}
+
+public class ErrorCallbackInfo
+{
+    public Result Result;                           /* Error code result */
+    public ErrorCallbackInstanceType InstanceType;  /* Type of instance the error occurred on */
+    public nint Instance;                         /* Instance object */
+    public string FunctionName;                     /* Function that the error occurred on */
+    public string FunctionParams;                   /* Function parameters that the error ocurred on */
+
+    public ErrorCallbackInfo(ref ErrorCallbackInfoNative native)
     {
-        public Result Result;                           /* Error code result */
-        public ErrorCallbackInstanceType InstanceType;  /* Type of instance the error occurred on */
-        public IntPtr Instance;                         /* Instance pointer */
-        public IntPtr FunctionName;                     /* Function that the error occurred on */
-        public IntPtr FunctionParams;                   /* Function parameters that the error ocurred on */
-    }
+        Result = native.Result;
 
-    public class ErrorCallbackInfo
-    {
-        public Result Result;                           /* Error code result */
-        public ErrorCallbackInstanceType InstanceType;  /* Type of instance the error occurred on */
-        public IntPtr Instance;                         /* Instance object */
-        public string FunctionName;                     /* Function that the error occurred on */
-        public string FunctionParams;                   /* Function parameters that the error ocurred on */
+        InstanceType = native.InstanceType;
 
-        public ErrorCallbackInfo(ref ErrorCallbackInfoNative native)
-        {
-            Result = native.Result;
+        Instance = native.Instance;
 
-            InstanceType = native.InstanceType;
-
-            Instance = native.Instance;
-
-            FunctionName = FmodHelpers.PtrToStringUnknownSize(native.FunctionName);
-            FunctionParams = FmodHelpers.PtrToStringUnknownSize(native.FunctionParams);
-        }
+        FunctionName = FmodHelpers.PtrToStringUnknownSize(native.FunctionName);
+        FunctionParams = FmodHelpers.PtrToStringUnknownSize(native.FunctionParams);
     }
 }

@@ -1,217 +1,159 @@
 ﻿#pragma warning disable CS0660, CS0661
 using System;
-using FmodAudio.Base.SGAttributes;
 
-namespace FmodAudio.Base
+namespace FmodAudio.Base;
+
+public readonly record struct SystemHandle : IHandleType<nint>
 {
-    [WrapperType, EqualityBoilerplate]
-    public partial struct SystemHandle : IHandleType<IntPtr>, IEquatable<SystemHandle>
+    public nint Handle { get; }
+
+    internal SystemHandle(nint handle)
     {
-        public IntPtr Handle { get; }
-
-        internal SystemHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
-
-        public bool Equals(SystemHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator SystemHandle(IntPtr rawHandle)
-        {
-            return new SystemHandle(rawHandle);
-        }
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct SoundHandle : IHandleType<IntPtr>, IEquatable<SoundHandle>
+    public static explicit operator SystemHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new SystemHandle(rawHandle);
+    }
+}
 
-        internal SoundHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct SoundHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(SoundHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-
-        public static explicit operator SoundHandle(IntPtr handle)
-        {
-            return new SoundHandle(handle);
-        }
+    internal SoundHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct SoundGroupHandle : IHandleType<IntPtr>, IEquatable<SoundGroupHandle>
+    public static explicit operator SoundHandle(nint handle)
     {
-        public IntPtr Handle { get; }
+        return new SoundHandle(handle);
+    }
+}
 
-        internal SoundGroupHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct SoundGroupHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(SoundGroupHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator SoundGroupHandle(IntPtr rawHandle)
-        {
-            return new SoundGroupHandle(rawHandle);
-        }
+    internal SoundGroupHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct ChannelHandle : IHandleType<IntPtr>, IEquatable<ChannelHandle>
+    public static explicit operator SoundGroupHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new SoundGroupHandle(rawHandle);
+    }
+}
 
-        internal ChannelHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct ChannelHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(ChannelHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator ChannelHandle(IntPtr rawHandle)
-        {
-            return new ChannelHandle(rawHandle);
-        }
+    internal ChannelHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct ChannelGroupHandle : IHandleType<IntPtr>, IEquatable<ChannelGroupHandle>
+    public static explicit operator ChannelHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new ChannelHandle(rawHandle);
+    }
+}
 
-        internal ChannelGroupHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct ChannelGroupHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(ChannelGroupHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator ChannelGroupHandle(IntPtr rawHandle)
-        {
-            return new ChannelGroupHandle(rawHandle);
-        }
+    internal ChannelGroupHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct DspHandle : IHandleType<IntPtr>, IEquatable<DspHandle>
+    public static explicit operator ChannelGroupHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new ChannelGroupHandle(rawHandle);
+    }
+}
 
-        internal DspHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct DspHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(DspHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator DspHandle(IntPtr rawHandle)
-        {
-            return new DspHandle(rawHandle);
-        }
+    internal DspHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct DspConnectionHandle : IHandleType<IntPtr>, IEquatable<DspConnectionHandle>
+    public static explicit operator DspHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new DspHandle(rawHandle);
+    }
+}
 
-        internal DspConnectionHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct DspConnectionHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(DspConnectionHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator DspConnectionHandle(IntPtr rawHandle)
-        {
-            return new DspConnectionHandle(rawHandle);
-        }
+    internal DspConnectionHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct GeometryHandle : IHandleType<IntPtr>, IEquatable<GeometryHandle>
+    public static explicit operator DspConnectionHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new DspConnectionHandle(rawHandle);
+    }
+}
 
-        internal GeometryHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct GeometryHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(GeometryHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator GeometryHandle(IntPtr rawHandle)
-        {
-            return new GeometryHandle(rawHandle);
-        }
+    internal GeometryHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct Reverb3DHandle : IHandleType<IntPtr>, IEquatable<Reverb3DHandle>
+    public static explicit operator GeometryHandle(nint rawHandle)
     {
-        public IntPtr Handle { get; }
+        return new GeometryHandle(rawHandle);
+    }
+}
 
-        internal Reverb3DHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct Reverb3DHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(Reverb3DHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
-
-        public static explicit operator Reverb3DHandle(IntPtr rawHandle)
-        {
-            return new Reverb3DHandle(rawHandle);
-        }
+    internal Reverb3DHandle(nint handle)
+    {
+        Handle = handle;
     }
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct PluginHandle : IHandleType<uint>, IEquatable<PluginHandle>
+    public static explicit operator Reverb3DHandle(nint rawHandle)
     {
-        public uint Handle { get; }
-
-        internal PluginHandle(uint handle)
-        {
-            Handle = handle;
-        }
-
-        public bool Equals(PluginHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
+        return new Reverb3DHandle(rawHandle);
     }
+}
 
-    [WrapperType, EqualityBoilerplate]
-    public partial struct SyncPointHandle : IHandleType<IntPtr>, IEquatable<SyncPointHandle>
+public readonly record struct PluginHandle : IHandleType<uint>
+{
+    public uint Handle { get; }
+
+    internal PluginHandle(uint handle)
     {
-        public IntPtr Handle { get; }
+        Handle = handle;
+    }
+}
 
-        internal SyncPointHandle(IntPtr handle)
-        {
-            Handle = handle;
-        }
+public readonly record struct SyncPointHandle : IHandleType<nint>
+{
+    public nint Handle { get; }
 
-        public bool Equals(SyncPointHandle other) => Handle == other.Handle;
-
-        public override int GetHashCode() => HashCode.Combine(Handle);
+    internal SyncPointHandle(nint handle)
+    {
+        Handle = handle;
     }
 }

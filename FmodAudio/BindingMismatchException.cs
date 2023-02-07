@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FmodAudio
+namespace FmodAudio;
+
+public sealed class BindingMismatchException : Exception
 {
-    public sealed class BindingMismatchException : Exception
+    // TODO: Add Message
+    public BindingMismatchException()
     {
-        // TODO: Add Message
-        public BindingMismatchException()
-        {
-        }
+    }
 
-        public BindingMismatchException(string message) : base(message)
-        {
-        }
+    public BindingMismatchException(string message) : base(message)
+    {
     }
 }

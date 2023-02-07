@@ -1,102 +1,88 @@
 ﻿#pragma warning disable CS0660, CS0661
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Numerics;
 
 using FmodAudio.Base;
 
-namespace FmodAudio
+namespace FmodAudio;
+
+public readonly record struct Reverb3D : IDisposable
 {
-    [EqualityBoilerplate]
-    public readonly partial struct Reverb3D : IDisposable, IEquatable<Reverb3D>
+    public static implicit operator Reverb3D(Reverb3DHandle handle)
     {
-        public static implicit operator Reverb3D(Reverb3DHandle handle)
+        return new Reverb3D(handle);
+    }
+
+    public static implicit operator Reverb3DHandle(Reverb3D reverb)
+    {
+        return reverb.Handle;
+    }
+
+    private static readonly FmodLibrary library = Fmod.Library;
+    private readonly Reverb3DHandle Handle;
+
+    internal Reverb3D(Reverb3DHandle handle)
+    {
+        Handle = handle;
+    }
+
+    public void Dispose()
+    {
+        Release();
+    }
+
+    public void Release()
+    {
+        library.Reverb3D_Release(Handle).CheckResult();
+    }
+
+    public void Set3DAttributes(in Vector3 position, float minDistance, float maxdistance)
+    {
+        library.Reverb3D_Set3DAttributes(Handle, in position, minDistance, maxdistance).CheckResult();
+    }
+
+    public void Get3DAttributes(out Vector3 position, out float minDistance, out float maxDistance)
+    {
+        library.Reverb3D_Get3DAttributes(Handle, out position, out minDistance, out maxDistance).CheckResult();
+    }
+
+    public void SetProperties(in ReverbProperties properties)
+    {
+        library.Reverb3D_SetProperties(Handle, in properties).CheckResult();
+    }
+
+    public void GetProperties(out ReverbProperties properties)
+    {
+        library.Reverb3D_GetProperties(Handle, out properties).CheckResult();
+    }
+
+    public bool Active
+    {
+        get
         {
-            return new Reverb3D(handle);
+            library.Reverb3D_GetActive(Handle, out FmodBool value).CheckResult();
+            return value;
         }
 
-        public static implicit operator Reverb3DHandle(Reverb3D reverb)
+        set
         {
-            return reverb.Handle;
+            library.Reverb3D_SetActive(Handle, value).CheckResult();
+        }
+    }
+
+    public unsafe nint UserData
+    {
+        get
+        {
+            nint value;
+            library.Reverb3D_GetUserData(Handle, &value).CheckResult();
+            return value;
         }
 
-        public bool Equals(Reverb3D other)
+        set
         {
-            return Handle == other.Handle;
-        }
-
-        public override int GetHashCode()
-        {
-            return Handle.GetHashCode();
-        }
-
-        private static readonly FmodLibrary library = Fmod.Library;
-        private readonly Reverb3DHandle Handle;
-
-        internal Reverb3D(Reverb3DHandle handle)
-        {
-            Handle = handle;
-        }
-
-        public void Dispose()
-        {
-            Release();
-        }
-
-        public void Release()
-        {
-            library.Reverb3D_Release(Handle).CheckResult();
-        }
-
-        public void Set3DAttributes(in Vector3 position, float minDistance, float maxdistance)
-        {
-            library.Reverb3D_Set3DAttributes(Handle, in position, minDistance, maxdistance).CheckResult();
-        }
-
-        public void Get3DAttributes(out Vector3 position, out float minDistance, out float maxDistance)
-        {
-            library.Reverb3D_Get3DAttributes(Handle, out position, out minDistance, out maxDistance).CheckResult();
-        }
-
-        public void SetProperties(in ReverbProperties properties)
-        {
-            library.Reverb3D_SetProperties(Handle, in properties).CheckResult();
-        }
-
-        public void GetProperties(out ReverbProperties properties)
-        {
-            library.Reverb3D_GetProperties(Handle, out properties).CheckResult();
-        }
-
-        public bool Active
-        {
-            get
-            {
-                library.Reverb3D_GetActive(Handle, out FmodBool value).CheckResult();
-                return value;
-            }
-
-            set
-            {
-                library.Reverb3D_SetActive(Handle, value).CheckResult();
-            }
-        }
-
-        public unsafe IntPtr UserData
-        {
-            get
-            {
-                IntPtr value;
-                library.Reverb3D_GetUserData(Handle, &value).CheckResult();
-                return value;
-            }
-
-            set
-            {
-                library.Reverb3D_SetUserData(Handle, value).CheckResult();
-            }
+            library.Reverb3D_SetUserData(Handle, value).CheckResult();
         }
     }
 }

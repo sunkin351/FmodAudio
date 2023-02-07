@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29306.81
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FmodAudio", "FmodAudio\FmodAudio.csproj", "{69AE6852-20E1-4C8A-AD65-FFADB8643F6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{4DD9C721-61ED-41CA-93A8-3C78D1E090B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FmodAudioSourceGenerator", "FmodAudioSourceGenerator\FmodAudioSourceGenerator.csproj", "{CF935AEB-4323-4670-BFE3-B8421FD41661}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGeneratorTests", "SourceGeneratorTests\SourceGeneratorTests.csproj", "{96CCFC53-8859-4B05-BAED-970F64A6CEFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +27,6 @@ Global
 		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF935AEB-4323-4670-BFE3-B8421FD41661}.Release|Any CPU.Build.0 = Release|Any CPU
-		{96CCFC53-8859-4B05-BAED-970F64A6CEFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{96CCFC53-8859-4B05-BAED-970F64A6CEFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{96CCFC53-8859-4B05-BAED-970F64A6CEFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{96CCFC53-8859-4B05-BAED-970F64A6CEFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

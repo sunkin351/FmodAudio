@@ -1,8 +1,7 @@
-﻿namespace FmodAudio.DigitalSignalProcessing
+﻿namespace FmodAudio.DigitalSignalProcessing;
+
+public struct DspParameterAttenuationRange
 {
-    public struct DspParameterAttenuationRange
-    {
-        public float Min;
-        public float Max;
-    }
+    public float Min;
+    public float Max;
 }

@@ -262,7 +262,7 @@ namespace Examples
             }
         }
 
-        private void DrawLog()
+        private static void DrawLog()
         {
             lock (LogBuffer)
             {

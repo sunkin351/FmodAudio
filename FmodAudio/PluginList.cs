@@ -1,12 +1,10 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace FmodAudio
+namespace FmodAudio;
+
+[StructLayout(LayoutKind.Sequential)]
+public struct PluginList
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PluginList
-    {
-        PluginType Type;
-        IntPtr Description;
-    }
+    public PluginType Type;
+    public nint Description;
 }

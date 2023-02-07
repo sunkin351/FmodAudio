@@ -3,166 +3,154 @@
 using System;
 using FmodAudio.Base;
 
-namespace FmodAudio
+namespace FmodAudio;
+
+public unsafe readonly record struct SoundGroup : IDisposable
 {
-    [EqualityBoilerplate]
-    public unsafe readonly partial struct SoundGroup : IDisposable, IEquatable<SoundGroup>
+    public static implicit operator SoundGroup(SoundGroupHandle handle)
     {
-        public static implicit operator SoundGroup(SoundGroupHandle handle)
+        return new SoundGroup(handle);
+    }
+
+    public static implicit operator SoundGroupHandle(SoundGroup soundGroup)
+    {
+        return soundGroup.Handle;
+    }
+
+    private static readonly FmodLibrary library = Fmod.Library;
+
+    private readonly SoundGroupHandle Handle;
+
+    internal SoundGroup(SoundGroupHandle handle)
+    {
+        Handle = handle;
+    }
+
+    public SystemHandle SystemObject
+    {
+        get
         {
-            return new SoundGroup(handle);
+            SystemHandle system;
+            library.SoundGroup_GetSystemObject(Handle, &system);
+            return system;
         }
+    }
 
-        public static implicit operator SoundGroupHandle(SoundGroup soundGroup)
+    public void Dispose()
+    {
+        Release();
+    }
+
+    public void Release()
+    {
+        library.SoundGroup_Release(Handle).CheckResult();
+    }
+
+    public int MaxAudible
+    {
+        get
         {
-            return soundGroup.Handle;
+            int value;
+            library.SoundGroup_GetMaxAudible(Handle, &value).CheckResult();
+            return value;
         }
-
-        public bool Equals(SoundGroup other)
+        set
         {
-            return Handle == other.Handle;
+            library.SoundGroup_SetMaxAudible(Handle, value).CheckResult();
         }
+    }
 
-        public override int GetHashCode()
+    public SoundGroupBehavior MaxAudibleBehavior
+    {
+        get
         {
-            return Handle.GetHashCode();
+            SoundGroupBehavior value;
+            library.SoundGroup_GetMaxAudibleBehavior(Handle, &value).CheckResult();
+            return value;
         }
-
-        private static readonly FmodLibrary library = Fmod.Library;
-
-        private readonly SoundGroupHandle Handle;
-
-        internal SoundGroup(SoundGroupHandle handle)
+        set
         {
-            Handle = handle;
+            library.SoundGroup_SetMaxAudibleBehavior(Handle, value).CheckResult();
         }
+    }
 
-        public SystemHandle SystemObject
+    public float MuteFadeSpeed
+    {
+        get
         {
-            get
-            {
-                SystemHandle system;
-                library.SoundGroup_GetSystemObject(Handle, &system);
-                return system;
-            }
+            float value;
+            library.SoundGroup_GetMuteFadeSpeed(Handle, &value).CheckResult();
+            return value;
         }
-
-        public void Dispose()
+        set
         {
-            Release();
+            library.SoundGroup_SetMuteFadeSpeed(Handle, value).CheckResult();
         }
+    }
 
-        public void Release()
+    public float Volume
+    {
+        get
         {
-            library.SoundGroup_Release(Handle).CheckResult();
+            float value;
+            library.SoundGroup_GetVolume(Handle, &value).CheckResult();
+            return value;
         }
-
-        public int MaxAudible
+        set
         {
-            get
-            {
-                int value;
-                library.SoundGroup_GetMaxAudible(Handle, &value).CheckResult();
-                return value;
-            }
-            set
-            {
-                library.SoundGroup_SetMaxAudible(Handle, value).CheckResult();
-            }
+            library.SoundGroup_SetVolume(Handle, value).CheckResult();
         }
+    }
 
-        public SoundGroupBehavior MaxAudibleBehavior
+    public string Name
+    {
+        get
         {
-            get
-            {
-                SoundGroupBehavior value;
-                library.SoundGroup_GetMaxAudibleBehavior(Handle, &value).CheckResult();
-                return value;
-            }
-            set
-            {
-                library.SoundGroup_SetMaxAudibleBehavior(Handle, value).CheckResult();
-            }
-        }
+            const int len = Fmod.MaxInteropNameStringLength;
+            var ptr = stackalloc byte[len];
 
-        public float MuteFadeSpeed
+            library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
+
+            return FmodHelpers.BufferToString(ptr, len);
+        }
+    }
+
+    public int SoundCount
+    {
+        get
         {
-            get
-            {
-                float value;
-                library.SoundGroup_GetMuteFadeSpeed(Handle, &value).CheckResult();
-                return value;
-            }
-            set
-            {
-                library.SoundGroup_SetMuteFadeSpeed(Handle, value).CheckResult();
-            }
+            int value;
+            library.SoundGroup_GetNumSounds(Handle, &value).CheckResult();
+            return value;
         }
+    }
 
-        public float Volume
+    public int PlayingCount
+    {
+        get
         {
-            get
-            {
-                float value;
-                library.SoundGroup_GetVolume(Handle, &value).CheckResult();
-                return value;
-            }
-            set
-            {
-                library.SoundGroup_SetVolume(Handle, value).CheckResult();
-            }
+            int value;
+            library.SoundGroup_GetNumPlaying(Handle, &value).CheckResult();
+            return value;
         }
+    }
 
-        public string Name
+    public IntPtr UserData
+    {
+        get
         {
-            get
-            {
-                const int len = Fmod.MaxInteropNameStringLength;
-                var ptr = stackalloc byte[len];
-
-                library.SoundGroup_GetName(Handle, ptr, len).CheckResult();
-
-                return FmodHelpers.BufferToString(ptr, len);
-            }
+            IntPtr value;
+            library.SoundGroup_GetUserData(Handle, &value).CheckResult();
+            return value;
         }
-
-        public int SoundCount
+        set
         {
-            get
-            {
-                int value;
-                library.SoundGroup_GetNumSounds(Handle, &value).CheckResult();
-                return value;
-            }
+            library.SoundGroup_SetUserData(Handle, value).CheckResult();
         }
+    }
 
-        public int PlayingCount
-        {
-            get
-            {
-                int value;
-                library.SoundGroup_GetNumPlaying(Handle, &value).CheckResult();
-                return value;
-            }
-        }
-
-        public IntPtr UserData
-        {
-            get
-            {
-                IntPtr value;
-                library.SoundGroup_GetUserData(Handle, &value).CheckResult();
-                return value;
-            }
-            set
-            {
-                library.SoundGroup_SetUserData(Handle, value).CheckResult();
-            }
-        }
-
-        public void Stop()
-        {
-            library.SoundGroup_Stop(Handle).CheckResult();
-        }
+    public void Stop()
+    {
+        library.SoundGroup_Stop(Handle).CheckResult();
     }
 }

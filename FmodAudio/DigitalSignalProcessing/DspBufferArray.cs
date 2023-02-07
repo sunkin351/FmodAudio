@@ -2,15 +2,14 @@
 
 using System.Runtime.InteropServices;
 
-namespace FmodAudio.DigitalSignalProcessing
+namespace FmodAudio.DigitalSignalProcessing;
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct DspBufferArray
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct DspBufferArray
-    {
-        public int BufferCount;
-        public int* BufferChannelCount;
-        public ChannelMask* BufferChannelMask;
-        public float** Buffers;
-        public SpeakerMode SpeakerMode;
-    }
+    public int BufferCount;
+    public int* BufferChannelCount;
+    public ChannelMask* BufferChannelMask;
+    public float** Buffers;
+    public SpeakerMode SpeakerMode;
 }

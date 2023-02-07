@@ -1,7 +1,6 @@
-﻿namespace FmodAudio.Base
+﻿namespace FmodAudio.Base;
+
+public interface IHandleType<T> where T: unmanaged
 {
-    public interface IHandleType<T> where T: unmanaged
-    {
-        T Handle { get; }
-    }
+    T Handle { get; }
 }

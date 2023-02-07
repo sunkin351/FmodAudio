@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "FmodAudioSourceGenerator": {
+      "commandName": "Project"
+    },
+    "Compilation Debug": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\FmodAudio\\FmodAudio.csproj"
+    }
+  }
+}

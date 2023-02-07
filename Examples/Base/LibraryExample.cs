@@ -39,6 +39,11 @@ namespace Examples.Base
             ConsoleUpdateStart = Console.CursorTop + 1;
         }
 
+        protected void ResetConsoleUpdateStart()
+        {
+            ConsoleUpdateStart = 0;
+        }
+
         protected void OnUpdate()
         {
             ConsoleHelpers.SetCursorRow(ConsoleUpdateStart);
@@ -114,59 +119,36 @@ namespace Examples.Base
             }
         }
 
-        private static int RenderTime(int ms, Span<char> buffer)
+        private static void RenderTime(int ms, ref BufferedStringBuilder builder)
         {
             if (ms < 0)
                 throw new ArgumentOutOfRangeException(nameof(ms));
-
-            int total = 0;
 
             var seconds = Math.DivRem(ms, 1000, out ms);
 
             var minutes = Math.DivRem(seconds, 60, out seconds);
 
-            int count;
-            if (minutes != 0)
-            {
-                minutes.TryFormat(buffer, out count);
-
-                buffer[count] = ':';
-                buffer = buffer.Slice(count + 1);
-
-                total += count + 1;
-            }
-
-            seconds.TryFormat(buffer, out count);
-
-            buffer[count] = '.';
-            buffer = buffer.Slice(count + 1);
-
-            total += count + 1;
-
-            ms.TryFormat(buffer, out count);
-
-            total += count;
-
-            return total;
+            builder.WriteToBuffer(minutes);
+            builder.WriteToBuffer(':');
+            builder.WriteToBuffer(seconds);
+            builder.WriteToBuffer('.');
+            builder.WriteToBuffer(ms);
         }
 
         protected static void DrawTime(int ms, int totalms)
         {
-            const string PreText = "Time: ";
+            Span<char> buffer = stackalloc char[64];
 
-            Span<char> buffer = stackalloc char[50];
+            var builder = new BufferedStringBuilder(buffer);
+            builder.WriteToBuffer("Time: ");
 
-            PreText.AsSpan().CopyTo(buffer);
-            int length = PreText.Length;
+            RenderTime(ms, ref builder);
 
-            length += RenderTime(ms, buffer.Slice(length));
+            builder.WriteToBuffer('/');
 
-            buffer[length] = '/';
-            length += 1;
-
-            length += RenderTime(totalms, buffer.Slice(length));
-
-            DrawText(buffer.Slice(0, length));
+            RenderTime(totalms, ref builder);
+            
+            DrawText(builder.CurrentContent);
         }
 
         protected ref struct BufferedStringBuilder
@@ -233,7 +215,18 @@ namespace Examples.Base
 
             public ReadOnlySpan<char> CurrentContent => Buffer.Slice(0, contentLength);
 
-            public int Written => contentLength;
+            public int Written
+            {
+                get => contentLength;
+                set
+                {
+                    if ((uint)value < (uint)contentLength)
+                    {
+                        contentLength = value;
+                        return;
+                    }
+                }
+            }
         }
     }
 }

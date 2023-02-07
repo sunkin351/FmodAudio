@@ -2,14 +2,13 @@
 
 using System.Runtime.InteropServices;
 
-namespace FmodAudio.DigitalSignalProcessing
+namespace FmodAudio.DigitalSignalProcessing;
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct DSPMeteringInfo
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct DSPMeteringInfo
-    {
-        public int SampleCount;
-        public fixed float peakLevel[32];
-        public fixed float rmsLevel[32];
-        public short ChannelCount;
-    }
+    public int SampleCount;
+    public fixed float peakLevel[32];
+    public fixed float rmsLevel[32];
+    public short ChannelCount;
 }

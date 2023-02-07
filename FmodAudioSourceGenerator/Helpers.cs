@@ -1,43 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+namespace FmodAudioSourceGenerator;
 
-namespace FmodAudioSourceGenerator
+internal static class Helpers
 {
-    internal static class Helpers
+    public static int SequenceHashCode<T>(this IEnumerable<T> values)
     {
-        public static bool HasAttributeOfName(MemberDeclarationSyntax decl, string stringName)
+        return values.SequenceHashCode(EqualityComparer<T>.Default);
+    }
+
+    public static int SequenceHashCode<T>(this IEnumerable<T> values, IEqualityComparer<T> comparer)
+    {
+        int code = 0;
+
+        if (values is not null)
         {
-            var lists = decl.AttributeLists;
-
-            if (lists.Count > 0)
+            foreach (var value in values)
             {
-                foreach (var list in lists)
-                {
-                    foreach (var attrib in list.Attributes)
-                    {
-                        var name = attrib.Name;
+                var valCode = comparer.GetHashCode(value);
 
-                        if (!(name is SimpleNameSyntax sname))
-                        {
-                            if (name is QualifiedNameSyntax qname)
-                                sname = qname.Right;
-                            else
-                                continue;
-                        }
-
-                        if (sname.Identifier.Text == stringName)
-                        {
-                            return true;
-                        }
-                    }
-                }
+                code = code * -1521134295 + valCode;
             }
-
-            return false;
         }
 
+        return code;
     }
 }

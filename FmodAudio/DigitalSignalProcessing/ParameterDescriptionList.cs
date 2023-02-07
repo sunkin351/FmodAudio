@@ -4,59 +4,58 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace FmodAudio.DigitalSignalProcessing
+namespace FmodAudio.DigitalSignalProcessing;
+
+public class ParameterDescriptionList
 {
-    public class ParameterDescriptionList
+    private readonly ParameterDescription[] ManagedArray;
+    private ParameterDescriptionStruct[]? StructArray;
+
+    [NotNull]
+    private nint[]? PointerList;
+
+    public ParameterDescriptionList(params ParameterDescription[] array)
     {
-        private readonly ParameterDescription[] ManagedArray;
-        private ParameterDescriptionStruct[]? StructArray;
-
-        [NotNull]
-        private IntPtr[]? PointerList;
-
-        public ParameterDescriptionList(ParameterDescription[] array)
+        if (array.Length == 0)
         {
-            if (array.Length == 0)
-            {
-                throw new ArgumentException("array length must be greater than 0");
-            }
-
-            ManagedArray = array;
+            throw new ArgumentException("array length must be greater than 0");
         }
 
-        public ParameterDescription[] List => ManagedArray;
+        ManagedArray = array;
+    }
 
-        public unsafe void GetPointerAndCount(out ParameterDescriptionStruct** ptr, out int length)
+    public ParameterDescription[] List => ManagedArray;
+
+    public unsafe void GetPointerAndCount(out ParameterDescriptionStruct** ptr, out int length)
+    {
+        EnsureInitialized();
+
+        ptr = (ParameterDescriptionStruct**)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(PointerList));
+        length = PointerList.Length;
+    }
+
+    private unsafe void EnsureInitialized()
+    {
+        if (Volatile.Read(ref PointerList) == null)
         {
-            EnsureInitialized();
-
-            ptr = (ParameterDescriptionStruct**)Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(PointerList));
-            length = PointerList.Length;
-        }
-
-        private unsafe void EnsureInitialized()
-        {
-            if (Volatile.Read(ref PointerList) == null)
+            lock (ManagedArray)
             {
-                lock (ManagedArray)
+                if (PointerList != null)
+                    return;
+
+                StructArray = GC.AllocateArray<ParameterDescriptionStruct>(ManagedArray.Length, true);
+                var list = GC.AllocateArray<nint>(ManagedArray.Length, true);
+
+                for (int i = 0; i < ManagedArray.Length; ++i)
                 {
-                    if (PointerList != null)
-                        return;
+                    ref var elem = ref StructArray[i];
 
-                    StructArray = GC.AllocateArray<ParameterDescriptionStruct>(ManagedArray.Length, true);
-                    var list = GC.AllocateArray<IntPtr>(ManagedArray.Length, true);
+                    elem = ManagedArray[i].internalDescription;
 
-                    for (int i = 0; i < ManagedArray.Length; ++i)
-                    {
-                        ref var elem = ref StructArray[i];
-
-                        elem = ManagedArray[i].internalDescription;
-
-                        list[i] = (IntPtr)Unsafe.AsPointer(ref elem);
-                    }
-
-                    Volatile.Write(ref PointerList, list);
+                    list[i] = (nint)Unsafe.AsPointer(ref elem);
                 }
+
+                Volatile.Write(ref PointerList, list);
             }
         }
     }

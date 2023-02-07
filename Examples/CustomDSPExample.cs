@@ -97,9 +97,11 @@ namespace Examples
             {
                 var gchandle = GCHandle.FromIntPtr(state->plugindata);
 
-                if (gchandle.IsAllocated && gchandle.Target is MyCustomDSP managedState)
+                if (gchandle.IsAllocated)
                 {
-                    managedState.Dispose();
+                    if (gchandle.Target is MyCustomDSP managedState)
+                        managedState.Dispose();
+                    
                     gchandle.Free();
                 }
 
